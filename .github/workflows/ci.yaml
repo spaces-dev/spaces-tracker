@@ -45,7 +45,7 @@ jobs:
 
           git push
 
-          COMMIT_SHA=$(git rev-parse HEAD)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
           echo "sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
 
       - name: Send to Telegram
