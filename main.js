@@ -150,8 +150,7 @@ async function main() {
   const lines = [`chore: Changed ${stats.changed.size} file(s)`];
 
   if (stats.revisionsUpdated) {
-    lines.push('\n');
-    lines.push('⚠️ revisions.json updated!');
+    lines.push('\n⚠️ revisions.json updated!');
   }
 
   if (stats.changed.size > 0) {
@@ -181,11 +180,8 @@ async function main() {
     process.exit(0);
   }
 
-  const telegramMessage = lines.join('\n')
-  const commitMessage = telegramMessage
-    .replaceAll('<pre>', '')
-    .replaceAll('</pre>', '')
-    .replace('chore: ', '')
+  const commitMessage = lines.join('\n').replaceAll('\n<pre>', '').replaceAll('\n</pre>', '')
+  const telegramMessage = lines.slice(1).join('\n')
 
   await fs.writeFile('commit-message.txt', commitMessage, 'utf-8');
   await fs.writeFile('telegram-message.txt', telegramMessage, 'utf-8');
