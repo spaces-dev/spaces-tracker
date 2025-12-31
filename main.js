@@ -2,8 +2,6 @@ import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
 
-const links = await fs.readFile('links.json', 'utf-8')
-
 const HOST = 'spaces.im'
 const SANDBOX_KEY = 'beta'
 const CONCURRENCY = 10
@@ -56,8 +54,20 @@ async function updateRevisions() {
   }
 
   const res = await req.json()
-  const revision = JSON.stringify(res, null, 2)
-  await fs.writeFile("revisions.json", revision)
+  
+   const files = [
+    ...Object.keys(revisions.js)
+      .filter((file) => !file.match(/^(\w+)\/b\//i) && !file.startsWith("pc/"))
+      .map((file) => `/js/${file}`),
+    ...Object.keys(revisions.css)
+      .filter((file) => !file.match(/^(\w+)\/b\//i) && !file.startsWith("dark/") && !file.startsWith("pc/"))
+      .map((file) => `/css/custom/${file}`),
+  ]
+
+  files.sort()
+
+  await fs.writeFile("links.json", JSON.stringify(files, null, '  '))
+  await fs.writeFile("revisions.json", JSON.stringify(res, null, 2))
 }
 
 async function downloadAndExtractSourcemap(url) {
@@ -143,6 +153,7 @@ async function processInBatches(items, batchSize, processor) {
 async function main() {
   await updateRevisions()
 
+  const links = await fs.readFile('links.json', 'utf-8');
   const sourcemapLinks = JSON.parse(links)
     .map((link) => `https://${HOST}${link}.map`)
 
