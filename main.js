@@ -3,9 +3,10 @@ import path from 'path';
 import crypto from 'crypto';
 
 const links = await fs.readFile('links.json', 'utf-8');
-const sourcemapLinks = JSON.parse(links).map((link) => `${link}.map`);
 
-const CONCURRENCY = 10;
+const HOST = 'spaces.im';
+const SANDBOX_KEY = 'beta';
+const CONCURRENCY = 1;
 
 const stats = {
   totalFiles: 0,
@@ -28,6 +29,31 @@ async function fileExists(filePath) {
   }
 }
 
+async function updateSourceFiles() {
+  const response = await fetch(`https://${HOST}/js/revisions.json`, {
+    headers: {
+      Cookie: `sandbox=${SANDBOX_KEY}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`Can't download revisions: ${response.status}`);
+  }
+
+  const revisions = await response.json();
+  const files = [
+    ...Object.keys(revisions.js)
+      .filter((file) => !file.match(/^(\w+)\/b\//i) && !file.startsWith("pc/"))
+      .map((file) => `/js/${file}`),
+    ...Object.keys(revisions.css)
+      .filter((file) => !file.match(/^(\w+)\/b\//i) && !file.startsWith("dark/") && !file.startsWith("pc/"))
+      .map((file) => `/css/custom/${file}`),
+  ];
+
+  files.sort();
+
+  await fs.writeFile("links.json", JSON.stringify(files, null, '  '));
+}
+
 async function downloadAndExtractSourcemap(url) {
   const results = {
     url,
@@ -37,7 +63,11 @@ async function downloadAndExtractSourcemap(url) {
   };
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        Cookie: `sandbox=${SANDBOX_KEY}`
+      }
+    });
     if (!response.ok) {
       results.success = false;
       results.error = `HTTP ${response.status}`;
@@ -101,6 +131,11 @@ async function processInBatches(items, batchSize, processor) {
 }
 
 async function main() {
+  await updateSourceFiles();
+
+  const sourcemapLinks = JSON.parse(links)
+    .filter((link) => link.endsWith('.css') || link.endsWith('.js'))
+    .map((link) => `https://${HOST}/${link}.map`);
   console.log(`Starting sourcemap extraction (${sourcemapLinks.length} files, concurrency: ${CONCURRENCY})...\n`);
 
   const startTime = Date.now();
