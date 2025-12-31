@@ -131,7 +131,7 @@ async function main() {
   const sourcemapLinks = JSON.parse(links)
     .map((link) => `https://${HOST}${link}.map`);
 
-  console.log(`Starting download sourcemap (${sourcemapLinks.length} links, concurrency: ${CONCURRENCY})...\n`);
+  console.log(`Starting download sourcemaps (${sourcemapLinks.length} links, concurrency: ${CONCURRENCY})...\n`);
 
   const startTime = Date.now();
   const results = await processInBatches(sourcemapLinks, CONCURRENCY, downloadAndExtractSourcemap);
@@ -159,7 +159,6 @@ async function main() {
     lines.push('\n<pre>')
     const sortedChanged = Array.from(stats.changed).sort();
     sortedChanged.forEach(file => {
-      console.log(`  - ${file}`)
       lines.push(`- ${file}`);
     });
     lines.push('</pre>');
@@ -169,7 +168,6 @@ async function main() {
     lines.push(`\nFailed downloads (${stats.failed.length}):`);
     lines.push('\n<pre>');
     stats.failed.forEach(({ url, error }) => {
-      console.log(`  - ${url}: ${error}`)
       lines.push(`- ${url}`);
     });
     lines.push('</pre>');
@@ -179,7 +177,7 @@ async function main() {
   console.log(`\nDuration: ${duration}s`);
 
   if (stats.changed.size === 0 || stats.failed.length === 0) {
-    console.log('\nNo files updated. Exiting without commit.');
+    console.log('\nNo files changed. Exiting without commit.');
     process.exit(0);
   }
 
