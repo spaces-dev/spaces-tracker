@@ -69,7 +69,11 @@ async function downloadAndExtractSourcemap(url) {
   }
 
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: {
+        Cookie: `sandbox=${SANDBOX_KEY}`
+      }
+    })
     if (!response.ok) {
       results.success = false
       results.error = `HTTP ${response.status}`
