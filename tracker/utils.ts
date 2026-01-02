@@ -69,3 +69,44 @@ export function compareFileSize(beforeBytes: number, afterBytes: number): string
 
   return `${afterFormatted} (${sign}${diffFormatted})`
 }
+
+const TELEGRAM_LIMIT = 3900
+
+export function splitTelegramMessage(message: string): string[] {
+  const chunks: string[] = []
+  let currentChunk = ''
+  let insidePre = false
+
+  const lines = message.split('\n')
+
+  for (const line of lines) {
+    const hasPreOpen = line.includes('<pre>')
+    const hasPreClose = line.includes('</pre>')
+
+    const potentialChunk = currentChunk + (currentChunk ? '\n' : '') + line
+
+    if (potentialChunk.length > TELEGRAM_LIMIT) {
+      if (insidePre) {
+        currentChunk += '\n</pre>'
+      }
+
+      chunks.push(currentChunk)
+
+      currentChunk = insidePre ? `<pre>\n${line}` : line
+    } else {
+      currentChunk = potentialChunk
+    }
+
+    if (hasPreOpen) insidePre = true
+    if (hasPreClose) insidePre = false
+  }
+
+  if (currentChunk) {
+    if (insidePre) {
+      currentChunk += '\n</pre>'
+    }
+    chunks.push(currentChunk)
+  }
+
+  return chunks
+}

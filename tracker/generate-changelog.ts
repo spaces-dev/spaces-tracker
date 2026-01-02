@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import { splitTelegramMessage } from './utils.ts'
 import type { TrackerStats } from './types.ts'
 
 export async function generateChangelog(stats: TrackerStats) {
@@ -45,5 +46,9 @@ export async function generateChangelog(stats: TrackerStats) {
   const telegramMessage = lines.slice(1).join('\n').replaceAll('<pre>\n', '<pre>')
 
   await fs.writeFile('commit-message.txt', commitMessage, 'utf-8')
-  await fs.writeFile('telegram-message.txt', telegramMessage, 'utf-8')
+
+  const chunks = splitTelegramMessage(telegramMessage)
+  for (let i = 0; i < chunks.length; i++) {
+    await fs.writeFile(`telegram-message-${i + 1}.txt`, chunks[i], 'utf-8')
+  }
 }

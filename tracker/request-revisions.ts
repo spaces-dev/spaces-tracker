@@ -49,7 +49,11 @@ export async function requestRevisions() {
 
   return {
     isChanged,
-    links,
+    links: {
+      assets: assetLinks,
+      added: links.added,
+      removed: links.removed,
+    },
   }
 }
 
@@ -58,8 +62,10 @@ function compareAssetsLinks(
   currentLinks: string[],
 ): TrackerLinks {
   const links = Object.values(assets).flat()
-  const added = links.filter(link => !currentLinks.includes(link))
-  const removed = currentLinks.filter(link => !links.includes(link))
+  const linksSet = new Set(links)
+  const currentLinksSet = new Set(currentLinks)
+  const added = links.filter(link => !currentLinksSet.has(link))
+  const removed = currentLinks.filter(link => !linksSet.has(link))
 
   return {
     assets,
