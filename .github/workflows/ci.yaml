@@ -90,6 +90,6 @@ jobs:
                 exit 1
               fi
 
-              sleep 500
+              sleep 1
             fi
           done
