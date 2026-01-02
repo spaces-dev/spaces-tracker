@@ -1,8 +1,15 @@
 {
   "name": "spaces-tracker",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
   "scripts": {
-    "start": "node main.js"
+    "start": "node tracker/main.ts",
+    "type-check": "tsc"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.7.3",
+    "@types/node": "^25.0.3",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
   }
 }
