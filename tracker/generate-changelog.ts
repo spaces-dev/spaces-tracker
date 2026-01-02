@@ -3,17 +3,13 @@ import { splitTelegramMessage } from './utils.ts'
 import type { TrackerStats } from './types.ts'
 
 export async function generateChangelog(stats: TrackerStats) {
-  if (stats.changed.size === 0 && stats.failed.length === 0) {
-    console.log('\nNo files changed. Exiting without commit.')
-    process.exit(0)
-  }
-
   const lines = [`chore: Changed ${stats.changed.size} file(s)`]
 
   if (stats.changed.size > 0) {
     lines.push(`\nChanged files (${stats.changed.size}):`)
     lines.push('\n<pre>')
-    const sortedChanged = Array.from(stats.changed.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+    const sortedChanged = Array.from(stats.changed.entries())
+      .toSorted((a, b) => a[0].localeCompare(b[0]))
     for (const [path, info] of sortedChanged) {
       lines.push(`${path} [${info.fileSize}] (${info.lastCommitDate})`)
     }

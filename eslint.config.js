@@ -14,6 +14,7 @@ export default antfu({
     'no-console': 'off',
     'no-unused-vars': 'warn',
     'node/prefer-global/process': 'off',
+    'node/prefer-global/buffer': 'off',
     'antfu/if-newline': 'off',
     'antfu/no-top-level-await': 'off',
     'unused-imports/no-unused-imports': 'warn',

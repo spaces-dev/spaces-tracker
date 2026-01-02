@@ -89,42 +89,38 @@ export async function requestSourcemaps(assets: Record<string, string[]>) {
   const countAssets = hashes.length
   console.log(`Starting download sourcemaps (${countAssets} assets, concurrency: ${Config.Concurrency})\n`)
 
-  try {
-    const resources: SourcemapResponse[] = []
-    let index = 0
+  const resources: SourcemapResponse[] = []
+  let index = 0
 
-    const worker = async () => {
-      while (index < hashes.length) {
-        const currentIndex = index++
-        const hash = hashes[currentIndex]
-        const urls = assets[hash]
+  const worker = async () => {
+    while (index < hashes.length) {
+      const currentIndex = index++
+      const hash = hashes[currentIndex]
+      const urls = assets[hash]
 
-        let result: SourcemapResponse | null = null
+      let result: SourcemapResponse | null = null
 
-        for (let urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-          const url = urls[urlIndex]
-          result = await loadSourcemap(url)
+      for (let urlIndex = 0; urlIndex < urls.length; urlIndex++) {
+        const url = urls[urlIndex]
+        result = await loadSourcemap(url)
 
-          if (!result.error) {
-            break
-          }
-
-          if (result.error && urlIndex < urls.length - 1) {
-            console.warn(`❌ ${url}: ${result.error}. Trying next URL...`)
-          }
+        if (!result.error) {
+          break
         }
 
-        if (result) {
-          resources[currentIndex] = result
-          const status = result.error ? `❌ ${result.error}` : '✅'
-          console.log(`${status} ${result.url} (${currentIndex + 1}/${countAssets})`)
+        if (result.error && urlIndex < urls.length - 1) {
+          console.warn(`❌ ${url}: ${result.error}. Trying next URL...`)
         }
       }
-    }
 
-    await Promise.all(Array.from({ length: Config.Concurrency }, worker))
-    return resources
-  } finally {
-    console.log('\nCleaned up temp directory')
+      if (result) {
+        resources[currentIndex] = result
+        const status = result.error ? `❌ ${result.error}` : '✅'
+        console.log(`${status} ${result.url} (${currentIndex + 1}/${countAssets})`)
+      }
+    }
   }
+
+  await Promise.all(Array.from({ length: Config.Concurrency }, worker))
+  return resources
 }

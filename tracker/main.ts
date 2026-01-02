@@ -1,4 +1,5 @@
 import { generateChangelog } from './generate-changelog.ts'
+import { requestIcons } from './request-icons.ts'
 import { requestRevisions } from './request-revisions.ts'
 import { requestSourcemaps } from './request-sourcemap.ts'
 import type { TrackerStats } from './types.ts'
@@ -35,6 +36,13 @@ async function main() {
       }
     }
   }
+
+  if (stats.changed.size === 0 && stats.failed.length === 0) {
+    console.log('\nNo files changed. Exiting without commit.')
+    process.exit(0)
+  }
+
+  await requestIcons()
 
   stats.links = revisions.links
   generateChangelog(stats)
