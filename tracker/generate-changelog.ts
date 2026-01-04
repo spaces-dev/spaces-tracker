@@ -3,23 +3,30 @@ import { splitTelegramMessage } from './utils.ts'
 import type { TrackerStats } from './types.ts'
 
 export async function generateChangelog(stats: TrackerStats) {
-  const lines = [`chore: Changed ${stats.changed.size} file(s)`]
+  const lines = [`chore: Changed ${stats.changed.length} file(s)`]
 
-  if (stats.changed.size > 0) {
-    lines.push(`\nChanged files (${stats.changed.size}):`)
-    lines.push('\n<pre>')
-    const sortedChanged = Array.from(stats.changed.entries())
-      .toSorted((a, b) => a[0].localeCompare(b[0]))
-    for (const [path, info] of sortedChanged) {
-      lines.push(`${path} [${info.fileSize}] (${info.lastCommitDate})`)
+  if (stats.added.length > 0) {
+    lines.push(`\nAdded files (${stats.added.length}):`)
+    lines.push('\n<pre language="text">')
+    for (const file of stats.added) {
+      lines.push(`${file.path} ${file.fileSize}`)
     }
     lines.push('</pre>')
   }
 
-  if (stats.links.removed.length > 0) {
-    lines.push(`\nRemoved files (${stats.links.removed.length}):`)
-    lines.push('\n<pre>')
-    for (const file of stats.links.removed) {
+  if (stats.changed.length > 0) {
+    lines.push(`\nChanged files (${stats.changed.length}):`)
+    lines.push('\n<pre language="text">')
+    for (const file of stats.changed) {
+      lines.push(`${file.path} [${file.fileSize}] (${file.lastCommitDate})`)
+    }
+    lines.push('</pre>')
+  }
+
+  if (stats.comparedLinks.removed.length > 0) {
+    lines.push(`\nRemoved files (${stats.comparedLinks.removed.length}):`)
+    lines.push('\n<pre language="text">')
+    for (const file of stats.comparedLinks.removed) {
       lines.push(file)
     }
     lines.push('</pre>')
@@ -27,9 +34,9 @@ export async function generateChangelog(stats: TrackerStats) {
 
   if (stats.failed.length > 0) {
     lines.push(`\nFailed downloads (${stats.failed.length}):`)
-    lines.push('\n<pre>')
-    for (const { url, error } of stats.failed) {
-      lines.push(`${url} (${error})`)
+    lines.push('\n<pre language="text">')
+    for (const file of stats.failed) {
+      lines.push(`${file.url} (${file.error})`)
     }
     lines.push('</pre>')
   }
@@ -38,7 +45,7 @@ export async function generateChangelog(stats: TrackerStats) {
   console.log(duration)
   lines.push(duration)
 
-  const commitMessage = lines.join('\n').replaceAll('\n<pre>', '').replaceAll('\n</pre>', '')
+  const commitMessage = lines.join('\n').replaceAll('\n<pre language="text">', '').replaceAll('\n</pre>', '')
   const telegramMessage = lines.slice(1).join('\n')
 
   await fs.writeFile('commit-message.txt', commitMessage, 'utf-8')

@@ -1,13 +1,13 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { apiRequest } from './api.ts'
+import { api } from './api.ts'
 import { Config } from './config.ts'
 
 const ICONS_SOURCE = '/css/custom/pc/b/main.css'
 const ICONS_REGEX = /url\(['"]?(\/i\/[^'")]+)['"]?\)/g
 
 export async function requestIcons() {
-  const req = await apiRequest(ICONS_SOURCE)
+  const req = await api.request(ICONS_SOURCE)
 
   if (req.status === 304) {
     return
@@ -27,7 +27,7 @@ export async function requestIcons() {
     .toSorted((a, b) => a[0].localeCompare(b[0]))
 
   for (const icon of sortedIcons) {
-    const req = await apiRequest(icon)
+    const req = await api.request(icon)
 
     if (req.status === 304) {
       continue

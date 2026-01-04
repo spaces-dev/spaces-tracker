@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { apiRequest } from './api.ts'
+import { api } from './api.ts'
 import { Config } from './config.ts'
 import {
   compareFileSize,
@@ -12,15 +12,16 @@ import type { Sourcemap, SourcemapFile, SourcemapResponse } from './types.ts'
 
 const processedPathToSize: Record<string, number> = {}
 
-async function loadSourcemap(url: string) {
+async function loadSourcemap(assetPath: string) {
+  const sourcemapPath = `${assetPath}.map`
   const results: SourcemapResponse = {
-    url,
+    url: sourcemapPath,
     files: [],
     error: null,
   }
 
   try {
-    const req = await apiRequest(url)
+    const req = await api.request(sourcemapPath)
 
     if (req.status === 304) {
       return results
@@ -33,7 +34,7 @@ async function loadSourcemap(url: string) {
 
     const sourcemap = await req.json() as Sourcemap
     if (!sourcemap.sourcesContent && !sourcemap.mappings) {
-      results.error = 'Sourcemap is empty'
+      // results.error = 'Sourcemap is empty'
       return results
     }
 
@@ -55,18 +56,21 @@ async function loadSourcemap(url: string) {
 
       let fileSize = ''
       let isChanged = false
+      let isAdded = false
       let lastCommitDate: SourcemapFile['lastCommitDate'] | undefined
 
       const contentPath = path.join('.', sourcePath.replace(/^[a-z]+:\/\/\//, ''))
       const isFileExists = await fileExists(contentPath)
 
       if (isFileExists) {
-        isChanged = await fileIsChanged(sourceContent, contentPath)
+        const currentFile = await fs.readFile(contentPath, 'utf-8')
+        isChanged = await fileIsChanged(sourceContent, currentFile)
         if (isChanged) lastCommitDate = await fileLastCommitDate(contentPath)
 
         const fileStats = await fs.stat(contentPath)
         fileSize = compareFileSize(fileStats.size, sourceContent.length)
       } else {
+        isAdded = true
         lastCommitDate = 'new'
         fileSize = compareFileSize(sourceContent.length, sourceContent.length)
       }
@@ -76,7 +80,8 @@ async function loadSourcemap(url: string) {
 
       results.files.push({
         path: contentPath,
-        isChanged: lastCommitDate === 'new' || isChanged,
+        isAdded,
+        isChanged,
         fileSize,
         lastCommitDate,
       })
@@ -88,19 +93,20 @@ async function loadSourcemap(url: string) {
   return results
 }
 
-export async function requestSourcemaps(assets: Record<string, string[]>) {
-  const hashes = Object.keys(assets)
+export async function requestSourcemaps(linksGroup: Record<string, string[]>) {
+  const hashes = Object.keys(linksGroup)
   const countAssets = hashes.length
+
   console.log(`Starting download sourcemaps (${countAssets} assets, concurrency: ${Config.Concurrency})\n`)
 
-  const resources: SourcemapResponse[] = []
+  const sourcemaps: SourcemapResponse[] = []
   let index = 0
 
   const worker = async () => {
     while (index < hashes.length) {
       const currentIndex = index++
       const hash = hashes[currentIndex]
-      const urls = assets[hash]
+      const urls = linksGroup[hash]
 
       let result: SourcemapResponse | null = null
 
@@ -118,7 +124,7 @@ export async function requestSourcemaps(assets: Record<string, string[]>) {
       }
 
       if (result) {
-        resources[currentIndex] = result
+        sourcemaps[currentIndex] = result
         const status = result.error ? `❌ ${result.error}` : '✅'
         console.log(`${status} ${result.url} (${currentIndex + 1}/${countAssets})`)
       }
@@ -126,5 +132,5 @@ export async function requestSourcemaps(assets: Record<string, string[]>) {
   }
 
   await Promise.all(Array.from({ length: Config.Concurrency }, worker))
-  return resources
+  return sourcemaps
 }

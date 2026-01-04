@@ -18,11 +18,24 @@ export function getFileHash(content: string) {
   return crypto.createHash('md5').update(content).digest('hex')
 }
 
-export async function fileIsChanged(nextContent: string, currentContentPath: string) {
-  const currentContent = await fs.readFile(currentContentPath, 'utf-8')
-  const nextHash = getFileHash(nextContent)
-  const currentHash = getFileHash(currentContent)
-  return currentHash !== nextHash
+export function stringifyJson<T>(value: T) {
+  return JSON.stringify(value, null, 2)
+}
+
+export async function readJson<T>(path: string) {
+  const data = await fs.readFile(path, 'utf-8')
+  return JSON.parse(data) as T
+}
+
+export async function writeJson<T>(path: string, data: T) {
+  const json = stringifyJson(data)
+  return fs.writeFile(path, json, 'utf-8')
+}
+
+export async function fileIsChanged<Left, Right>(left: Left, right: Right) {
+  const leftHash = getFileHash(stringifyJson(left))
+  const rightHash = getFileHash(stringifyJson(right))
+  return rightHash !== leftHash
 }
 
 export async function fileLastCommitDate(path: string) {

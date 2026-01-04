@@ -21,7 +21,8 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "strictPropertyInitialization": false
   },
   "include": [
     "tracker"
