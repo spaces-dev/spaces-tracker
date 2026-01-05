@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import { splitTelegramMessage } from './utils.ts'
-import type { TrackerStats } from './types.ts'
+import type { Stats } from './types.ts'
 
-export async function generateChangelog(stats: TrackerStats) {
+export async function generateChangelog(stats: Stats) {
   const lines = [`chore: Changed ${stats.changed.length} file(s)`]
 
   if (stats.added.length > 0) {
@@ -18,15 +18,15 @@ export async function generateChangelog(stats: TrackerStats) {
     lines.push(`\nChanged files (${stats.changed.length}):`)
     lines.push('\n<pre language="text">')
     for (const file of stats.changed) {
-      lines.push(`${file.path} [${file.fileSize}] (${file.lastCommitDate})`)
+      lines.push(`${file.path} | ${file.fileSize} | ${file.lastCommitDate}`)
     }
     lines.push('</pre>')
   }
 
-  if (stats.comparedLinks.removed.length > 0) {
-    lines.push(`\nRemoved files (${stats.comparedLinks.removed.length}):`)
+  if (stats.removed.length > 0) {
+    lines.push(`\nRemoved files (${stats.removed.length}):`)
     lines.push('\n<pre language="text">')
-    for (const file of stats.comparedLinks.removed) {
+    for (const file of stats.removed) {
       lines.push(file)
     }
     lines.push('</pre>')
@@ -36,7 +36,7 @@ export async function generateChangelog(stats: TrackerStats) {
     lines.push(`\nFailed downloads (${stats.failed.length}):`)
     lines.push('\n<pre language="text">')
     for (const file of stats.failed) {
-      lines.push(`${file.url} (${file.error})`)
+      lines.push(`${file.url} | ${file.error}`)
     }
     lines.push('</pre>')
   }
@@ -45,7 +45,10 @@ export async function generateChangelog(stats: TrackerStats) {
   console.log(duration)
   lines.push(duration)
 
-  const commitMessage = lines.join('\n').replaceAll('\n<pre language="text">', '').replaceAll('\n</pre>', '')
+  const commitMessage = lines.join('\n')
+    .replaceAll('\n<pre language="text">', '')
+    .replaceAll('\n</pre>', '')
+
   const telegramMessage = lines.slice(1).join('\n')
 
   await fs.writeFile('commit-message.txt', commitMessage, 'utf-8')

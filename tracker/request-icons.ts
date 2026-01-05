@@ -1,17 +1,22 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { api } from './api.ts'
+import { concurrentWorker } from './concurrency-worker.ts'
 import { Config } from './config.ts'
+import { request, writeJson } from './utils.ts'
 
 const ICONS_SOURCE = '/css/custom/pc/b/main.css'
 const ICONS_REGEX = /url\(['"]?(\/i\/[^'")]+)['"]?\)/g
 
-export async function requestIcons() {
-  const req = await api.request(ICONS_SOURCE)
+function parseIcons(res: string) {
+  const paths = res.matchAll(ICONS_REGEX)
+    .map((match) => match[1].split('?')[0])
 
-  if (req.status === 304) {
-    return
-  }
+  const icons = Array.from(new Set(paths).values()).toSorted()
+  return icons
+}
+
+export async function requestIcons() {
+  const req = await request(ICONS_SOURCE)
 
   if (!req.ok) {
     console.log(`Can't download icons from ${ICONS_SOURCE}: ${req.status}`)
@@ -19,23 +24,17 @@ export async function requestIcons() {
   }
 
   const res = await req.text()
+  const icons = parseIcons(res)
+  await writeJson(Config.IconsPath, icons)
 
-  const iconPaths = res.matchAll(ICONS_REGEX)
-    .map((match) => match[1].split('?')[0])
+  console.log(`Starting download icons (${icons.length} icons, concurrency: ${Config.Concurrency})`)
 
-  const sortedIcons = Array.from(new Set(iconPaths).values())
-    .toSorted((a, b) => a[0].localeCompare(b[0]))
-
-  for (const icon of sortedIcons) {
-    const req = await api.request(icon)
-
-    if (req.status === 304) {
-      continue
-    }
+  await concurrentWorker(icons, async (icon) => {
+    const req = await request(icon)
 
     if (!req.ok) {
       console.log(`Can't download icon ${icon}: ${req.status}`)
-      continue
+      return
     }
 
     const buffer = await req.arrayBuffer()
@@ -46,11 +45,5 @@ export async function requestIcons() {
       Buffer.from(buffer),
       'binary',
     )
-  }
-
-  await fs.writeFile(
-    Config.IconsPath,
-    JSON.stringify(Array.from(sortedIcons), null, 2),
-    'utf-8',
-  )
+  })
 }

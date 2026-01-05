@@ -2,8 +2,9 @@ import path from 'node:path'
 
 interface TrackerConfig {
   Host: string
-  RequestHeaders: HeadersInit
+  RequestHeaders: Record<string, string>
   Concurrency: number
+  ETagsPath: string
   IconsPath: string
   LinksPath: string
   RevisionsPath: string
@@ -15,6 +16,7 @@ export const Config: TrackerConfig = {
     Cookie: 'sandbox=beta',
   },
   Concurrency: 10,
+  ETagsPath: path.resolve('etags.json'),
   IconsPath: path.resolve('icons.json'),
   LinksPath: path.resolve('links.json'),
   RevisionsPath: path.resolve('revisions.json'),

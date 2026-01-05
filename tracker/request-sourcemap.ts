@@ -1,31 +1,27 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { api } from './api.ts'
+import { concurrentWorker } from './concurrency-worker.ts'
 import { Config } from './config.ts'
 import {
   compareFileSize,
   fileExists,
   fileIsChanged,
   fileLastCommitDate,
+  request,
 } from './utils.ts'
 import type { Sourcemap, SourcemapFile, SourcemapResponse } from './types.ts'
 
 const processedPathToSize: Record<string, number> = {}
 
-async function loadSourcemap(assetPath: string) {
-  const sourcemapPath = `${assetPath}.map`
+async function loadSourcemap(sourcemapUrl: string) {
   const results: SourcemapResponse = {
-    url: sourcemapPath,
+    url: sourcemapUrl,
     files: [],
     error: null,
   }
 
   try {
-    const req = await api.request(sourcemapPath)
-
-    if (req.status === 304) {
-      return results
-    }
+    const req = await request(sourcemapUrl)
 
     if (!req.ok) {
       results.error = `HTTP ${req.status}`
@@ -34,7 +30,7 @@ async function loadSourcemap(assetPath: string) {
 
     const sourcemap = await req.json() as Sourcemap
     if (!sourcemap.sourcesContent && !sourcemap.mappings) {
-      // results.error = 'Sourcemap is empty'
+      console.log('Sourcemap is empty', sourcemapUrl)
       return results
     }
 
@@ -99,38 +95,31 @@ export async function requestSourcemaps(linksGroup: Record<string, string[]>) {
 
   console.log(`Starting download sourcemaps (${countAssets} assets, concurrency: ${Config.Concurrency})\n`)
 
-  const sourcemaps: SourcemapResponse[] = []
-  let index = 0
+  const results = await concurrentWorker(hashes, async (hash, index) => {
+    const urls = linksGroup[hash]
 
-  const worker = async () => {
-    while (index < hashes.length) {
-      const currentIndex = index++
-      const hash = hashes[currentIndex]
-      const urls = linksGroup[hash]
+    let result: SourcemapResponse | null = null
 
-      let result: SourcemapResponse | null = null
+    for (let urlIndex = 0; urlIndex < urls.length; urlIndex++) {
+      const sourcemapUrl = `${urls[urlIndex]}.map`
+      result = await loadSourcemap(sourcemapUrl)
 
-      for (let urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-        const url = urls[urlIndex]
-        result = await loadSourcemap(url)
-
-        if (!result.error) {
-          break
-        }
-
-        if (result.error && urlIndex < urls.length - 1) {
-          console.warn(`❌ ${url}: ${result.error}. Trying next URL...`)
-        }
+      if (!result.error) {
+        break
       }
 
-      if (result) {
-        sourcemaps[currentIndex] = result
-        const status = result.error ? `❌ ${result.error}` : '✅'
-        console.log(`${status} ${result.url} (${currentIndex + 1}/${countAssets})`)
+      if (result.error && urlIndex < urls.length - 1) {
+        console.warn(`❌ ${sourcemapUrl}: ${result.error}. Trying next URL...`)
       }
     }
-  }
 
-  await Promise.all(Array.from({ length: Config.Concurrency }, worker))
-  return sourcemaps
+    if (result) {
+      const status = result.error ? `❌ ${result.error}` : '✅'
+      console.log(`${status} ${result.url} (${index + 1}/${countAssets})`)
+    }
+
+    return result
+  })
+
+  return results.filter((result) => result !== null)
 }

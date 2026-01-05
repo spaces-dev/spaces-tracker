@@ -2,8 +2,19 @@ import { execFile } from 'node:child_process'
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
 import { promisify } from 'node:util'
+import { Config } from './config.ts'
 
 const execFileAsync = promisify(execFile)
+
+export async function request(path: string) {
+  const url = new URL(path, Config.Host)
+
+  const request = await fetch(url, {
+    headers: Config.RequestHeaders,
+  })
+
+  return request
+}
 
 export async function fileExists(path: string) {
   try {

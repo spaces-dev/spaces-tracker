@@ -12,15 +12,16 @@ export interface SourcemapResponse {
   files: SourcemapFile[]
 }
 
-export interface TrackerStats {
+export interface Stats {
   startTime: number
+  isChanged: boolean
   changed: SourcemapFile[]
   added: SourcemapFile[]
+  removed: string[]
   failed: {
     url: string
     error: string
   }[]
-  comparedLinks: ComparedLinks
 }
 
 export type RevisionAssets = [path: string, hash: string][]

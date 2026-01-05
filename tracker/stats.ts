@@ -1,28 +1,37 @@
-import type { ComparedLinks, SourcemapFile, SourcemapResponse } from './types'
+import type { SourcemapFile, SourcemapResponse, Stats } from './types.ts'
 
 class TrackerStats {
   private startTime = Date.now()
 
   private changed: SourcemapFile[] = []
   private added: SourcemapFile[] = []
+  private removed: string[] = []
   private failed: { url: string, error: string }[] = []
-  private comparedLinks: ComparedLinks
 
-  get stats() {
+  get stats(): Stats {
+    const isChanged = this.changed.length !== 0
+      || this.added.length !== 0
+      || this.failed.length === 0
+
     return {
       startTime: this.startTime,
       changed: this.changed,
       added: this.added,
       failed: this.failed,
-      comparedLinks: this.comparedLinks,
+      removed: this.removed,
+      isChanged,
     }
   }
 
-  setComparedLinks(comparedLinks: ComparedLinks) {
-    this.comparedLinks = comparedLinks
+  computeRemovedLinks(prevLinks: string[], currentLinks: string[]) {
+    // const added = prevLinks.filter(link => !currentLinks.includes(link))
+    const removed = currentLinks.filter(link => !prevLinks.includes(link))
+    this.removed = removed
   }
 
-  parseSourcemapResponses(sourcemapResponses: SourcemapResponse[]) {
+  parseSourcemapResponses(
+    sourcemapResponses: SourcemapResponse[],
+  ) {
     for (const response of sourcemapResponses) {
       if (response.error) {
         this.failed.push({

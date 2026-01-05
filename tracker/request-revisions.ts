@@ -1,32 +1,30 @@
 import path from 'node:path'
-import { api } from './api.ts'
 import { Config } from './config.ts'
-import { fileIsChanged, readJson, writeJson } from './utils.ts'
-import type { ComparedLinks, RevisionAssets, Revisions } from './types.ts'
+import { trackerStats } from './stats.ts'
+import { fileIsChanged, readJson, request, writeJson } from './utils.ts'
+import type { RevisionAssets, Revisions } from './types.ts'
 
 class RequestRevisions {
   async loadRevisions() {
-    const fileName = path.basename(Config.RevisionsPath)
-    const request = await api.request(`/js/${fileName}`)
+    const req = await request(`/js/${path.basename(Config.RevisionsPath)}`)
 
-    if (!request.ok) {
-      throw new Error(`Can't download ${fileName}: ${request.status}`)
+    if (!req.ok) {
+      throw new Error(`Can't download revisions: ${req.status}`)
     }
 
-    const response = await this.parseRevisionsRequest(request)
+    const res = await this.parseRevisionsRequest(req)
 
     const currentRevision = await readJson<Revisions>(Config.RevisionsPath)
-    const isChanged = await fileIsChanged(response.revisions, currentRevision)
-    await writeJson(Config.RevisionsPath, response.revisions)
+    const isChanged = await fileIsChanged(res.revisions, currentRevision)
+    await writeJson(Config.RevisionsPath, res.revisions)
 
     const currentLinks = await readJson<string[]>(Config.LinksPath)
-    const comparedLinks = this.compareLinks(response.links, currentLinks)
-    await writeJson(Config.LinksPath, response.links)
+    trackerStats.computeRemovedLinks(res.links, currentLinks)
+    await writeJson(Config.LinksPath, res.links)
 
     return {
       isChanged,
-      comparedLinks,
-      ...response,
+      ...res,
     }
   }
 
@@ -53,19 +51,6 @@ class RequestRevisions {
       revisions,
       links,
       linksGroup,
-    }
-  }
-
-  private compareLinks(
-    prevLinks: string[],
-    currentLinks: string[],
-  ): ComparedLinks {
-    const added = prevLinks.filter(link => !currentLinks.includes(link))
-    const removed = currentLinks.filter(link => !prevLinks.includes(link))
-
-    return {
-      added,
-      removed,
     }
   }
 }
