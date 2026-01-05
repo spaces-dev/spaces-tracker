@@ -66,7 +66,7 @@ jobs:
                 REPO_URL="https://github.com/${{ github.repository }}"
                 COMMIT_URL="${REPO_URL}/commit/${{ steps.commit.outputs.sha }}"
                 HEADER="<a href=\"${REPO_URL}\">${{ github.repository }}</a> • <a href=\"${COMMIT_URL}\">${{ steps.commit.outputs.sha }}</a>"
-                MESSAGE=$(printf "%s\n%s" "$HEADER" "$BODY")
+                MESSAGE=$(printf "%s\n\n%s" "$HEADER" "$BODY")
                 FIRST_MESSAGE=false
               else
                 MESSAGE="$BODY"
