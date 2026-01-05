@@ -29,7 +29,6 @@ var MailPage,
 	last_refresh,
 	mail_params = {},
 	checkedChekboxes = [],
-	checkedChekboxesMap = {},
 	show_icons = true,
 	new_msg_form = true,
 	check_online_thread,
@@ -1492,10 +1491,6 @@ var mailServices = {
 			}
 		});
 		
-		MailPage.on('mailCheckboxChange', function(e) {
-			mailServices.checkBoxesChecker();
-		});
-		
 		// ищем все ссылки и вешаем события на все ссылки в нашем документе
 		MailPage.on('click', '.pgn [data-p]', function(e) {
 			e.preventDefault();
@@ -1732,7 +1727,7 @@ var mailServices = {
 			
 			el.html(state ? L('Снять все') : L('Выбрать все'));
 			
-			$('input.mail_chb').each(function() {
+			$('.js-mail_contact_checkbox input').each(function() {
 				if (this.checked != state)
 					$(this).parent().click();
 			});
@@ -2555,24 +2550,25 @@ var mailServices = {
 	//проверка включенных чекбоксов, добавление айдишников в массив
 	checkBoxesChecker : function(){
 		checkedChekboxes = [];
-		$('input.mail_chb:checked').each(function(){
+		$('.js-mail_contact_checkbox input:checked').each(function(){
 			var id = $(this).data('id');
 			checkedChekboxes.push(id);
-			checkedChekboxesMap[id] = true;
 		});
 		mailServices.checkButtons(checkedChekboxes.length > 0);
 	},
 	
 	restoreCheckBoxes: function () {
+		const checkedChekboxesToRestore = [...checkedChekboxes];
+		if (!checkedChekboxesToRestore.length)
+			return;
+
 		mailServices.resetSelection();
 	   
-		if (checkedChekboxes && checkedChekboxes.length) {
-			$('input.mail_chb').each(function() {
-				var el = $(this), id = el.data('id');
-				if (!this.checked && checkedChekboxesMap[id])
-					el.parent().click();
-			});
-		}
+		$('.js-mail_contact_checkbox input').each(function() {
+			var el = $(this), id = el.data('id');
+			if (!this.checked && checkedChekboxesToRestore.includes(id))
+				el.parent().click();
+		});
 	},
 	
 	resetSelection() {
@@ -2580,7 +2576,7 @@ var mailServices = {
 	    if (select_all_btn.data('state'))
 			select_all_btn.click();
 		
-		$('input.mail_chb:checked').each(function() {
+		$('.js-mail_contact_checkbox input:checked').each(function() {
 			$(this).parent().click();
 		});
 	},
@@ -2836,7 +2832,7 @@ function toggle_checkbox(checkbox, invert) {
 	$checkbox.parents('.js-mail_contact').toggleClass('mail-contact--is-checked', checked);
 
 	if (invert)
-		$checkbox.trigger('mailCheckboxChange');
+		mailServices.checkBoxesChecker();
 }
 
 if (page_loader.ok()) {
