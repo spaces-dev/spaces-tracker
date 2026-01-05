@@ -491,6 +491,15 @@
 			background: rgba(0, 0, 0, 0.4);
 		}
 	}
+
+	&__play-button {
+		cursor: pointer;
+		color: $video-player-icon-color;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
 }
 .video-player_native {
 	width: 100%;
