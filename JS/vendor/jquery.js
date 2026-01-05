@@ -1,5 +1,4 @@
-import {loadScript} from 'loader';
-import { Sizzle } from './sizzle';
+import { loadScript } from 'loader';
 
 var jQuery = (function( window, noGlobal ) {
 
@@ -550,7 +549,7 @@ function isArrayLike( obj ) {
 		typeof length === "number" && length > 0 && ( length - 1 ) in obj;
 }
 
-if (!Sizzle) {
+(() => {
 	/*
 	 * Optional (non-Sizzle) selector module for custom builds.
 	 *
@@ -618,11 +617,11 @@ if (!Sizzle) {
 
 	// http://www.w3.org/TR/css3-selectors/#whitespace
 	var whitespace = "[\\x20\\t\\r\\n\\f]";
-	
+
 	let push = [].push;
 	let rquickselectors = /^\s*(?:#([\w-]+)|(\w+)|\.([\w-]+))(?:\s*,|$)/;
-	
-	
+
+
 	jQuery.extend({
 		find: function( selector, context, results, seed ) {
 			var elem,
@@ -640,27 +639,27 @@ if (!Sizzle) {
 			} else {
 				let m;
 				let mixed = 0;
-				
+
 				while (selector.length && (m = rquickselectors.exec(selector))) {
 					selector = selector.substr(m[0].length);
-					
+
 					// #id
 					if (m[1]) {
 						let element;
 						let check = false;
-						
+
 						if (context.getElementById) {
 							element = context.getElementById(m[1]);
 						} else {
 							element = document.getElementById(m[1]);
 							check = true;
 						}
-						
+
 						if (element && element.id !== m[1]) {
 							element = context.querySelector('#' + m[1]);
 							check = false;
 						}
-						
+
 						if (element && (!check || jQuery.contains(context, element))) {
 							results.push(element);
 							mixed++;
@@ -683,12 +682,12 @@ if (!Sizzle) {
 						}
 					}
 				}
-				
+
 				if (selector.length) {
 					push.apply(results, context.querySelectorAll(selector));
 					mixed++;
 				}
-				
+
 				if (mixed > 1)
 					results = jQuery.unique(results);
 			}
@@ -767,15 +766,7 @@ if (!Sizzle) {
 			return elem.getAttribute( name );
 		}
 	});
-} else {
-	jQuery.find = Sizzle;
-	jQuery.expr = Sizzle.selectors;
-	jQuery.expr[ ":" ] = jQuery.expr.pseudos;
-	jQuery.unique = Sizzle.unique;
-	jQuery.text = Sizzle.getText;
-	jQuery.isXMLDoc = Sizzle.isXML;
-	jQuery.contains = Sizzle.contains;
-}
+})();
 
 var dir = function( elem, dir, until ) {
 	var matched = [],
