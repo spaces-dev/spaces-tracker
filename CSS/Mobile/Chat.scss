@@ -63,10 +63,10 @@
 }
 
 .chat_msg {
-	background: $chat-message-incoming-bg
+	background: $chat-message-in-bg
 }
 .chat_msg-body .chat_msg::after {
-	border-right-color: $chat-message-incoming-bg
+	border-right-color: $chat-message-in-bg
 }
 
 .chat_msg-system {
@@ -85,11 +85,11 @@
 }
 
 .chat_msg-my {
-	background: $chat-message-outgoing-bg
+	background: $chat-message-out-bg
 }
 .chat_msg-body .chat_msg-my::after {
     border-right-color: transparent;
-    border-left-color: $chat-message-outgoing-bg;
+    border-left-color: $chat-message-out-bg;
     right: 0; left: 100%
 }
 

@@ -459,7 +459,7 @@ function initReactionsWidget(reactionsWidget) {
 			if (resposne.code == 0) {
 				replaceReactionsList(objectType, objectId, resposne.reactions);
 				if (!isDelete) {
-					const addedReaction = $(`#reactions_${objectType}_${objectId}`).find(`[data-emotion-id="${emotionId}"]`);
+					const addedReaction = reactionsWidget.find(`.js-reaction[data-emotion-id="${emotionId}"]`);
 					reactionConfetti(addedReaction[0]);
 				}
 			}
@@ -499,6 +499,12 @@ function replaceReactionsList(objectType, objectId, reactions) {
 		list.data('unread', true);
 		observer.observe(list[0]);
 	}
+
+	let count = 0;
+	for (const reaction of list.find('.js-reaction'))
+		count += +reaction.dataset.count
+
+	updateReactionsCount(objectType, objectId, count);
 }
 
 function handleReactionsRead(reactionsWidget) {

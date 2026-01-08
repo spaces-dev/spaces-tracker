@@ -49,7 +49,7 @@
 }
 
 .message__description{
-	background: $chat-message-incoming-bg;
+	background: $chat-message-in-bg;
 	padding: 13px 10px;
 	position: relative
 }
@@ -65,18 +65,18 @@
 }
 
 .message-block_my .message__description{
-	background: $chat-message-outgoing-bg
+	background: $chat-message-out-bg
 }
 
 .message-block_my .message__description:before{
 	left: auto;
 	right: -15px;
-	border-left-color: $chat-message-outgoing-bg
+	border-left-color: $chat-message-out-bg
 }
 
 .message-block_foreign .message__description:before{
 	right: 100%;
-	border-right-color: $chat-message-incoming-bg
+	border-right-color: $chat-message-in-bg
 }
 
 .message-block_my.message-block_system .message__description,

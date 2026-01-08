@@ -16,11 +16,11 @@
 }
 
 .message.answer{
-	background: $mail-message-incoming-bg;
+	background: $mail-message-in-bg;
 }
 
 .message.my{
-	background: $mail-message-outgoing-bg;
+	background: $mail-message-out-bg;
 }
 
 .message.my.not_read::before {

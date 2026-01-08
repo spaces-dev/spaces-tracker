@@ -13,10 +13,10 @@ $mail-contact-checked-shadow:			theme(inset 0px 3px 3px #97AD9F,	inset 0px 3px 3
 $mail-contact-unread-border:			theme(#64a3eb,	#7cc3ff);
 $mail-contact-message-unread-bg:		theme(#ddebf7,	#4b4d4e);
 
-$mail-message-outgoing-bg:				theme(#dcf6d8,	#252528);
-$mail-message-outgoing-new-bg:			theme(#adeaa4,	#000000);
-$mail-message-incoming-bg:				theme(#e1e9f2,	#2f3032);
-$mail-message-incoming-new-bg:			theme(#bfd0e3,	#000000);
+$mail-message-out-bg:					theme(#dcf6d8,	#252528);
+$mail-message-out-new-bg:				theme(#adeaa4,	#000000);
+$mail-message-in-bg:					theme(#e1e9f2,	#2f3032);
+$mail-message-in-new-bg:			theme(#bfd0e3,	#000000);
 
 $mail-message-system-bg:				theme(#f0f0f0,	#2c2d2f);
 $mail-message-reply-bg:					theme(#e6e6e6,	#2c2d2f);
@@ -24,8 +24,8 @@ $mail-bubble-bg:						theme($bubble-bg, #343637);
 
 /* Чат */
 $chat-message-selected-bg:				theme(#fce3f8,	#562032);
-$chat-message-outgoing-bg:				theme(#dcf6d8,	#252528);
-$chat-message-incoming-bg:				theme(#e1e9f2,	#2f3032);
+$chat-message-out-bg:					theme(#dcf6d8,	#252528);
+$chat-message-in-bg:					theme(#e1e9f2,	#2f3032);
 $chat-message-system-bg:				theme(#f0f0f0,	#2c2d2f);
 $chat-message-quest-bg:					theme(#e1f2e9,	#3f5551);
 $chat-message-answer-bg:				theme(#ceebf9,	#262e40);
