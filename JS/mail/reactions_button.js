@@ -136,12 +136,17 @@ function useFloatingButton(reactionsButton, { topAnchor, bottomAnchor, stickyCla
 
 		reactionsButton.classList.toggle(stickyClass, position == "sticky");
 
-		if (position != "sticky") {
+		if (position == "sticky") {
+			const siteContentRect = document.getElementById('siteContent').getBoundingClientRect();
+			const offset = Math.round(siteContentRect.left + siteContentRect.width / 2);
+			reactionsButton.style.left = `${offset}px`;
+		} else {
 			const parentRect = reactionsButton.offsetParent.getBoundingClientRect();
 			const offset = position == "top" ?
 				topAnchorRect.top - alignOffset - parentRect.top :
 				bottomAnchorRect.bottom - alignOffset - parentRect.top;
-			reactionsButton.style.setProperty('--mail-reactions-button-y', `${offset}px`);
+			reactionsButton.style.setProperty('--mail-reactions-button-y', `${Math.round(offset)}px`);
+			reactionsButton.style.left = '50%';
 		}
 	});
 

@@ -1,26 +1,26 @@
 @use "./Base" as *;
 
-$reaction-chat-outgoing-bg:				theme(#C0E5BA, #303033);
+$reaction-chat-outgoing-bg:				theme(#C4E9BE, #303033);
 $reaction-chat-outgoing-border:			transparent;
-$reaction-chat-outgoing-hover-bg:		theme(#B6E4AF, #37373B);
-$reaction-chat-outgoing-active-bg:		theme(#ABDAA4, #3D3D3F);
-$reaction-chat-outgoing-selected-bg:	theme(#67B05B, #4A4B4F);
+$reaction-chat-outgoing-hover-bg:		theme(#ADDEA6, #353539);
+$reaction-chat-outgoing-active-bg:		theme(#94CF8C, #3B3B3F);
+$reaction-chat-outgoing-selected-bg:	theme(#78BC6F, #414145);
 $reaction-chat-outgoing-selected-text:	#FFFFFF;
 
-$reaction-chat-incoming-bg:				theme(#D0D9E3, #37383B);
+$reaction-chat-incoming-bg:				theme(#D1D9E3, #3A3B3E);
 $reaction-chat-incoming-border:			transparent;
-$reaction-chat-incoming-hover-bg:		theme(#C1CCD9, #404245);
-$reaction-chat-incoming-active-bg:		theme(#B9C6D6, #464749);
-$reaction-chat-incoming-selected-bg:	theme(#8B9CB0, #4C4E52);
+$reaction-chat-incoming-hover-bg:		theme(#BFCBDB, #3F4144);
+$reaction-chat-incoming-active-bg:		theme(#ADBED2, #45474B);
+$reaction-chat-incoming-selected-bg:	theme(#94A9C3, #4B4D51);
 $reaction-chat-incoming-selected-text:	#FFFFFF;
 
 $reaction-topic-icon:					theme(#404f5e, #cccccc);
 $reaction-topic-selected-icon:			theme(#ffffff, #cccccc);
-$reaction-topic-bg:						theme(#f4f6f9, #47484a);
+$reaction-topic-bg:						theme(#EBEFF4, #494B4D);
 $reaction-topic-border:					transparent;
-$reaction-topic-hover-bg:				theme(#e9edf3, #4e5052);
-$reaction-topic-active-bg:				theme(#dde3ec, #56585b);
-$reaction-topic-selected-bg:			theme(#9aaac0, #5f6164);
+$reaction-topic-hover-bg:				theme(#DAE1E9, #56595C);
+$reaction-topic-active-bg:				theme(#C9D3DF, #595D60);
+$reaction-topic-selected-bg:			theme(#B8C5D4, #5F6367);
 $reaction-topic-selected-text:			#FFFFFF;
 
 $reaction-pills-bg:						$content-bg;
