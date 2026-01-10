@@ -13,7 +13,7 @@ interface TrackerConfig {
 export const Config: TrackerConfig = {
   Host: 'http://spac.me',
   RequestHeaders: {
-    Cookie: 'sandbox=beta',
+    // Cookie: 'sandbox=beta',
   },
   Concurrency: 10,
   ETagsPath: path.resolve('etags.json'),
