@@ -5,14 +5,36 @@ import { fileIsChanged, readJson, request, writeJson } from './utils.ts'
 import type { RevisionAssets, Revisions } from './types.ts'
 
 class RequestRevisions {
-  async loadRevisions() {
+  private async loadJs() {
     const req = await request(`/js/${path.basename(Config.RevisionsPath)}`)
 
     if (!req.ok) {
-      throw new Error(`Can't download revisions: ${req.status}`)
+      throw new Error(`Can't download js revisions`)
     }
 
-    const res = await this.parseRevisionsRequest(req)
+    const json = await req.json()
+    return json as Record<string, string>
+  }
+
+  private async loadCss() {
+    const req = await request(`/css/custom/${path.basename(Config.RevisionsPath)}`)
+
+    if (!req.ok) {
+      throw new Error(`Can't download css revisions`)
+    }
+
+    const json = await req.json()
+    return json as Record<string, string>
+  }
+
+  async loadRevisions() {
+    const js = await this.loadJs()
+    const css = await this.loadCss()
+
+    const res = await this.parseRevisionsRequest({
+      js,
+      css,
+    })
 
     const currentRevision = await readJson<Revisions>(Config.RevisionsPath)
     const isChanged = await fileIsChanged(res.revisions, currentRevision)
@@ -28,9 +50,7 @@ class RequestRevisions {
     }
   }
 
-  private async parseRevisionsRequest(response: Response) {
-    const revisions = await response.json() as Revisions
-
+  private async parseRevisionsRequest(revisions: Revisions) {
     const js = Object.entries(revisions.js)
       .filter(([path]) => path.endsWith('.js'))
       .map(([path, hash]) => [`/js/${path}`, hash]) as RevisionAssets

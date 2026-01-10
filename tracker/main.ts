@@ -7,7 +7,7 @@ import { trackerStats } from './stats.ts'
 async function main() {
   const revisions = await requestRevisions.loadRevisions()
   if (!revisions.isChanged) {
-    console.log('No changes found in "revisions.json". Nothing to do.')
+    console.log('No changes found in revisions. Nothing to do.')
     process.exit(0)
   }
 
