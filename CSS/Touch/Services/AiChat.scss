@@ -22,11 +22,11 @@
 	}
 
 	&--type-incoming {
-		background: $chat-message-in-bg;
+		background: $chat-message-incoming-bg;
 	}
 
 	&--type-outgoing {
-		background: $chat-message-out-bg;
+		background: $chat-message-outgoing-bg;
 		padding-top: 10px;
 	}
 }

@@ -53,12 +53,11 @@ const tpl = {
 					<div
 						role="button"
 						class="
-							js-reaction_toggle
+							js-reaction_add
 							reactions-selector__item
 							${reaction.id == selected ? ' reactions-selector__item--is-selected' : ''}
 						"
 						data-emotion-id="${reaction.id}"
-						${reaction.id == selected ? `data-selected="true"` : ``}
 					>
 						${reaction.emoji}
 					</div>
@@ -75,23 +74,22 @@ const tpl = {
 	},
 
 	reactionSelectorGrid({ reactions, selected }) {
-		const reactionItem = (reaction) => `
-			<div
-				role="button"
-				class="
-					js-reaction_toggle
-					reactions-selector__item
-					${reaction.id == selected ? ' reactions-selector__item--is-selected' : ''}
-				"
-				data-emotion-id="${reaction.id}"
-				${reaction.id == selected ? `data-selected="true"` : ``}
-			>
-				${reaction.emoji}
-			</div>
-		`;
 		return `
 			<div class="reactions-selector__content reactions-selector__content--type-grid">
-				${reactions.slice(0, 7).map(reactionItem).join('')}
+				${reactions.slice(0, 7).map((reaction) => `
+					<div
+						role="button"
+						class="
+							js-reaction_add
+							reactions-selector__item
+							${reaction.id == selected ? ' reactions-selector__item--is-selected' : ''}
+						"
+						data-emotion-id="${reaction.id}"
+					>
+						${reaction.emoji}
+					</div>
+				`).join('')}
+
 				<div
 					role="button"
 					class="js-reactions_selector_expand reactions-selector__expand"
@@ -99,7 +97,16 @@ const tpl = {
 				>
 					${tpl.iconArrUp()}
 				</div>
-				${reactions.slice(7).map(reactionItem).join('')}
+
+				${reactions.slice(7).map((reaction) => `
+					<div
+						role="button"
+						class="js-reaction_add reactions-selector__item"
+						data-emotion-id="${reaction.id}"
+					>
+						${reaction.emoji}
+					</div>
+				`).join('')}
 			</div>
 		`;
 	},
@@ -181,6 +188,17 @@ const tpl = {
 	pagination({ current, total }) {
 		if (total <= 1)
 			return '';
+
+		/*
+		if (current == 1) {
+			return `
+				<div class="js-reaction_users_pgn list-link list-link-blue t_center" data-dir="next">
+					<span class="js-text">Показать ещё</span>
+					<span class="ico-right ico ico_arr_down_blue js-ico"></span>
+				</div>
+			`;
+		}
+		*/
 
 		return `
 			<div class="pgn-wrapper">
@@ -436,33 +454,24 @@ function initReactionsWidget(reactionsWidget) {
 		reactionsSelectorMenu[0].dispatchEvent(new CustomEvent(eventType, { bubbles: true }));
 	});
 
-	reactionsSelectorMenu.on('click', '.js-reaction_toggle', async function (e) {
+	reactionsSelectorMenu.on('click', '.js-reaction_add', async function (e) {
 		e.preventDefault();
-		const selectedReaction = $(this);
-		const emotionId = selectedReaction.data('emotionId');
-		const isDelete = selectedReaction.data('selected');
+		const reaction = $(this);
+		const emotionId = reaction.data('emotionId');
 
 		closeAllPoppers();
 
-		const reactionButton = reactionsWidget.find(`.js-reaction[data-emotion-id="${emotionId}"]`);
-		if (reactionButton.length > 0) {
-			reactionButton.click();
-		} else {
-			const apiMethod = isDelete ? "uobj.reaction.delete" : "uobj.reaction.add";
-			const resposne = await Spaces.asyncApi(apiMethod, {
-				CK: null,
-				Ot: objectType,
-				Oid: objectId,
-				Emotion: emotionId,
-				hash: Spaces.tabId(),
-			});
-			if (resposne.code == 0) {
-				replaceReactionsList(objectType, objectId, resposne.reactions);
-				if (!isDelete) {
-					const addedReaction = reactionsWidget.find(`.js-reaction[data-emotion-id="${emotionId}"]`);
-					reactionConfetti(addedReaction[0]);
-				}
-			}
+		const resposne = await Spaces.asyncApi("uobj.reaction.add", {
+			CK: null,
+			Ot: objectType,
+			Oid: objectId,
+			Emotion: emotionId,
+			hash: Spaces.tabId(),
+		});
+		if (resposne.code == 0) {
+			replaceReactionsList(objectType, objectId, resposne.reactions);
+			const addedReaction = $(`#reactions_${objectType}_${objectId}`).find(`[data-emotion-id="${emotionId}"]`);
+			reactionConfetti(addedReaction[0]);
 		}
 	});
 
@@ -499,12 +508,6 @@ function replaceReactionsList(objectType, objectId, reactions) {
 		list.data('unread', true);
 		observer.observe(list[0]);
 	}
-
-	let count = 0;
-	for (const reaction of list.find('.js-reaction'))
-		count += +reaction.dataset.count
-
-	updateReactionsCount(objectType, objectId, count);
 }
 
 function handleReactionsRead(reactionsWidget) {
