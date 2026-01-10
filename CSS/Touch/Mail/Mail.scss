@@ -1,14 +1,4 @@
 @use "Common/Theme" as *;
-.chb_label{
-    position:absolute;
-    display:block;
-    top:0;
-    bottom:0;
-    left:0;
-    width:30px;
-    z-index:10;
-}
-
 #reply_message .block-btn {
 	right: 6px;
 	top: 6px;
@@ -29,7 +19,7 @@
     background-position: 0 0;
 }
 
-.mail_chb, #check_all{
+#check_all{
     margin: auto;
     display: block;
 }

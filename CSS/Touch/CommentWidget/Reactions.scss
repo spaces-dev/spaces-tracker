@@ -8,7 +8,7 @@
 	border-radius: 12px;
 	border: 1px solid $reactions-selector-border;
 	background: $content-bg;
-	box-shadow: $reactions-selector-shadow;
+	box-shadow: $default-block-shadow;
 	z-index: 2000;
 	user-select: none;
 	box-sizing: border-box;
@@ -79,14 +79,6 @@
 	}
 }
 
-.reaction-pills {
-
-}
-
-.reaction-pill {
-
-}
-
 .reaction-user {
 	display: flex;
 	flex-direction: column;
@@ -98,33 +90,40 @@
 	flex-wrap: wrap;
 	gap: 6px;
 	margin-top: 6px;
-	margin-bottom: -5px;
 	scroll-margin: 15px;
 
 	--reaction-icon-color: #{$default-text-color};
 	--reaction-selected-icon-color: var(--reaction-selected-text);
 
-	// MAIL, CHAT
-	&--style-chat-my-object {
-		--reaction-bg: #{$reaction-chat-outgoing-bg};
-		--reaction-border: #{$reaction-chat-outgoing-border};
-		--reaction-hover-bg: #{$reaction-chat-outgoing-hover-bg};
-		--reaction-active-bg: #{$reaction-chat-outgoing-active-bg};
-		--reaction-selected-bg: #{$reaction-chat-outgoing-selected-bg};
-		--reaction-selected-text: #{$reaction-chat-incoming-selected-text};
+	&[data-count="0"] {
+		margin-top: 0;
 	}
 
-	&--style-chat-our-object {
-		--reaction-bg: #{$reaction-chat-incoming-bg};
-		--reaction-border: #{$reaction-chat-incoming-border};
-		--reaction-hover-bg: #{$reaction-chat-incoming-hover-bg};
-		--reaction-active-bg: #{$reaction-chat-incoming-active-bg};
-		--reaction-selected-bg: #{$reaction-chat-incoming-selected-bg};
-		--reaction-selected-text: #{$reaction-chat-incoming-selected-text};
+	// MESSAGE OUT
+	&--style-message-my-object {
+		--reaction-text: #{$reaction-message-out-text};
+		--reaction-bg: #{$reaction-message-out-bg};
+		--reaction-border: #{$reaction-message-out-border};
+		--reaction-hover-bg: #{$reaction-message-out-hover-bg};
+		--reaction-active-bg: #{$reaction-message-out-active-bg};
+		--reaction-selected-bg: #{$reaction-message-out-selected-bg};
+		--reaction-selected-text: #{$reaction-message-in-selected-text};
+	}
+
+	// MESSAGE IN
+	&--style-message-our-object {
+		--reaction-text: #{$reaction-message-in-text};
+		--reaction-bg: #{$reaction-message-in-bg};
+		--reaction-border: #{$reaction-message-in-border};
+		--reaction-hover-bg: #{$reaction-message-in-hover-bg};
+		--reaction-active-bg: #{$reaction-message-in-active-bg};
+		--reaction-selected-bg: #{$reaction-message-in-selected-bg};
+		--reaction-selected-text: #{$reaction-message-in-selected-text};
 	}
 
 	// TOPIC
 	&--style-topic {
+		--reaction-text: #{$reaction-topic-text};
 		--reaction-bg: #{$reaction-topic-bg};
 		--reaction-border: #{$reaction-topic-border};
 		--reaction-hover-bg: #{$reaction-topic-hover-bg};
@@ -143,6 +142,7 @@
 		padding: 12px 15px;
 		border-bottom: 1px solid $separator-color;
 
+		--reaction-text: #{$reaction-pills-text};
 		--reaction-bg: #{$reaction-pills-bg};
 		--reaction-border: #{$reaction-pills-border};
 		--reaction-hover-bg: #{$reaction-pills-hover-bg};
@@ -167,6 +167,7 @@
 	cursor: pointer;
 	user-select: none;
 
+	color: var(--reaction-text);
 	transition: background-color 0.15s ease;
 	background-color: var(--reaction-bg);
 	--avatar-border-color: var(--reaction-bg);

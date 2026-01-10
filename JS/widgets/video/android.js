@@ -1,11 +1,14 @@
-import Spaces from '../../spacesLib';
 import $ from '../../jquery';
 import SpacesApp from '../../android/api';
 import BaseDriver from './base';
 
 const tpl = {
 	play() {
-		return `<span class="ico_play_btn ico_play_btn_normal"></span>`;
+		return `
+			<svg class="video-player__play-button" xmlns="http://www.w3.org/2000/svg" height="78px" width="78px" viewBox="0 -960 960 960" fill="currentColor">
+				<path d="M320-203v-560l440 280-440 280Z"/>
+			</svg>
+		`;
 	},
 	
 	qualitySelector(sources, selected_index) {

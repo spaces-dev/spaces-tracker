@@ -285,13 +285,14 @@
 }
 
 .mail__dialog_message {
-	background: $mail-message-outgoing-bg;
+	background: $mail-message-out-bg;
 	border-radius: 3px;
 	padding: 15px;
+	padding-bottom: 10px;
 }
 
 .mail__dialog_message.mail__dialog_message--is-new {
-	background: $mail-message-outgoing-new-bg
+	background: $mail-message-out-new-bg
 }
 
 .mail__dialog_text {
@@ -316,11 +317,11 @@
 }
 
 .mail__dialog_answer {
-	background: $mail-message-incoming-bg
+	background: $mail-message-in-bg
 }
 
 .mail__dialog_answer.mail__dialog_message--is-new {
-	background: $mail-message-incoming-new-bg
+	background: $mail-message-in-new-bg
 }
 
 .mail__dialog_answer .user__nick .mysite-nick {
@@ -427,11 +428,11 @@
 	width: 0;
 	left: 50px;
 	border: 8px solid transparent;
-	border-right-color: $mail-message-outgoing-bg;
+	border-right-color: $mail-message-out-bg;
 }
 
 .w_ava .mail__dialog_answer:before{
-	border-right-color: $mail-message-incoming-bg;
+	border-right-color: $mail-message-in-bg;
 }
 
 .w_ava .mail__dialog_system:before{
@@ -546,11 +547,11 @@
 
 	.root--layout-light & {
 		padding: 10px;
-		background-color: $mail-message-outgoing-bg;
+		background-color: $mail-message-out-bg;
 	}
 
 	.root--layout-light &--style-incoming {
-		background-color: $mail-message-incoming-bg;
+		background-color: $mail-message-in-bg;
 	}
 
 	&__play-button {
@@ -635,7 +636,7 @@
 		top: 0;
 		left: -15px;
 		border-radius: 100%;
-		background-color: $mail-message-outgoing-bg;
+		background-color: $mail-message-out-bg;
 	}
 
 	&--is-unlistened &__listen-status {
@@ -650,7 +651,7 @@
 
 	&--style-incoming {
 		.voice-player__listen-status {
-			background-color: $mail-message-incoming-bg;
+			background-color: $mail-message-in-bg;
 		}
 
 		.voice-player__play-button {
