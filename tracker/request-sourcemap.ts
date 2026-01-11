@@ -30,7 +30,7 @@ async function loadSourcemap(sourcemapUrl: string) {
 
     const sourcemap = await req.json() as Sourcemap
     if (!sourcemap.sourcesContent && !sourcemap.mappings) {
-      console.log('Sourcemap is empty', sourcemapUrl)
+      console.log('⚠️ Sourcemap is empty', sourcemapUrl)
       return results
     }
 

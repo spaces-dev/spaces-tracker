@@ -108,7 +108,7 @@ function formatTable(rows: TableRow[]): string[] {
 
 const MESSAGE_LIMIT = 3900
 
-export function splitTelegramMessage(message: string): string[] {
+function splitTelegramMessage(message: string): string[] {
   const chunks: string[] = []
   let currentChunk = ''
   let insidePre = false

@@ -19,21 +19,20 @@ export async function requestIcons() {
   const req = await request(ICONS_SOURCE)
 
   if (!req.ok) {
-    console.log(`Can't download icons from ${ICONS_SOURCE}: ${req.status}`)
-    return
+    throw new Error(`Can't download icons from ${ICONS_SOURCE}: ${req.status}`)
   }
 
   const res = await req.text()
   const icons = parseIcons(res)
   await writeJson(Config.IconsPath, icons)
 
-  console.log(`Starting download icons (${icons.length} icons, concurrency: ${Config.Concurrency})`)
+  console.log(`\nStarting download icons (${icons.length} icons, concurrency: ${Config.Concurrency})\n`)
 
   await concurrentWorker(icons, async (icon) => {
     const req = await request(icon)
 
     if (!req.ok) {
-      console.log(`Can't download icon ${icon}: ${req.status}`)
+      console.log(`❌ Can't download icon ${icon}: ${req.status}`)
       return
     }
 
@@ -45,5 +44,7 @@ export async function requestIcons() {
       Buffer.from(buffer),
       'binary',
     )
+
+    console.log(`✅ Downloaded ${icon}`)
   })
 }

@@ -38,11 +38,13 @@ class RequestRevisions {
 
     const currentRevision = await readJson<Revisions>(Config.RevisionsPath)
     const isChanged = await fileIsChanged(res.revisions, currentRevision)
-    await writeJson(Config.RevisionsPath, res.revisions)
 
-    const currentLinks = await readJson<string[]>(Config.LinksPath)
-    trackerStats.computeRemovedLinks(res.links, currentLinks)
-    await writeJson(Config.LinksPath, res.links)
+    if (isChanged) {
+      await writeJson(Config.RevisionsPath, res.revisions)
+      const currentLinks = await readJson<string[]>(Config.LinksPath)
+      trackerStats.computeRemovedLinks(res.links, currentLinks)
+      await writeJson(Config.LinksPath, res.links)
+    }
 
     return {
       isChanged,
