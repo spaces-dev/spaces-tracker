@@ -1,174 +1,114 @@
-import $ from './jquery';
 import * as pushstream from './core/lp';
 import Spaces from './spacesLib';
-import page_loader from './ajaxify';
+import pageLoader from './ajaxify';
 import notifications from './notifications';
-import {toggleClass} from './utils';
 
-/*
-	Глобальное автоматическое обновление иконок онлайновости. 
-	Для сброса таймера обновления - checkOnline()
-*/
+const ONLINE_CHECK_INTERVAL = 40000;
 
-var ONLINE_CHECK_INTERVAL = 40000; // Интервал обновления онлайновости
+let lastCheckTime = Date.now();
+let updateTimerId;
+let lastRequestDone = true;
 
-var TYPES = {
-	ICON: 0,
-	STATUS_WIDGET: 1
-};
+initOnlineChecker();
 
-var last_request_done = true, online_check_interval,
-	check_on_window_focus = false,
-	recheck_own_online = false,
-	static_online = {};
+function initOnlineChecker() {
+	document.body.addEventListener('focuswindow', () => sheduleNextUpdate(), false);
+	document.body.addEventListener('blurwindow', () => sheduleNextUpdate(), false);
+	sheduleNextUpdate();
 
-var icons_updater = function (only_nid) {
-	if (!only_nid) {
-		// Не будем срать запросами, пока старый не выполнился
-		if (!last_request_done)
-			return;
-		
-		// Не делаем запросы, если таб неактивен
-		if (notifications && !notifications.isWindowActive()) {
-			check_on_window_focus = true;
-			return;
-		}
-		check_on_window_focus = false;
-	}
-	
-	var users = [],
-		widgets = {},
-		main = $('#main_content');
-	
-	var icons = main.find('img.online_status_ico');
-	for (var i = 0; i < icons.length; ++i) {
-		var icon = icons[i],
-			data = icon.getAttribute('data-u');
-		if (data) {
-			data = data.split(":");
-			var uid = data[0];
-			if (only_nid && uid != only_nid)
-				continue;
-			_addIndicator(uid, icon, TYPES.ICON);
-		}
-	}
-	
-	var user_widgets = main.find('.js-online_status');
-	for (var i = 0; i < user_widgets.length; ++i) {
-		var w = user_widgets[i],
-			uid = +w.getAttribute('data-user');
-		if (only_nid && uid != only_nid)
-			continue;
-		_addIndicator(uid, w, TYPES.STATUS_WIDGET);
-	}
-	
-	if (users.length > 0) {
-		last_request_done = false;
-		Spaces.api("users.isOnline", {UsErs: users}, function (res) {
-			last_request_done = true;
-			if (res.code != 0)
-				return;
-			
-			for (var id in res.status) {
-				var entry = widgets[id],
-					state = !!res.status[id].is_online;
-				if (!entry)
-					continue;
-				
-				for (var type in entry.widgets) {
-					for (var i in entry.widgets[type]) {
-						var item = entry.widgets[type][i];
-						if (type == TYPES.ICON) {
-							toggleOnlineIcon(item.el, state);
-						} else if (type == TYPES.STATUS_WIDGET) {
-							var $el = $(item.el),
-								toggle = $el.data('toggle');
-							
-							$el.toggle((toggle == 'online' && state) || (toggle == 'offline' && !state));
-							if (toggle == 'offline') {
-								var inner = $el.data('inner'),
-									$time = (inner ? ($el.find(inner == 1 ? '.js-online_status_time' : inner)) : $el);
-								$time.text(res.status[id].human_last_time);
-							}
-						}
-					}
-				}
-			}
-		}, {
-			onError: function () {
-				last_request_done = true;
-			}
-		});
-	}
-	
-	function toggleOnlineIcon(el, state) {
-		if (el.parentNode) {
-			el.src = el.src.replace(/(_off)?(_2x)?(\.png)/ig, (state ? '' : '_off') + '$2$3');
-			if (el.srcset)
-				el.srcset = el.srcset.replace(/(_off)?(_2x)?(\.png)/ig, (state ? '' : '_off') + '$2$3');
-		}
-	}
-	
-	function _addIndicator(uid, el, type, data) {
-		// Свою иконку обновлять нет смысла
-		if (uid in static_online && type == TYPES.ICON) {
-			toggleOnlineIcon(el, static_online[uid]);
-			return;
-		}
-		
-		if (Spaces.params.nid && Spaces.params.nid == uid) {
-			if (!recheck_own_online)
-				return;
-			recheck_own_online = false;
-		}
-		
-		var entry = widgets[uid];
-		if (!entry) {
-			users.push(uid);
-			entry = widgets[uid] = {uid: uid, widgets: {}};
-		}
-		
-		if (!entry.widgets[type])
-			entry.widgets[type] = [];
-		entry.widgets[type].push({
-			el: el
-		});
-		return entry;
-	}
-};
-
-export function checkOnline(force, only_nid) {
-	if (!Spaces.params.nid) // Обновляем только для юзеров
-		return;
-	
-	if (online_check_interval) {
-		clearInterval(online_check_interval);
-		online_check_interval = null;
-	}
-	online_check_interval = setInterval(icons_updater, ONLINE_CHECK_INTERVAL);
-	if (force)
-		icons_updater(only_nid);
-};
-
-if (pushstream) {
 	pushstream.on('message', 'online_status', function (data) {
-		if (data.act == pushstream.TYPES.STATUS_CHANGE) {
-			static_online[Spaces.params.nid] = data.Online;
-			recheck_own_online = true;
-			checkOnline(true, Spaces.params.nid);
-		}
+		if (data.act == pushstream.TYPES.STATUS_CHANGE)
+			updateOnlineStatus([Spaces.params.nid]);
 	});
+
+	pageLoader.on('mailrequestend', "online_status", () => {
+		lastCheckTime = Date.now();
+		sheduleNextUpdate();
+	}, true);
+
+	pageLoader.on('pageloaded', "online_status", () => {
+		lastCheckTime = Date.now();
+		sheduleNextUpdate();
+	}, true);
 }
 
-if (Spaces.params.nid) {
-	checkOnline();
-	
-	page_loader.on('pageloaded', "online_status", function () {
-		checkOnline();
-	}, true);
-	
-	$('#main').on('focuswindow', function (e) {
-		if (check_on_window_focus)
-			checkOnline(true);
-	});
+function sheduleNextUpdate() {
+	if (updateTimerId) {
+		clearTimeout(updateTimerId);
+		updateTimerId = undefined;
+	}
+
+	if (!lastRequestDone || !notifications.isWindowActive())
+		return;
+
+	const elapsed = Date.now() - lastCheckTime;
+	const nextUpdateTime = Math.max(0, ONLINE_CHECK_INTERVAL - elapsed);
+
+	updateTimerId = setTimeout(async () => {
+		updateTimerId = undefined;
+
+		const users = getOnlineIndicators()
+			.map((ind) => ind.userId)
+			.filter((userId) => userId != Spaces.params.nid);
+
+		if (users.length > 0) {
+			lastRequestDone = false;
+			await updateOnlineStatus(users);
+			lastRequestDone = true;
+		}
+
+		lastCheckTime = Date.now();
+		sheduleNextUpdate();
+	}, nextUpdateTime);
+}
+
+function getOnlineIndicators() {
+	const indicators = [];
+	for (const icon of document.querySelectorAll('img.online_status_ico')) {
+		const userId = +icon.dataset.u;
+		indicators.push({ userId, icon });
+	}
+	for (const widget of document.querySelectorAll('.js-online_status')) {
+		const userId = +widget.dataset.user;
+		indicators.push({ userId, widget });
+	}
+	return indicators;
+}
+
+async function updateOnlineStatus(users) {
+	const response = await Spaces.asyncApi("users.isOnline", { UsErs: users });
+	if (response.code != 0)
+		return;
+
+	for (const indicator of getOnlineIndicators()) {
+		const status = response.status[indicator.userId];
+		if (!status)
+			continue;
+
+		if (indicator.icon) {
+			updateOnlineStatusIcon(indicator.icon, status);
+		} else if (indicator.widget) {
+			updateOnlineStatusWidget(indicator.widget, status);
+		}
+	}
+}
+
+function updateOnlineStatusIcon(icon, status) {
+	const updateIconSrc = (src) => src.replace(/(_off)?(_2x)?(\.png)/ig, (status.is_online ? '' : '_off') + '$2$3');
+	icon.src = updateIconSrc(icon.src);
+	if (icon.srcset)
+		icon.srcset = updateIconSrc(icon.srcset);
+}
+
+function updateOnlineStatusWidget(widget, status) {
+	const isVisible = (
+		(widget.dataset.toggle == 'online' && status.is_online) ||
+		(widget.dataset.toggle == 'offline' && !status.is_online)
+	);
+	widget.classList.toggle('hide', !isVisible);
+
+	if (widget.dataset.toggle == 'offline') {
+		const lastVisitTimePlace = widget.querySelector('.js-text') || widget;
+		lastVisitTimePlace.textContent = status.human_last_time;
+	}
 }

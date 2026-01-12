@@ -251,10 +251,9 @@ var Notifications = Class({
 	},
 	
 	onBlurWindow: function () {
-		var self = this;
 		cookie.set('spacesactive', 'false', {expires: 7 * 24 * 3600});
 		$('.lp_notif_wrapper').remove();
-		$('#main').trigger("blurwindow");
+		document.querySelector('#main').dispatchEvent(new CustomEvent('blurwindow', { bubbles: true }));
 	},
 	
 	onFocusWindow: function () {
@@ -262,7 +261,7 @@ var Notifications = Class({
 		self.titleBlink(false);
 		cookie.set('spacesactive', 'true', {expires: 7 * 24 * 3600});
 		self.showBackgroundNotifications();
-		$('#main').trigger("focuswindow");
+		document.querySelector('#main').dispatchEvent(new CustomEvent('focuswindow', { bubbles: true }));
 	},
 	
 	// Счётчики

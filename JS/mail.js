@@ -8,7 +8,6 @@ import page_loader from './ajaxify';
 import {HistoryManager} from './ajaxify';
 import notifications from './notifications';
 import {Notifications} from './notifications';
-import {checkOnline} from './online_status';
 import GALLERY from './gallery';
 import AttachSelector from './widgets/attach_selector';
 
@@ -2671,7 +2670,6 @@ var mailServices = {
 			
 			mailServices.resetMsgQueue(true);
 			mailCore.typingMonitor(false);
-			checkOnline();
 		}
 		
 		checkVoicePlayers();
