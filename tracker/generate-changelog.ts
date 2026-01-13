@@ -7,6 +7,16 @@ const PRE_CLOSE = '</pre>'
 export async function generateChangelog(stats: Stats) {
   const lines = [`chore: Changed ${stats.changed.length} file(s)`]
 
+  const isChangedRevisionsOnly = stats.changed.length === 0
+    && stats.added.length === 0
+    && stats.removed.length === 0
+
+  if (isChangedRevisionsOnly) {
+    const message = `\nNo files changed in revisions 🤷‍♂️`
+    lines.push(message)
+    console.log(message)
+  }
+
   if (stats.added.length > 0) {
     lines.push(`\nAdded files (${stats.added.length}):`)
     lines.push(PRE_OPEN)
