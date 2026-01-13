@@ -5,11 +5,15 @@ const PRE_OPEN = '\n<pre language="text">'
 const PRE_CLOSE = '</pre>'
 
 export async function generateChangelog(stats: Stats) {
-  const lines = [`chore: Changed ${stats.changed.length} file(s)`]
-
   const isChangedRevisionsOnly = stats.changed.length === 0
     && stats.added.length === 0
     && stats.removed.length === 0
+
+  const lines = [
+    isChangedRevisionsOnly
+      ? `chore: Changed revisions.json`
+      : `chore: Changed ${stats.changed.length} file(s)`,
+  ]
 
   if (isChangedRevisionsOnly) {
     const message = `\nNo files changed in revisions 🤷‍♂️`
