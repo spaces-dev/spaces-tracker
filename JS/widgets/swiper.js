@@ -50,6 +50,10 @@ function initSwipe() {
 		if (locked)
 			return;
 
+		const activeElement = document.activeElement;
+		if (activeElement && ["TEXTAREA", "INPUT"].includes(activeElement.nodeName))
+			return;
+
 		if (e.target.closest('.vjs-control-bar')) {
 			gesture = false;
 			return;
