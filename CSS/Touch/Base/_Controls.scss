@@ -420,7 +420,7 @@ body input.search__btn:focus {
 	&--with-right-button {
 		padding-right: $text-input-height;
 		&:focus {
-			padding-left: calc($text-input-height - 1px);
+			padding-right: calc($text-input-height - 1px);
 		}
 	}
 }
