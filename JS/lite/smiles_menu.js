@@ -97,7 +97,7 @@ const tpl = {
 		const styles = `width:${maxWidth}px; height:${maxHeight}px; line-height:${maxHeight}px`;
 		return `
 			<div class="oh">
-				<div class="s-property__wrap">
+				<div class="s-property-list">
 					<span class="s-property break-word">
 						${db.smiles[id].name}
 						<a href="#" class="js-smile_menu_nav" data-type="smiles" data-page="categories" data-id="0">
@@ -162,7 +162,7 @@ const tpl = {
 
 		return `
 			<div class="oh">
-				<div class="s-property__wrap">
+				<div class="s-property-list">
 					<span class="s-property break-word">
 						${cat.name}
 						<a href="#" class="js-smile_menu_nav" data-type="stickers" data-page="categories" data-id="0">

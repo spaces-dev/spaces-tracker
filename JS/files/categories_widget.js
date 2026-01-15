@@ -114,6 +114,41 @@ function initModule(parent) {
 		updateSexOrientsAvailability();
 	});
 
+
+	parent.action('moder_tag_offer', async function (e) {
+		e.preventDefault();
+		const link = $(this);
+		const fileId = link.data('fileId');
+		const fileType = link.data('fileType');
+
+		const toggleLoading = (flag) => link.find('.js-ico').toggleClass('ico_spinner', flag);
+
+		toggleLoading(true);
+		const params = link.data('params');
+		const response = await Spaces.asyncApi('xxx.moderation.tagOffer', {
+			CK: null,
+			File_id: fileId,
+			Ftype: fileType,
+			...params
+		});
+		toggleLoading(false);
+
+		if (params.Accept) {
+			const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="caT"][value="${params.Category}"])`);
+			categoryCheckbox.click();
+		}
+
+		if (response.code == 0) {
+			const moderationTags = link.parents('.js-file_moderation_tags');
+			link.parents('.s-property').remove();
+
+			if (!moderationTags.find('.s-property').length)
+				moderationTags.remove();
+
+			$(`#file_cats_offers_cnt_${fileType}_${fileId}`).html(response.offers_cnt);
+		}
+	});
+
 	function saveCategories() {
 		const fileId = parent.data('fileId');
 		const fileType = parent.data('fileType');
@@ -136,11 +171,11 @@ function initModule(parent) {
 		Spaces.api(parent.data('method'), apiData, function (res) {
 			toggleLoading(false);
 
-			if (!res.addition_cats)
-				res.addition_cats = [];
+			if (!res.cats)
+				res.cats = [];
 
-			$('#xxx_cats_' + fileType + '_' + fileId).html(res.addition_cats.join(', '));
-			$('#xxx_cats_' + fileType + '_' + fileId + '_wrap').toggleClass('hide', !res.addition_cats.length);
+			$(`#xxx_cats_${fileType}_${fileId}`).html(res.cats.join(', '));
+			// $(`#xxx_cats_${fileType}_${fileId}_wrap`).toggleClass('hide', !res.cats.length);
 
 			if (res.code != 0)
 				Spaces.showApiError(res);

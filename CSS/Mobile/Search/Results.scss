@@ -2,12 +2,16 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
+.s-property-list {
+	overflow: hidden;
+}
+
 @if $LITE {
-	.s-property__wrap {
+	.s-property-list {
 		margin-bottom: -10px;
 	}
 	
-	.s-property__wrapper .s-property {
+	.s-property-list .s-property {
 		margin: 10px 10px 0 0;
 	}
 }
