@@ -5,7 +5,11 @@ import { requestRevisions } from './request-revisions.ts'
 import { requestSourcemaps } from './request-sourcemap.ts'
 import { trackerStats } from './stats.ts'
 
-loadEnvFile()
+try {
+  loadEnvFile()
+} catch {
+  // .env file is optional
+}
 
 const revisions = await requestRevisions.loadRevisions()
 if (!revisions.isChanged) {
