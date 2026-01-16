@@ -11,6 +11,8 @@ async function generateAiSummary(diff: string): Promise<string> {
   }
 
   try {
+    console.log('🤔 Generating summary...')
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
