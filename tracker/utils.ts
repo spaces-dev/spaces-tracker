@@ -4,7 +4,7 @@ import fs from 'node:fs/promises'
 import { promisify } from 'node:util'
 import { Config } from './config.ts'
 
-const execFileAsync = promisify(execFile)
+const execScript = promisify(execFile)
 
 export async function request(path: string) {
   const url = new URL(path, Config.Host)
@@ -51,7 +51,7 @@ export async function fileIsChanged<Left, Right>(left: Left, right: Right) {
 
 export async function fileLastCommitDate(path: string) {
   try {
-    const { stdout } = await execFileAsync('git', [
+    const { stdout } = await execScript('git', [
       'log',
       '-1',
       '--format=%cr',
@@ -92,4 +92,23 @@ export function compareFileSize(beforeBytes: number, afterBytes: number): string
   const sign = diff > 0 ? '+' : '-'
 
   return `${afterFormatted} (${sign}${diffFormatted})`
+}
+
+export async function getGitDiff() {
+  try {
+    await execScript('git', ['add', '-N', '.'])
+    const { stdout } = await execScript('git', [
+      'diff',
+      'HEAD',
+      '--',
+      '.',
+      ':(exclude)revisions.json',
+      ':(exclude)links.json',
+      ':(exclude)icons.json',
+    ])
+    return stdout
+  } catch (e) {
+    console.error('Failed to get git diff', e)
+    return ''
+  }
 }
