@@ -7,7 +7,7 @@ import {
   fileExists,
   fileIsChanged,
   fileLastCommitDate,
-  request,
+  spacesRequests,
 } from './utils.ts'
 import type { Sourcemap, SourcemapFile, SourcemapResponse } from './types.ts'
 
@@ -21,7 +21,7 @@ async function loadSourcemap(sourcemapUrl: string) {
   }
 
   try {
-    const req = await request(sourcemapUrl)
+    const req = await spacesRequests(sourcemapUrl)
 
     if (!req.ok) {
       results.error = `HTTP ${req.status}`

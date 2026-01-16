@@ -1,9 +1,11 @@
 import { loadEnvFile } from 'node:process'
 import { generateChangelog } from './generate-changelog.ts'
+import { commitAndPush } from './git.ts'
 import { requestIcons } from './request-icons.ts'
 import { requestRevisions } from './request-revisions.ts'
 import { requestSourcemaps } from './request-sourcemap.ts'
 import { trackerStats } from './stats.ts'
+import { sendNotifications } from './telegram.ts'
 
 try {
   loadEnvFile()
@@ -25,4 +27,11 @@ if (!stats.isChanged) {
 }
 
 await requestIcons()
-await generateChangelog(stats)
+
+const changelog = await generateChangelog(stats)
+const commitSha = await commitAndPush(changelog.commitMessage)
+if (commitSha) {
+  await sendNotifications(commitSha, changelog.telegramMessage)
+} else {
+  console.log('No git changes detected.')
+}
