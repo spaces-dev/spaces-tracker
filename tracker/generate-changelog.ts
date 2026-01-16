@@ -2,12 +2,12 @@ import fs from 'node:fs/promises'
 import { getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
-const TAG_OPEN = '<blockquote>'
+const TAG_OPEN = '<blockquote expandable>'
 const TAG_CLOSE = '</blockquote>'
 
 async function generateAiSummary(diff: string): Promise<string> {
   if (!process.env.OPENROUTER_API_KEY) {
-    console.log('OPENROUTER_API_KEY is not set')
+    console.log('⚠️ OPENROUTER_API_KEY is not set')
     return ''
   }
 
@@ -19,12 +19,12 @@ async function generateAiSummary(diff: string): Promise<string> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-oss-120b:free',
+        // https://openrouter.ai/mistralai/devstral-2512:free
+        model: 'mistralai/devstral-2512:free',
         messages: [
           {
             role: 'system',
-            content:
-              'You are a technical assistant. Summarize the following code changes concisely in Russian. Focus on what functionality changed. Use bullet points if multiple distinct changes. Output only the summary text, no extra markdown wrapper.',
+            content: 'You are a technical assistant. Analyze the code changes and provide a brief summary in Russian. Describe the changes as a changelog for users, use very brief technical language for the professionals. Use russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
           },
           { role: 'user', content: diff },
         ],
@@ -32,15 +32,14 @@ async function generateAiSummary(diff: string): Promise<string> {
     })
 
     if (!response.ok) {
-      console.log(`OpenRouter API error: ${response.statusText}`)
-      return ''
+      const text = await response.text()
+      return `OpenRouter API error (${response.status}): ${text}`
     }
 
     const data = await response.json()
     return data.choices?.[0]?.message?.content || ''
   } catch (error) {
-    console.log('Failed to generate AI summary', error)
-    return ''
+    return `Failed to generate summary: ${error}`
   }
 }
 
