@@ -4,10 +4,10 @@ interface TrackerConfig {
   Host: string
   RequestHeaders: Record<string, string>
   Concurrency: number
-  ETagsPath: string
   IconsPath: string
   LinksPath: string
   RevisionsPath: string
+  GitDiffExclude: string[]
 }
 
 export const Config: TrackerConfig = {
@@ -16,7 +16,11 @@ export const Config: TrackerConfig = {
     Cookie: 'sandbox=beta',
   },
   Concurrency: 10,
-  ETagsPath: path.resolve('etags.json'),
+  GitDiffExclude: [
+    'revisions.json',
+    'links.json',
+    'icons.json',
+  ],
   IconsPath: path.resolve('icons.json'),
   LinksPath: path.resolve('links.json'),
   RevisionsPath: path.resolve('revisions.json'),
