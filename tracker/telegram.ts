@@ -25,11 +25,11 @@ export async function sendTelegramMessage(
 }
 
 export async function sendNotifications(commitSha: string, messageChunks: string[]) {
-  const token = process.env.TELEGRAM_BOT_TOKEN
+  const botToken = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
 
-  if (!token || !chatId) {
-    console.log('Telegram credentials not found. Skipping notification.')
+  if (!botToken || !chatId) {
+    console.log('\nTelegram credentials not found. Skipping notification.')
     return
   }
 
@@ -43,7 +43,6 @@ export async function sendNotifications(commitSha: string, messageChunks: string
     if (i === 0) {
       message = `${messageHeader}\n\n${message}`
     }
-    console.log(`Sending Telegram message ${i + 1}/${messageChunks.length}...`)
-    await sendTelegramMessage(token, chatId, message)
+    await sendTelegramMessage(botToken, chatId, message)
   }
 }

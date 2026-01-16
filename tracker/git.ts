@@ -1,6 +1,11 @@
 import { execCmd } from './utils.ts'
 
 export async function commitAndPush(message: string) {
+  if (!process.env.CI) {
+    console.log('\nNot in CI, skipping commit and push')
+    return '998fe5c' // for debugging `sendNotifications`
+  }
+
   await execCmd('git', ['add', '.'])
   const { stdout: status } = await execCmd('git', ['status', '--porcelain'])
   if (!status.trim()) return
