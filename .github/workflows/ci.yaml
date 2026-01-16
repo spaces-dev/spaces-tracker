@@ -22,6 +22,8 @@ jobs:
           node-version: 24
 
       - name: Download sourcemaps
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node tracker/main.ts
 
       - name: Check changes

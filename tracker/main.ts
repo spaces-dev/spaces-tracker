@@ -1,8 +1,11 @@
+import { loadEnvFile } from 'node:process'
 import { generateChangelog } from './generate-changelog.ts'
 import { requestIcons } from './request-icons.ts'
 import { requestRevisions } from './request-revisions.ts'
 import { requestSourcemaps } from './request-sourcemap.ts'
 import { trackerStats } from './stats.ts'
+
+loadEnvFile()
 
 const revisions = await requestRevisions.loadRevisions()
 if (!revisions.isChanged) {

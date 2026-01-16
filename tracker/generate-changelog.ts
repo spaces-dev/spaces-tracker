@@ -1,8 +1,47 @@
 import fs from 'node:fs/promises'
+import { getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
-const PRE_OPEN = '\n<pre language="text">'
-const PRE_CLOSE = '</pre>'
+const TAG_OPEN = '<blockquote expandable>'
+const TAG_CLOSE = '</blockquote>'
+
+async function generateAiSummary(diff: string): Promise<string> {
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.log('⚠️ OPENROUTER_API_KEY is not set')
+    return ''
+  }
+
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // https://openrouter.ai/mistralai/devstral-2512:free
+        model: 'mistralai/devstral-2512:free',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a technical assistant. Analyze the code changes and provide a brief summary in Russian. Describe the changes as a changelog for users, use very brief technical language for the professionals. Use russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
+          },
+          { role: 'user', content: diff },
+        ],
+      }),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      return `OpenRouter API error (${response.status}): ${text}`
+    }
+
+    const data = await response.json()
+    return data.choices?.[0]?.message?.content || ''
+  } catch (error) {
+    return `Failed to generate summary: ${error}`
+  }
+}
 
 export async function generateChangelog(stats: Stats) {
   const isChangedRevisionsOnly = stats.changed.length === 0
@@ -23,45 +62,54 @@ export async function generateChangelog(stats: Stats) {
 
   if (stats.added.length > 0) {
     lines.push(`\nAdded files (${stats.added.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(TAG_OPEN)
     const formattedAdded = formatTable(stats.added.map(file => ({
       path: file.path,
       size: file.fileSize,
     })))
     lines.push(...formattedAdded)
-    lines.push(PRE_CLOSE)
+    lines.push(TAG_CLOSE)
   }
 
   if (stats.changed.length > 0) {
     lines.push(`\nChanged files (${stats.changed.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(TAG_OPEN)
     const formattedChanged = formatTable(stats.changed.map(file => ({
       path: file.path,
       size: file.fileSize,
       date: file.lastCommitDate,
     })))
     lines.push(...formattedChanged)
-    lines.push(PRE_CLOSE)
+    lines.push(TAG_CLOSE)
   }
 
   if (stats.removed.length > 0) {
     lines.push(`\nRemoved files (${stats.removed.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(TAG_OPEN)
     for (const file of stats.removed) {
       lines.push(file)
     }
-    lines.push(PRE_CLOSE)
+    lines.push(TAG_CLOSE)
   }
 
   if (stats.failed.length > 0) {
     lines.push(`\nFailed downloads (${stats.failed.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(TAG_OPEN)
     const formattedFailed = formatTable(stats.failed.map(file => ({
       path: file.url,
       size: file.error,
     })))
     lines.push(...formattedFailed)
-    lines.push(PRE_CLOSE)
+    lines.push(TAG_CLOSE)
+  }
+
+  const diff = await getGitDiff()
+  const summary = await generateAiSummary(diff)
+  if (summary) {
+    lines.push('\nSummary:')
+    lines.push(TAG_OPEN)
+    lines.push(summary.trim())
+    lines.push(TAG_CLOSE)
   }
 
   const duration = `\nDuration: ${((Date.now() - stats.startTime) / 1000).toFixed(2)}s`
@@ -69,8 +117,8 @@ export async function generateChangelog(stats: Stats) {
   lines.push(duration)
 
   const commitMessage = lines.join('\n')
-    .replaceAll(`${PRE_OPEN}\n`, '')
-    .replaceAll(PRE_CLOSE, '')
+    .replaceAll(`${TAG_OPEN}\n`, '')
+    .replaceAll(TAG_CLOSE, '')
   await fs.writeFile('commit-message.txt', commitMessage, 'utf-8')
 
   const telegramMessage = lines.slice(1).join('\n')
@@ -130,19 +178,19 @@ function splitTelegramMessage(message: string): string[] {
   const lines = message.split('\n')
 
   for (const line of lines) {
-    const hasPreOpen = line.includes(PRE_OPEN)
-    const hasPreClose = line.includes(PRE_CLOSE)
+    const hasPreOpen = line.includes(TAG_OPEN)
+    const hasPreClose = line.includes(TAG_CLOSE)
 
     const potentialChunk = currentChunk + (currentChunk ? '\n' : '') + line
 
     if (potentialChunk.length > MESSAGE_LIMIT) {
       if (insidePre) {
-        currentChunk += PRE_CLOSE
+        currentChunk += TAG_CLOSE
       }
 
       chunks.push(currentChunk)
 
-      currentChunk = insidePre ? `${PRE_CLOSE}\n${line}` : line
+      currentChunk = insidePre ? `${TAG_OPEN}\n${line}` : line
     } else {
       currentChunk = potentialChunk
     }
@@ -153,7 +201,7 @@ function splitTelegramMessage(message: string): string[] {
 
   if (currentChunk) {
     if (insidePre) {
-      currentChunk += `\n${PRE_CLOSE}`
+      currentChunk += `\n${TAG_CLOSE}`
     }
     chunks.push(currentChunk)
   }
