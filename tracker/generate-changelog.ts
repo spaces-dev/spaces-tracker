@@ -103,13 +103,15 @@ export async function generateChangelog(stats: Stats) {
     lines.push(TAG_CLOSE)
   }
 
-  const diff = await getGitDiff()
-  const summary = await generateAiSummary(diff)
-  if (summary) {
-    lines.push('\nSummary:')
-    lines.push(TAG_OPEN)
-    lines.push(summary.trim())
-    lines.push(TAG_CLOSE)
+  if (!isChangedRevisionsOnly) {
+    const diff = await getGitDiff()
+    const summary = await generateAiSummary(diff)
+    if (summary) {
+      lines.push('\nSummary:')
+      lines.push(TAG_OPEN)
+      lines.push(summary.trim())
+      lines.push(TAG_CLOSE)
+    }
   }
 
   const duration = `\nDuration: ${((Date.now() - stats.startTime) / 1000).toFixed(2)}s`
