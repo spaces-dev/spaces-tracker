@@ -3,6 +3,16 @@ import {Spaces, Url} from '../spacesLib';
 import $ from '../jquery';
 import {debounce, L, numeral, tick} from '../utils';
 import '../select_item';
+import { createDataSelector, scrollIntoViewIfNotVisible } from '../utils/dom';
+
+const tpl = {
+	editLinkLabel({ selectedCatsCount, offersCount }) {
+		return `
+			${selectedCatsCount > 0 ? L('Изменить') : L('Добавить')}
+			${offersCount > 0 ? `(<span class="red b">${offersCount}</span>)` : ``}
+		`;
+	}
+};
 
 function initModule(parent) {
 	parent.itemsSelector({
@@ -24,37 +34,38 @@ function initModule(parent) {
 		});
 	}
 
-	const searchCategoriesByWord = debounce((query) => updateCategoriesList(query), 150);
+	const searchCategoriesByWord = debounce(updateCategoriesList, 150);
 
 	parent.on('click', '.js-xxx_cats_spoiler, .js-xxx_cats_spoiler_top', function (e) {
 		e.preventDefault();
 
-		let bottom_spoiler = parent.find('.js-xxx_cats_spoiler');
-		let status = !bottom_spoiler.hasClass('js-clicked');
-		bottom_spoiler
-			.toggleClass('js-clicked')
-			.find('.js-btn_text')
-			.text(status ? L('Скрыть категории') : L('Показать все категории'));
+		const topExpandButton = parent.find('.js-xxx_cats_spoiler_top');
+		const bottomExpandButton = parent.find('.js-xxx_cats_spoiler');
+		bottomExpandButton.data('expanded', !bottomExpandButton.data('expanded'));
+		const isExpanded = bottomExpandButton.data('expanded');
 
-		let top_spoiler = parent.find('.js-xxx_cats_spoiler_top');
-		top_spoiler.toggleClass('hide', !status || bottom_spoiler.isVisible());
+		bottomExpandButton
+			.find('.js-text')
+			.text(isExpanded ? L('Скрыть категории') : L('Показать все категории'));
 
-		if (!status) {
-			tick(() => {
-				$('html, body').scrollTo(parent, {position: 'visible'});
-			});
-		}
+		bottomExpandButton
+			.find('.js-ico')
+			.toggleClass('ico_arr_down', !isExpanded)
+			.toggleClass('ico_arr_up', isExpanded);
 
-		updateCategoriesList("");
+		topExpandButton.toggleClass('hide', !isExpanded);
+
+		updateCategoriesList();
+
+		if (!isExpanded)
+			scrollIntoViewIfNotVisible(parent[0], { start: "nearest", end: "nearest" });
 	});
 
 	parent.on('click', '.js-search__submit', function (e) {
 		e.preventDefault();
 	});
 
-	parent.on('input clearSearchForm', '.js-search__input', function () {
-		searchCategoriesByWord(this.value);
-	});
+	parent.on('input clearSearchForm', '.js-search__input', () => searchCategoriesByWord());
 
 	parent.on('change', '.js-checkbox', function (e) {
 		const checkbox = $(this);
@@ -105,11 +116,25 @@ function initModule(parent) {
 		// Сбрасываем поиск после выбора категории
 		if (searchInput.val().length > 0) {
 			searchInput.val('');
-			updateCategoriesList('');
+			updateCategoriesList();
 		}
 	});
 
 	parent.on('changed', '.js-checkbox', function () {
+		const checkbox = $(this);
+		const input = checkbox.find('input')[0];
+
+		if (input.checked) {
+			const offeredCategories = parent.find('.js-cats_offers');
+			const acceptOfferedCategory = offeredCategories.find(createDataSelector({
+				action: "moder_tag_offer",
+				accept: 1,
+				category: input.value
+			}));
+			if (acceptOfferedCategory.length > 0)
+				acceptOfferedCategory.click();
+		}
+
 		saveCategories();
 		updateSexOrientsAvailability();
 	});
@@ -118,36 +143,49 @@ function initModule(parent) {
 	parent.action('moder_tag_offer', async function (e) {
 		e.preventDefault();
 		const link = $(this);
-		const fileId = link.data('fileId');
-		const fileType = link.data('fileType');
-
 		const toggleLoading = (flag) => link.find('.js-ico').toggleClass('ico_spinner', flag);
 
 		toggleLoading(true);
-		const params = link.data('params');
 		const response = await Spaces.asyncApi('xxx.moderation.tagOffer', {
 			CK: null,
-			File_id: fileId,
-			Ftype: fileType,
-			...params
+			File_id: link.data('fileId'),
+			Ftype: link.data('fileType'),
+			Category: link.data('category'),
+			Accept: link.data('accept'),
 		});
 		toggleLoading(false);
 
-		if (params.Accept) {
-			const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="caT"][value="${params.Category}"])`);
-			categoryCheckbox.click();
+		if (link.data('accept')) {
+			const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="caT"][value="${link.data('category')}"])`);
+			if (!categoryCheckbox.hasClass('form-checkbox_checked'))
+				categoryCheckbox.click();
 		}
 
 		if (response.code == 0) {
-			const moderationTags = link.parents('.js-file_moderation_tags');
 			link.parents('.s-property').remove();
+			updateEditLink();
 
-			if (!moderationTags.find('.s-property').length)
-				moderationTags.remove();
-
-			$(`#file_cats_offers_cnt_${fileType}_${fileId}`).html(response.offers_cnt);
+			const expandButton = parent.find('.js-xxx_cats_spoiler');
+			if (expandButton.data('expanded')) {
+				expandButton.click();
+			} else {
+				updateCategoriesList();
+			}
 		}
 	});
+
+	function updateEditLink() {
+		const fileId = parent.data('fileId');
+		const fileType = parent.data('fileType');
+		const offeredCategories = parent.find('.js-cats_offers');
+		const selectedCatsCount = parent.find('.js-checkbox.form-checkbox_checked').length;
+		const offersCount = offeredCategories.find('.s-property').length;
+		$(`#xxx_cats_edit_link_${fileType}_${fileId}`).html(tpl.editLinkLabel({
+			offersCount,
+			selectedCatsCount
+		}));
+		offeredCategories.toggleClass('hide', offersCount == 0);
+	}
 
 	function saveCategories() {
 		const fileId = parent.data('fileId');
@@ -175,7 +213,7 @@ function initModule(parent) {
 				res.cats = [];
 
 			$(`#xxx_cats_${fileType}_${fileId}`).html(res.cats.join(', '));
-			// $(`#xxx_cats_${fileType}_${fileId}_wrap`).toggleClass('hide', !res.cats.length);
+			updateEditLink();
 
 			if (res.code != 0)
 				Spaces.showApiError(res);
@@ -215,7 +253,8 @@ function initModule(parent) {
 		}
 	}
 
-	function updateCategoriesList(query) {
+	function updateCategoriesList() {
+		const query = parent.find('.js-search__input').val();
 		const searchQueryRegExp = getSearchQueryRegExp(query);
 		const isSearch = searchQueryRegExp != null;
 
@@ -223,14 +262,18 @@ function initModule(parent) {
 		const container = parent.find('.js-xxx_cats_all')[0];
 		if (isSearch) {
 			for (const item of container.children) {
+				if (item.dataset.stub)
+					continue;
 				const isVisible = searchQueryRegExp.test(item.textContent);
 				item.classList.toggle('hide', !isVisible);
 				if (isVisible)
 					found++;
 			}
 		} else {
-			const showAll = parent.find('.js-xxx_cats_spoiler').hasClass('js-clicked');
+			const showAll = !!parent.find('.js-xxx_cats_spoiler').data('expanded');
 			for (const item of container.children) {
+				if (item.dataset.stub)
+					continue;
 				const isVisible = showAll || item.dataset.checked;
 				item.classList.toggle('hide', !isVisible);
 				if (isVisible)
@@ -241,7 +284,7 @@ function initModule(parent) {
 		const stub = container.querySelector('.js-xxx_cat_item[data-stub]');
 		stub.classList.toggle('hide', (found % 2) === 0);
 
-		container.classList.toggle('hide', isSearch && found == 0);
+		container.classList.toggle('hide', found == 0);
 		parent.find('.js-xxx_cats_spoiler').toggleClass('hide', isSearch);
 		parent.find('.js-xxx_cats_not_found').toggleClass('hide', !isSearch || found > 0);
 	}
