@@ -1,12 +1,3 @@
-import { toKebabCase } from "./string";
-
-export function createDataSelector(data) {
-	const pairs = [];
-	for (const k in data)
-		pairs.push(`[data-${toKebabCase(k)}="${data[k]}"]`);
-	return pairs.join("");
-}
-
 export function findParent(el, selector) {
 	while (el && el.parentElement) {
 		el = el.parentElement;
