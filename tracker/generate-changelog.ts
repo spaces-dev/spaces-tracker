@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises'
 import { getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
@@ -120,12 +121,12 @@ export async function generateChangelog(stats: Stats) {
   const commitMessage = lines.join('\n')
     .replaceAll(`${TAG_OPEN}\n`, '')
     .replaceAll(TAG_CLOSE, '')
+  await fs.writeFile('commit-message.txt', commitMessage, 'utf-8')
 
-  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\n'))
-
-  return {
-    commitMessage,
-    telegramMessage,
+  const telegramMessage = lines.slice(1).join('\n')
+  const chunks = splitTelegramMessage(telegramMessage)
+  for (let i = 0; i < chunks.length; i++) {
+    await fs.writeFile(`telegram-message-${i + 1}.txt`, chunks[i], 'utf-8')
   }
 }
 

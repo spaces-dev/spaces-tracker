@@ -1,12 +1,12 @@
 import path from 'node:path'
 import { Config } from './config.ts'
 import { trackerStats } from './stats.ts'
-import { fileIsChanged, readJson, spacesRequests, writeJson } from './utils.ts'
+import { fileIsChanged, readJson, request, writeJson } from './utils.ts'
 import type { RevisionAssets, Revisions } from './types.ts'
 
 class RequestRevisions {
   private async loadJs() {
-    const req = await spacesRequests(`/js/${path.basename(Config.RevisionsPath)}`)
+    const req = await request(`/js/${path.basename(Config.RevisionsPath)}`)
 
     if (!req.ok) {
       throw new Error(`Can't download js revisions`)
@@ -17,7 +17,7 @@ class RequestRevisions {
   }
 
   private async loadCss() {
-    const req = await spacesRequests(`/css/custom/${path.basename(Config.RevisionsPath)}`)
+    const req = await request(`/css/custom/${path.basename(Config.RevisionsPath)}`)
 
     if (!req.ok) {
       throw new Error(`Can't download css revisions`)

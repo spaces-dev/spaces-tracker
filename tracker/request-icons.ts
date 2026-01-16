@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { concurrentWorker } from './concurrency-worker.ts'
 import { Config } from './config.ts'
-import { spacesRequests, writeJson } from './utils.ts'
+import { request, writeJson } from './utils.ts'
 
 const ICONS_SOURCE = '/css/custom/pc/b/main.css'
 const ICONS_REGEX = /url\(['"]?(\/i\/[^'")]+)['"]?\)/g
@@ -16,7 +16,7 @@ function parseIcons(res: string) {
 }
 
 export async function requestIcons() {
-  const req = await spacesRequests(ICONS_SOURCE)
+  const req = await request(ICONS_SOURCE)
 
   if (!req.ok) {
     throw new Error(`Can't download icons from ${ICONS_SOURCE}: ${req.status}`)
@@ -29,7 +29,7 @@ export async function requestIcons() {
   console.log(`\nStarting download icons (${icons.length} icons, concurrency: ${Config.Concurrency})\n`)
 
   await concurrentWorker(icons, async (icon) => {
-    const req = await spacesRequests(icon)
+    const req = await request(icon)
 
     if (!req.ok) {
       console.log(`❌ Can't download icon ${icon}: ${req.status}`)

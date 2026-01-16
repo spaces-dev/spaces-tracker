@@ -4,9 +4,9 @@ import fs from 'node:fs/promises'
 import { promisify } from 'node:util'
 import { Config } from './config.ts'
 
-export const execCmd = promisify(execFile)
+const execScript = promisify(execFile)
 
-export async function spacesRequests(path: string) {
+export async function request(path: string) {
   const url = new URL(path, Config.Host)
 
   const request = await fetch(url, {
@@ -51,7 +51,7 @@ export async function fileIsChanged<Left, Right>(left: Left, right: Right) {
 
 export async function fileLastCommitDate(path: string) {
   try {
-    const { stdout } = await execCmd('git', [
+    const { stdout } = await execScript('git', [
       'log',
       '-1',
       '--format=%cr',
@@ -96,13 +96,15 @@ export function compareFileSize(beforeBytes: number, afterBytes: number): string
 
 export async function getGitDiff() {
   try {
-    await execCmd('git', ['add', '-N', '.'])
-    const { stdout } = await execCmd('git', [
+    await execScript('git', ['add', '-N', '.'])
+    const { stdout } = await execScript('git', [
       'diff',
       'HEAD',
       '--',
       '.',
-      ...Config.GitDiffExclude.map((file) => `:(exclude)${file}`),
+      ':(exclude)revisions.json',
+      ':(exclude)links.json',
+      ':(exclude)icons.json',
     ])
     return stdout
   } catch (e) {
