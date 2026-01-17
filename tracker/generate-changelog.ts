@@ -25,7 +25,7 @@ async function generateAiSummary(diff: string): Promise<string> {
         messages: [
           {
             role: 'system',
-            content: 'You are a technical assistant. Analyze the code changes and provide a brief summary in Russian. Describe the changes as a changelog for users, use very brief technical language for the professionals. Use russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
+            content: 'You are a technical assistant that help with diff analysis. Yout goal is to analyze the code changes and provide a brief summary in Russian using brief technical language for the professionals with russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
           },
           { role: 'user', content: diff },
         ],
