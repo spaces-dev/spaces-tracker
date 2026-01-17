@@ -198,6 +198,11 @@
 		align-items: center;
 		justify-content: center;
 
+		svg {
+			width: 10px;
+			height: 10px;
+		}
+
 		&--type-unread {
 			background: $important-counter-bg;
 			color: $important-counter-text-color;
@@ -683,10 +688,10 @@
 	align-items: center;
 	justify-content: center;
 
-	padding: 8px 10px;
+	padding: 8px 11px;
 	border-radius: 16px;
 
-	font-size: 12px;
+	font-weight: 700;
 	line-height: 1;
 
 	position: absolute;
@@ -700,9 +705,9 @@
 	z-index: 3000;
 
 	background: $content-bg;
-	color: $reactions-mail-button-text;
-	box-shadow: $reactions-mail-button-shadow;
-	border: 1px solid $reactions-mail-button-border;
+	color: $accent-blue-color;
+	box-shadow: $default-block-shadow;
+	border: 1px solid $accent-blue-color;
 
 	cursor: pointer;
 	user-select: none;
@@ -711,15 +716,13 @@
 		opacity 0.3s,
 		visibility 0.3s,
 		bottom 0.3s,
-		background 0.2s;
+		background 0.15s ease,
+		color 0.15s ease;
 
 	&--is-sticky {
 		position: fixed;
-		top: 8px;
+		top: 14px;
 		transform: translateX(-50%);
-		color: $reactions-mail-button-sticky-text;
-		box-shadow: $reactions-mail-button-sticky-shadow;
-		border: 1px solid $reactions-mail-button-sticky-border;
 	}
 
 	&[data-count="0"], &--is-hidden {
@@ -729,6 +732,7 @@
 
 	&:hover {
 		background: $default-hover-bg;
+		color: $accent-blue-hover-color;
 	}
 
 	&:active {

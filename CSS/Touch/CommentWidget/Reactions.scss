@@ -75,7 +75,18 @@
 		width: 26px;
 		height: 26px;
 		border-radius: 50%;
-		color: $reactions-selector-icon;
+		color: $icon-grey-color;
+
+		@media (hover: hover) {
+			&:hover {
+				color: $accent-blue-color;
+			}
+		}
+
+		&:active {
+			// FIXME: active??? hover???
+			color: $accent-blue-hover-color;
+		}
 	}
 }
 
@@ -95,10 +106,6 @@
 	--reaction-icon-color: #{$default-text-color};
 	--reaction-selected-icon-color: var(--reaction-selected-text);
 
-	&[data-count="0"] {
-		margin-top: 0;
-	}
-
 	// MESSAGE OUT
 	&--style-message-my-object {
 		--reaction-text: #{$reaction-message-out-text};
@@ -108,6 +115,10 @@
 		--reaction-active-bg: #{$reaction-message-out-active-bg};
 		--reaction-selected-bg: #{$reaction-message-out-selected-bg};
 		--reaction-selected-text: #{$reaction-message-in-selected-text};
+
+		&[data-count="0"] {
+			display: none;
+		}
 	}
 
 	// MESSAGE IN
@@ -119,9 +130,13 @@
 		--reaction-active-bg: #{$reaction-message-in-active-bg};
 		--reaction-selected-bg: #{$reaction-message-in-selected-bg};
 		--reaction-selected-text: #{$reaction-message-in-selected-text};
+
+		&[data-count="0"] {
+			display: none;
+		}
 	}
 
-	// TOPIC
+	// TOPIC, COMMENT
 	&--style-topic {
 		--reaction-text: #{$reaction-topic-text};
 		--reaction-bg: #{$reaction-topic-bg};
@@ -130,8 +145,14 @@
 		--reaction-active-bg: #{$reaction-topic-active-bg};
 		--reaction-selected-bg: #{$reaction-topic-selected-bg};
 		--reaction-selected-text: #{$reaction-topic-selected-text};
-		--reaction-icon-color: #{$reaction-topic-icon};
-		--reaction-selected-icon-color: #{$reaction-topic-selected-icon};
+
+		--reaction-button-primary-icon-color: #{$reaction-button-topic-primary-icon};
+		--reaction-button-secondary-icon-color: #{$reaction-button-topic-secondary-icon};
+		--reaction-button-selected-icon-color: #{$reaction-button-topic-selected-icon};
+
+		&[data-disabled="true"][data-count="0"] {
+			display: none;
+		}
 	}
 
 	// PILLS
@@ -149,6 +170,142 @@
 		--reaction-active-bg: #{$reaction-pills-active-bg};
 		--reaction-selected-bg: #{$reaction-pills-selected-bg};
 		--reaction-selected-text: #{$reaction-pills-selected-text};
+	}
+}
+
+.reaction-button-group {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	border-radius: 12px;
+	overflow: hidden;
+	background-color: var(--reaction-bg);
+
+	&__sep {
+		width: 1px;
+		height: 50%;
+		background-color: var(--reaction-selected-bg);
+		z-index: 100;
+		align-self: center;
+	}
+
+	.reactions-list[data-count="0"] &__sep {
+		display: none;
+	}
+}
+
+.reaction-button {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	box-sizing: border-box;
+	position: relative;
+
+	padding: 6px 14px;
+
+	cursor: pointer;
+	user-select: none;
+
+	color: $secondary-text-color;
+	transition: background-color 0.15s ease;
+	background-color: var(--reaction-bg);
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		transition: background-color 0.15s ease;
+	}
+
+	&:hover {
+		background-color: var(--reaction-hover-bg);
+
+		&::before {
+			background-color: var(--reaction-hover-bg);
+		}
+	}
+
+	&:active {
+		background-color: var(--reaction-active-bg);
+
+		&::before {
+			background-color: var(--reaction-active-bg);
+		}
+	}
+
+	&--is-selected, &--is-selected:active, &--is-selected:hover {
+		--reaction-button-primary-icon-color: var(--reaction-button-selected-icon-color);
+		--reaction-button-secondary-icon-color: var(--reaction-button-selected-icon-color);
+
+		background-color: var(--reaction-selected-bg);
+		color: var(--reaction-selected-text);
+		&::before {
+			background-color: var(--reaction-selected-bg);
+			z-index: 90;
+		}
+	}
+
+	&__icon {
+		display: flex;
+		color: var(--reaction-button-primary-icon-color);
+
+		svg {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&__arrow {
+		display: flex;
+		color: var(--reaction-button-secondary-icon-color);
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	&__label {
+		display: none;
+	}
+
+	&--type-selector {
+		padding-left: 14px;
+		padding-right: 10px;
+
+		&::before {
+			right: -1px;
+		}
+	}
+
+	&--type-counter {
+		padding-left: 12px;
+		padding-right: 7px;
+		gap: 1px;
+
+		&::before {
+			left: -1px;
+		}
+	}
+
+	.reactions-list[data-count="0"] & {
+		&__label {
+			display: block;
+		}
+
+		&--type-selector {
+			padding-right: 14px;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		&--type-counter {
+			display: none;
+		}
 	}
 }
 
@@ -172,10 +329,6 @@
 	background-color: var(--reaction-bg);
 	--avatar-border-color: var(--reaction-bg);
 
-	&--style-spoiler {
-		gap: 4px;
-	}
-
 	&:hover {
 		--avatar-border-color: var(--reaction-hover-bg);
 		background-color: var(--reaction-hover-bg);
@@ -188,19 +341,8 @@
 
 	&--is-selected, &--is-selected:active, &--is-selected:hover {
 		--avatar-border-color: var(--reaction-selected-bg);
-		--reaction-icon-color: var(--reaction-selected-icon-color);
 		background-color: var(--reaction-selected-bg);
 		color: var(--reaction-selected-text);
-	}
-
-	&__icon {
-		display: flex;
-		color: var(--reaction-icon-color);
-		svg {
-			width: 24px;
-			height: 24px;
-			pointer-events: none;
-		}
 	}
 
 	&__emoji {
@@ -214,21 +356,9 @@
 	}
 
 	&__counter {
-		margin-left: -2px; // TODO: разрулить лучшим способом
+		margin-left: -2px; // TODO: разрулить лучшим способом (= никогда)
 		margin-right: 4px;
 		font-weight: 700;
-
-		.reaction--style-spoiler & {
-			margin-right: 0;
-			margin-left: 4px;
-		}
-	}
-
-	&__label {
-		margin-right: 6px;
-		margin-left: 6px;
-		font-weight: 700;
-		text-transform: uppercase;
 	}
 
 	&__avatars {
@@ -239,9 +369,17 @@
 		}
 	}
 
+	&__label {
+		margin-right: 6px;
+		margin-left: 6px;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
 	&__avatar {
 		font-size: 0;
 		border: 2px solid var(--avatar-border-color);
+		transition: border 0.15s ease;
 		margin: -2px;
 		margin-left: -4px;
 		border-radius: 50%;

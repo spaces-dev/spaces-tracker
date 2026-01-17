@@ -24,7 +24,7 @@ module.on("componentpage", () => {
 					topAnchor,
 					bottomAnchor,
 					stickyClass: 'mail-reactions-button--is-sticky',
-					stickyMargin: 8,
+					stickyMargin: 14,
 				});
 			}
 		} else {
@@ -37,7 +37,7 @@ module.on("componentpage", () => {
 
 	const updateCounter = (newReactionsCnt) => {
 		reactionsButton.dataset.count = newReactionsCnt;
-		reactionsButton.querySelector('.js-cnt').textContent = Math.min(99, newReactionsCnt);
+		reactionsButton.querySelector('.js-cnt').textContent = newReactionsCnt;
 		updateFloatingButton();
 	};
 

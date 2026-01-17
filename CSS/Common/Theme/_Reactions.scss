@@ -17,14 +17,16 @@ $reaction-message-in-selected-bg:		theme(#94A9C3, #4B4D51);
 $reaction-message-in-selected-text:		#FFFFFF;
 
 $reaction-topic-text:					$default-text-color;
-$reaction-topic-icon:					theme(#404f5e, #cccccc);
-$reaction-topic-selected-icon:			theme(#ffffff, #cccccc);
 $reaction-topic-bg:						theme(#EBEFF4, #494B4D);
 $reaction-topic-border:					transparent;
 $reaction-topic-hover-bg:				theme(#DAE1E9, #56595C);
 $reaction-topic-active-bg:				theme(#C9D3DF, #595D60);
 $reaction-topic-selected-bg:			theme(#B8C5D4, #5F6367);
 $reaction-topic-selected-text:			#FFFFFF;
+
+$reaction-button-topic-primary-icon:			$secondary-text-color;
+$reaction-button-topic-secondary-icon:			theme(#A8B9C6, #ABB8C5);
+$reaction-button-topic-selected-icon:			theme(#ffffff, #CCCCCC);
 
 $reaction-pills-text:					$default-text-color;
 $reaction-pills-bg:						$content-bg;
@@ -35,18 +37,7 @@ $reaction-pills-selected-bg:			theme(#E1E9F3, #555759);
 $reaction-pills-selected-text:			$default-text-color;
 
 $reactions-selector-border:						theme(#CDDAE7, #2D2E30);
-$reactions-selector-icon:						theme(#A8B9C6, #ABB8C5);
 
 $reactions-selector-item-hover-bg:				theme(#ECF5FD, #424446);
 $reactions-selector-item-active-bg:				theme(#B8CDE3, #555759);
 $reactions-selector-item-selected-bg:			theme(#DDEBF7, #4B4D4E);
-
-$reactions-mail-button-hover-bg:				$default-hover-bg;
-$reactions-mail-button-shadow: 					none;
-$reactions-mail-button-text:					$blue-text-color;
-$reactions-mail-button-border:					$blue-text-color;
-
-$reactions-mail-button-sticky-hover-bg:			$default-hover-bg;
-$reactions-mail-button-sticky-shadow: 			theme(0px 4px 4px 0px rgba(0, 0, 0, 0.25), 0px 4px 4px 0px rgba(17, 17, 19, 0.25));
-$reactions-mail-button-sticky-text:				$blue-text-color;
-$reactions-mail-button-sticky-border:			$separator-color;

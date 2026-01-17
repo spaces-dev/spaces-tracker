@@ -247,8 +247,6 @@ module.on("componentpage", () => {
 		if (message.act == pushstream.TYPES.USER_OBJECT_ADD_REACTION || message.act == pushstream.TYPES.USER_OBJECT_DELETE_REACTION) {
 			if (!document.getElementById(`reactions_${message.objectType}_${message.objectId}`))
 				return;
-			if (message.reactionsCnt != null)
-				updateReactionsCount(message.objectType, message.objectId, message.reactionsCnt);
 			if (message.hash == Spaces.tabId())
 				return;
 			refreshReactionsList(message.objectType, message.objectId);
@@ -354,10 +352,8 @@ function updateReactionsCount(type, id, count) {
 	}
 
 	const reactionsSpoilerButton = reactionsList?.querySelector(`.js-reactions_spoiler_button`);
-	if (reactionsSpoilerButton) {
-		reactionsSpoilerButton.classList.toggle('hide', count == 0);
+	if (reactionsSpoilerButton)
 		reactionsSpoilerButton.querySelector('.js-reactions_count').textContent = count;
-	}
 }
 
 function initReactionsWidget(reactionsWidget) {
@@ -482,12 +478,13 @@ async function refreshReactionsList(objectType, objectId) {
 
 function replaceReactionsList(objectType, objectId, reactions) {
 	const list = $(`#reactions_${objectType}_${objectId}`);
+
 	if (!list.length)
 		return;
 
 	list.find('.js-reaction').remove();
 
-	const insertionPlace = list.find('.js-reaction_add_button');
+	const insertionPlace = list.find('.js-reactions_buttons');
 	if (insertionPlace.length > 0) {
 		insertionPlace.after(reactions.join(''));
 	} else {
