@@ -1,0 +1,4 @@
+pre-commit:
+  jobs:
+    - name: Type Check
+      run: pnpm type-check

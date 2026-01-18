@@ -2,6 +2,7 @@
   "name": "spaces-tracker",
   "type": "module",
   "version": "0.0.0",
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "start": "node tracker/main.ts",
     "lint": "eslint tracker --cache",
@@ -12,6 +13,7 @@
     "@antfu/eslint-config": "7.0.1",
     "@types/node": "25.0.9",
     "eslint": "9.39.2",
+    "lefthook": "2.0.15",
     "typescript": "5.9.3"
   }
 }
