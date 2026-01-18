@@ -10,7 +10,6 @@ export default antfu({
   ],
   rules: {
     'curly': 'off',
-    'no-alert': 'off',
     'no-console': 'off',
     'no-unused-vars': 'warn',
     'node/prefer-global/process': 'off',
@@ -21,16 +20,16 @@ export default antfu({
     'eslint-comments/no-unlimited-disable': 'off',
     'perfectionist/sort-imports': ['error', {
       groups: [
-        'builtin',
-        'external',
-        ['internal', 'internal-type'],
-        ['parent', 'sibling', 'index'],
+        'value-builtin',
+        'value-external',
+        ['value-internal', 'type-internal'],
+        ['value-parent', 'value-sibling', 'value-index'],
 
-        'type',
-        ['parent-type', 'sibling-type', 'index-type'],
+        'type-import',
+        ['type-parent', 'type-sibling', 'type-index'],
 
         'side-effect',
-        'object',
+        'ts-equals-import',
         'unknown',
       ],
       newlinesBetween: 'ignore',

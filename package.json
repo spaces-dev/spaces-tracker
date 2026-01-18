@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "scripts": {
     "start": "node tracker/main.ts",
+    "lint": "eslint tracker --cache",
+    "lint:fix": "eslint tracker --fix --cache",
     "type-check": "tsc"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^6.7.3",
-    "@types/node": "^25.0.3",
-    "eslint": "^9.39.2",
-    "typescript": "^5.9.3"
+    "@antfu/eslint-config": "7.0.1",
+    "@types/node": "25.0.9",
+    "eslint": "9.39.2",
+    "typescript": "5.9.3"
   }
 }
