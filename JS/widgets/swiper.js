@@ -47,6 +47,8 @@ function initSwipe() {
 	let gesture = false;
 
 	document.body.addEventListener('touchstart', (e) => {
+		gesture = false;
+
 		if (locked)
 			return;
 
@@ -54,10 +56,8 @@ function initSwipe() {
 		if (activeElement && ["TEXTAREA", "INPUT"].includes(activeElement.nodeName))
 			return;
 
-		if (e.target.closest('.vjs-control-bar')) {
-			gesture = false;
+		if (e.target.closest('.vjs-control-bar'))
 			return;
-		}
 
 		gesture = !e.touches || e.touches.length == 1;
 		startX = e.touches ? e.touches[0].clientX : e.clientX;
