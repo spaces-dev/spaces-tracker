@@ -1043,7 +1043,9 @@ body a.disabled .bordered .t {
 
 	&__title {
 		width: 50%;
+		padding-right: 5px;
 		max-width: 200px;
+		box-sizing: border-box;
 		color: $secondary-text-color;
 		word-wrap: break-word;
 		display: block;
