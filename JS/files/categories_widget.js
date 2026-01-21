@@ -124,21 +124,36 @@ function initModule(parent) {
 		const checkbox = $(this);
 		const input = checkbox.find('input')[0];
 
+		// Костыли
 		if (input.checked) {
 			const offeredCategories = parent.find('.js-cats_offers');
-			const acceptOfferedCategory = offeredCategories.find(createDataSelector({
-				action: "moder_tag_offer",
-				accept: 1,
-				category: input.value
-			}));
-			if (acceptOfferedCategory.length > 0)
-				acceptOfferedCategory.click();
+			const acceptOfferedCategory = offeredCategories.find([
+				createDataSelector({
+					action: "add_file_cat",
+					category: input.value
+				}),
+				createDataSelector({
+					action: "moder_tag_offer",
+					accept: 1,
+					category: input.value
+				})
+			].join(', '));
+			acceptOfferedCategory.parents('.s-property').remove();
+			updateEditLink();
+			updateCategoriesList();
 		}
 
 		saveCategories();
 		updateSexOrientsAvailability();
 	});
 
+	parent.action('add_file_cat', async function (e) {
+		e.preventDefault();
+		const link = $(this);
+		const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="caT"][value="${link.data('category')}"])`);
+		if (!categoryCheckbox.hasClass('form-checkbox_checked'))
+			categoryCheckbox.click();
+	});
 
 	parent.action('moder_tag_offer', async function (e) {
 		e.preventDefault();
