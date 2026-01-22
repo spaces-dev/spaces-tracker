@@ -127,17 +127,7 @@ function initModule(parent) {
 		// Костыли
 		if (input.checked) {
 			const offeredCategories = parent.find('.js-cats_offers');
-			const acceptOfferedCategory = offeredCategories.find([
-				createDataSelector({
-					action: "add_file_cat",
-					category: input.value
-				}),
-				createDataSelector({
-					action: "moder_tag_offer",
-					accept: 1,
-					category: input.value
-				})
-			].join(', '));
+			const acceptOfferedCategory = offeredCategories.find(createDataSelector({ category: input.value }));
 			acceptOfferedCategory.parents('.s-property').remove();
 			updateEditLink();
 			updateCategoriesList();
