@@ -90,6 +90,10 @@ export class Dialog {
 		return this.dialogElement.dataset.dialogIsResized === "true";
 	}
 
+	id() {
+		return this.dialogElement.id;
+	}
+
 	element() {
 		return this.dialogElement;
 	}
@@ -152,11 +156,11 @@ export class Dialog {
 		this.handleResize();
 	}
 
-	async toggle(openerOptions = {}, referenceElement = undefined) {
-		if (this.isOpen()) {
-			await this.close();
+	async toggle() {
+		if (this.isCollapsed()) {
+			await this.expand();
 		} else {
-			await this.open(openerOptions, referenceElement);
+			await this.collapse();
 		}
 	}
 
@@ -194,6 +198,8 @@ export class Dialog {
 		this.dialogElement.classList.remove('dialog--transition-in');
 		this.update();
 		this.handleResize();
+
+		this._triggerEvent("collapsed");
 	}
 
 	async expand() {
@@ -207,6 +213,8 @@ export class Dialog {
 		this.dialogElement.classList.remove('dialog--transition-out');
 		this.update();
 		this.handleResize();
+
+		this._triggerEvent("expanded");
 	}
 
 	update() {
@@ -357,7 +365,7 @@ export class Dialog {
 	}
 
 	_triggerEvent(eventName) {
-		const event = new CustomEvent(`dialog:${eventName}`, { detail: { dialog: this }, bubbles: true });
+		const event = new CustomEvent(`dialog:${eventName}`, { detail: { dialog: this }, bubbles: true, cancelable: true });
 		this.dialogElement.dispatchEvent(event);
 		return !event.defaultPrevented;
 	}
@@ -438,15 +446,15 @@ module.on("componentpage", () => {
 			}
 
 			if (dialogByOpener) {
-				if (dialogByOpener.isCollapsed()) {
-					dialogByOpener.expand();
-				} else {
-					dialogByOpener.collapse();
-				}
+				dialogByOpener.toggle();
 				return;
 			}
 
-			dialogById.toggle();
+			if (dialogById.isOpen()) {
+				dialogById.toggle();
+			} else {
+				dialogById.open();
+			}
 		})
 		.on('click' + NS, '.js-dialog_close', function (e) {
 			e.preventDefault();
@@ -456,13 +464,8 @@ module.on("componentpage", () => {
 		.on('click' + NS, '.js-dialog_expand_collapse', function (e) {
 			e.preventDefault();
 			const dialog = this.dataset.dialogId ? getDialogById(this.dataset.dialogId) : getNearestDialog(this);
-			if (dialog) {
-				if (dialog.isCollapsed()) {
-					dialog.expand();
-				} else {
-					dialog.collapse();
-				}
-			}
+			if (dialog)
+				dialog.toggle();
 		})
 		.on('click' + NS, '.js-dialog_header_title', function (e) {
 			e.preventDefault();
