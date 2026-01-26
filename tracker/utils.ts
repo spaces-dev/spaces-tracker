@@ -6,8 +6,8 @@ import { Config } from './config.ts'
 
 export const execCmd = promisify(execFile)
 
-export async function spacesRequest(path: string) {
-  const url = new URL(path, Config.Host)
+export async function spacesRequest(baseUrl: string, path: string) {
+  const url = new URL(path, baseUrl)
 
   const request = await fetch(url, {
     headers: Config.RequestHeaders,

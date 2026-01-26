@@ -97,7 +97,7 @@ export async function generateChangelog(stats: Stats) {
     lines.push(`\nFailed downloads (${stats.failed.length}):`)
     lines.push(TAG_OPEN)
     const formattedFailed = formatTable(stats.failed.map(file => ({
-      path: file.url,
+      path: file.path,
       size: file.error,
     })))
     lines.push(...formattedFailed)

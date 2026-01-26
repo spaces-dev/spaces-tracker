@@ -1,49 +1,78 @@
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Config } from './config.ts'
 import { trackerStats } from './stats.ts'
-import { fileIsChanged, readJson, spacesRequest, writeJson } from './utils.ts'
-import type { RevisionAssets, Revisions } from './types.ts'
+import {
+  fileIsChanged,
+  readJson,
+  spacesRequest,
+  writeJson,
+} from './utils.ts'
+import type {
+  RevisionAssets,
+  Revisions,
+  SourceConfig,
+} from './types.ts'
 
 class RequestRevisions {
-  private async loadJs() {
-    const req = await spacesRequest(`/js/${path.basename(Config.RevisionsPath)}`)
+  private async loadJs(source: SourceConfig) {
+    const req = await spacesRequest(source.url, source.revisions)
 
     if (!req.ok) {
-      throw new Error(`Can't download js revisions`)
+      throw new Error(`Can't download js revisions from "${source.name}"`)
     }
 
     const json = await req.json()
     return json as Record<string, string>
   }
 
-  private async loadCss() {
-    const req = await spacesRequest(`/css/custom/${path.basename(Config.RevisionsPath)}`)
+  private async loadCss(source: SourceConfig) {
+    const req = await spacesRequest(source.url, `/css/custom/revisions.json`)
 
     if (!req.ok) {
-      throw new Error(`Can't download css revisions`)
+      throw new Error(`Can't download css revisions from "${source.name}"`)
     }
 
     const json = await req.json()
     return json as Record<string, string>
   }
 
-  async loadRevisions() {
-    const js = await this.loadJs()
-    const css = await this.loadCss()
+  async loadRevisions(source: SourceConfig) {
+    const js = await this.loadJs(source)
+    const css = await this.loadCss(source)
 
-    const res = await this.parseRevisionsRequest({
+    const res = await this.parseRevisionsRequest(source, {
       js,
       css,
     })
 
-    const currentRevision = await readJson<Revisions>(Config.RevisionsPath)
-    const isChanged = await fileIsChanged(res.revisions, currentRevision)
+    const revisionsPath = path.join(source.name, Config.RevisionsPath)
 
+    let currentRevision: Revisions
+    try {
+      currentRevision = await readJson<Revisions>(revisionsPath)
+    } catch {
+      currentRevision = { js: {}, css: {} }
+    }
+
+    const isChanged = await fileIsChanged(res.revisions, currentRevision)
     if (isChanged) {
-      await writeJson(Config.RevisionsPath, res.revisions)
-      const currentLinks = await readJson<string[]>(Config.LinksPath)
-      trackerStats.computeRemovedLinks(res.links, currentLinks)
-      await writeJson(Config.LinksPath, res.links)
+      await fs.mkdir(path.dirname(revisionsPath), { recursive: true })
+      await writeJson(revisionsPath, res.revisions)
+
+      const linksPath = path.join(source.name, Config.LinksPath)
+      let currentLinks: string[]
+      try {
+        currentLinks = await readJson<string[]>(linksPath)
+      } catch {
+        currentLinks = []
+      }
+
+      if (source.isPrimary) {
+        trackerStats.computeRemovedLinks(res.links, currentLinks)
+      }
+
+      await writeJson(linksPath, res.links)
     }
 
     return {
@@ -52,10 +81,12 @@ class RequestRevisions {
     }
   }
 
-  private async parseRevisionsRequest(revisions: Revisions) {
+  private async parseRevisionsRequest(source: SourceConfig, revisions: Revisions) {
+    const jsBasePath = source.revisions.replace('revisions.json', '')
+
     const js = Object.entries(revisions.js)
       .filter(([path]) => path.endsWith('.js'))
-      .map(([path, hash]) => [`/js/${path}`, hash]) as RevisionAssets
+      .map(([path, hash]) => [`${jsBasePath}${path}`, hash]) as RevisionAssets
 
     const css = Object.entries(revisions.css)
       .filter(([path]) => path.endsWith('.css'))

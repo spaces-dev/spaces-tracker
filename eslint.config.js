@@ -5,8 +5,9 @@ export default antfu({
   markdown: true,
   yaml: true,
   ignores: [
-    'CSS',
-    'JS',
+    'spaces',
+    'kinotam',
+    'strip2',
   ],
   rules: {
     'curly': 'off',

@@ -7,7 +7,7 @@ export interface SourcemapFile {
 }
 
 export interface SourcemapResponse {
-  url: string
+  path: string
   error: string | null
   files: SourcemapFile[]
 }
@@ -19,7 +19,7 @@ export interface Stats {
   added: SourcemapFile[]
   removed: string[]
   failed: {
-    url: string
+    path: string
     error: string
   }[]
 }
@@ -42,4 +42,25 @@ export interface Sourcemap {
   sourcesContent: string[]
   names: string[]
   mappings: string
+}
+
+export interface SourceConfig {
+  name: string
+  url: string
+  revisions: string
+  isPrimary?: boolean
+}
+
+export interface TrackerConfig {
+  Sources: SourceConfig[]
+  RequestHeaders: Record<string, string>
+  Concurrency: number
+  IconsPath: string
+  LinksPath: string
+  RevisionsPath: string
+  GitDiffExclude: string[]
+}
+
+export interface TrackerState {
+  lastRun: Record<string, number>
 }

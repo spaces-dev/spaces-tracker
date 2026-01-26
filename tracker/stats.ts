@@ -6,7 +6,7 @@ class TrackerStats {
   private changed: SourcemapFile[] = []
   private added: SourcemapFile[] = []
   private removed: string[] = []
-  private failed: { url: string, error: string }[] = []
+  private failed: { path: string, error: string }[] = []
 
   get stats(): Stats {
     const isChanged = this.changed.length !== 0
@@ -35,7 +35,7 @@ class TrackerStats {
     for (const response of sourcemapResponses) {
       if (response.error) {
         this.failed.push({
-          url: response.url,
+          path: response.path,
           error: response.error,
         })
       } else {
