@@ -1,0 +1,52 @@
+@use "Common/Theme" as *;
+#photo_preview img {
+	max-width: 100%
+}
+
+.l-bord {
+	border-left: 1px solid $separator-color; 
+}
+
+.menu_wrap a.current{
+	position: relative;
+	background-color: #25292d;
+}
+
+.menu_wrap a.current:after{
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background-color: #57a3ea;
+}
+
+.tiled_item_bg {
+	border: 2px solid $content-bg;
+	border-bottom: none;
+	background: $content-bg
+}
+
+#section_tabs a {
+	color: $default-text-color
+}
+
+.external-player {
+	position: relative
+}
+
+.external-player:before {
+	background-color: $video-wrap-bg;
+	padding-top: 56.25%;
+	content: '';
+	display: block;
+}
+
+.external-player iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}

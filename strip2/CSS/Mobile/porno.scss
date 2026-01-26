@@ -1,0 +1,38 @@
+@use "Common/Theme" as *;
+#mobtop {
+	display: inline-block;
+	padding: 4px 0px;
+}
+
+.menu_wrap a {
+	font-weight: bold;
+}
+
+.l-bord {
+	border-left: 1px solid $separator-color; 
+}
+
+.menu_wrap a.current{
+	position: relative;
+	background-color: $header-link-selected-bg;
+}
+
+.menu_wrap a.current:after{
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background-color: $header-link-selected-border;
+}
+
+.tiled_item_bg {
+	border: 2px solid $content-bg;
+	border-bottom: none;
+	background: $content-bg
+}
+
+#section_tabs a {
+	color: $default-text-color
+}
