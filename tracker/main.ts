@@ -38,7 +38,7 @@ for (const source of sources) {
 }
 
 const stats = trackerStats.stats
-if (!stats.isChanged) {
+if (stats.isNotChanged) {
   console.log('No files changed in any source. Exiting without commit.')
   process.exit(0)
 }

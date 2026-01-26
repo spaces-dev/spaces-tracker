@@ -9,9 +9,9 @@ class TrackerStats {
   private failed: { path: string, error: string }[] = []
 
   get stats(): Stats {
-    const isChanged = this.changed.length !== 0
-      || this.added.length !== 0
-      || this.failed.length === 0
+    const isNotChanged = this.changed.length === 0
+      && this.added.length === 0
+      && this.removed.length === 0
 
     return {
       startTime: this.startTime,
@@ -19,7 +19,7 @@ class TrackerStats {
       added: this.added,
       failed: this.failed,
       removed: this.removed,
-      isChanged,
+      isNotChanged,
     }
   }
 

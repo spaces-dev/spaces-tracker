@@ -60,21 +60,7 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
 }
 
 export async function generateChangelog(stats: Stats) {
-  const isChangedRevisionsOnly = stats.changed.length === 0
-    && stats.added.length === 0
-    && stats.removed.length === 0
-
-  const lines = [
-    isChangedRevisionsOnly
-      ? `chore: Changed revisions.json`
-      : `chore: Changed ${stats.changed.length + stats.added.length} file(s)`,
-  ]
-
-  if (isChangedRevisionsOnly) {
-    const message = `\nNo files changed in revisions 🤷‍♂️`
-    lines.push(message)
-    console.log(message)
-  }
+  const lines = [`chore: Changed ${stats.changed.length + stats.added.length} file(s)`]
 
   if (stats.added.length > 0) {
     lines.push(`\nAdded files (${stats.added.length}):`)
@@ -119,15 +105,13 @@ export async function generateChangelog(stats: Stats) {
     lines.push(PRE_CLOSE)
   }
 
-  if (!isChangedRevisionsOnly) {
-    const diff = await getGitDiff()
-    const { summary, model } = await generateAiSummary(diff)
-    if (summary) {
-      lines.push(model ? `\nSummary (${model}):` : '\nSummary:')
-      lines.push(BLOCKQUOTE_OPEN)
-      lines.push(summary.trim())
-      lines.push(BLOCKQUOTE_CLOSE)
-    }
+  const diff = await getGitDiff()
+  const { summary, model } = await generateAiSummary(diff)
+  if (summary) {
+    lines.push(model ? `\nSummary (${model}):` : '\nSummary:')
+    lines.push(BLOCKQUOTE_OPEN)
+    lines.push(summary.trim())
+    lines.push(BLOCKQUOTE_CLOSE)
   }
 
   const duration = `\nDuration: ${((Date.now() - stats.startTime) / 1000).toFixed(2)}s`
