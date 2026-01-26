@@ -54,7 +54,7 @@ export async function generateChangelog(stats: Stats) {
   const lines = [
     isChangedRevisionsOnly
       ? `chore: Changed revisions.json`
-      : `chore: Changed ${stats.changed.length} file(s)`,
+      : `chore: Changed ${stats.changed.length + stats.added.length} file(s)`,
   ]
 
   if (isChangedRevisionsOnly) {
