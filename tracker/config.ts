@@ -31,6 +31,13 @@ export const Config: TrackerConfig = {
     '**/links.json',
     '**/icons.json',
   ],
+  Models: [
+    'mistralai/devstral-2512:free',
+    'google/gemini-2.0-flash-exp:free',
+    'qwen/qwen3-coder:free',
+    'qwen/qwen3-next-80b-a3b-instruct:free',
+    'xiaomi/mimo-v2-flash:free',
+  ],
   IconsPath: 'icons.json',
   LinksPath: 'links.json',
   RevisionsPath: 'revisions.json',

@@ -59,6 +59,7 @@ export interface TrackerConfig {
   LinksPath: string
   RevisionsPath: string
   GitDiffExclude: string[]
+  Models: string[]
 }
 
 export interface TrackerState {

@@ -1,3 +1,4 @@
+import { Config } from './config.ts'
 import { getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
@@ -6,44 +7,56 @@ const BLOCKQUOTE_CLOSE = '</blockquote>'
 const PRE_OPEN = '<pre language="text">'
 const PRE_CLOSE = '</pre>'
 
-async function generateAiSummary(diff: string): Promise<string> {
+async function generateAiSummary(diff: string): Promise<{ summary: string, model?: string }> {
   if (!process.env.OPENROUTER_API_KEY) {
     console.log('⚠️ OPENROUTER_API_KEY is not set')
-    return ''
+    return { summary: '' }
   }
 
-  try {
-    console.log('🤔 Generating summary...')
+  let lastError = ''
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        // https://openrouter.ai/mistralai/devstral-2512:free
-        model: 'mistralai/devstral-2512:free',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a technical assistant that help with diff analysis. Yout goal is to analyze the code changes and provide a brief summary in Russian using brief technical language for the professionals with russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
-          },
-          { role: 'user', content: diff },
-        ],
-      }),
-    })
+  for (const model of Config.Models) {
+    try {
+      console.log(`🤔 Generating summary with ${model}...`)
 
-    if (!response.ok) {
-      const text = await response.text()
-      return `OpenRouter API error (${response.status}): ${text}`
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a technical assistant that help with diff analysis. Yout goal is to analyze the code changes and provide a brief summary in Russian using brief technical language for the professionals with russian slang. STRICTLY FORBIDDEN: Markdown formatting, bullet points, tables, and special characters (*, |, #, _). Output only the plain text summary.',
+            },
+            { role: 'user', content: diff },
+          ],
+        }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(`OpenRouter API error (${response.status}): ${text}`)
+      }
+
+      const data = await response.json()
+      const summary = data.choices?.[0]?.message?.content || ''
+      if (summary) {
+        return {
+          summary,
+          model,
+        }
+      }
+    } catch (error: any) {
+      console.error(`Failed to generate summary with ${model}:`, error.message)
+      lastError = error.message
     }
-
-    const data = await response.json()
-    return data.choices?.[0]?.message?.content || ''
-  } catch (error) {
-    return `Failed to generate summary: ${error}`
   }
+
+  return { summary: `Failed to generate summary: ${lastError}` }
 }
 
 export async function generateChangelog(stats: Stats) {
@@ -108,9 +121,9 @@ export async function generateChangelog(stats: Stats) {
 
   if (!isChangedRevisionsOnly) {
     const diff = await getGitDiff()
-    const summary = await generateAiSummary(diff)
+    const { summary, model } = await generateAiSummary(diff)
     if (summary) {
-      lines.push('\nSummary:')
+      lines.push(model ? `\nSummary (${model}):` : '\nSummary:')
       lines.push(BLOCKQUOTE_OPEN)
       lines.push(summary.trim())
       lines.push(BLOCKQUOTE_CLOSE)
