@@ -1,8 +1,10 @@
 import { getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
-const TAG_OPEN = '<blockquote expandable>'
-const TAG_CLOSE = '</blockquote>'
+const BLOCKQUOTE_OPEN = '<blockquote expandable>'
+const BLOCKQUOTE_CLOSE = '</blockquote>'
+const PRE_OPEN = '<pre language="text">'
+const PRE_CLOSE = '</pre>'
 
 async function generateAiSummary(diff: string): Promise<string> {
   if (!process.env.OPENROUTER_API_KEY) {
@@ -63,45 +65,45 @@ export async function generateChangelog(stats: Stats) {
 
   if (stats.added.length > 0) {
     lines.push(`\nAdded files (${stats.added.length}):`)
-    lines.push(TAG_OPEN)
+    lines.push(PRE_OPEN)
     const formattedAdded = formatTable(stats.added.map(file => ({
       path: file.path,
       size: file.fileSize,
     })))
     lines.push(...formattedAdded)
-    lines.push(TAG_CLOSE)
+    lines.push(PRE_CLOSE)
   }
 
   if (stats.changed.length > 0) {
     lines.push(`\nChanged files (${stats.changed.length}):`)
-    lines.push(TAG_OPEN)
+    lines.push(PRE_OPEN)
     const formattedChanged = formatTable(stats.changed.map(file => ({
       path: file.path,
       size: file.fileSize,
       date: file.lastCommitDate,
     })))
     lines.push(...formattedChanged)
-    lines.push(TAG_CLOSE)
+    lines.push(PRE_CLOSE)
   }
 
   if (stats.removed.length > 0) {
     lines.push(`\nRemoved files (${stats.removed.length}):`)
-    lines.push(TAG_OPEN)
+    lines.push(PRE_OPEN)
     for (const file of stats.removed) {
       lines.push(file)
     }
-    lines.push(TAG_CLOSE)
+    lines.push(PRE_CLOSE)
   }
 
   if (stats.failed.length > 0) {
     lines.push(`\nFailed downloads (${stats.failed.length}):`)
-    lines.push(TAG_OPEN)
+    lines.push(PRE_OPEN)
     const formattedFailed = formatTable(stats.failed.map(file => ({
       path: file.path,
       size: file.error,
     })))
     lines.push(...formattedFailed)
-    lines.push(TAG_CLOSE)
+    lines.push(PRE_CLOSE)
   }
 
   if (!isChangedRevisionsOnly) {
@@ -109,9 +111,9 @@ export async function generateChangelog(stats: Stats) {
     const summary = await generateAiSummary(diff)
     if (summary) {
       lines.push('\nSummary:')
-      lines.push(TAG_OPEN)
+      lines.push(BLOCKQUOTE_OPEN)
       lines.push(summary.trim())
-      lines.push(TAG_CLOSE)
+      lines.push(BLOCKQUOTE_CLOSE)
     }
   }
 
@@ -120,8 +122,10 @@ export async function generateChangelog(stats: Stats) {
   lines.push(duration)
 
   const commitMessage = lines.join('\n')
-    .replaceAll(`${TAG_OPEN}\n`, '')
-    .replaceAll(TAG_CLOSE, '')
+    .replaceAll(`${BLOCKQUOTE_OPEN}\n`, '')
+    .replaceAll(BLOCKQUOTE_CLOSE, '')
+    .replaceAll(`${PRE_OPEN}\n`, '')
+    .replaceAll(PRE_CLOSE, '')
 
   const telegramMessage = splitTelegramMessage(lines.slice(1).join('\n'))
 
@@ -176,35 +180,44 @@ const MESSAGE_LIMIT = 3900
 function splitTelegramMessage(message: string): string[] {
   const chunks: string[] = []
   let currentChunk = ''
-  let insidePre = false
+  let currentOpenTag: string | null = null
 
   const lines = message.split('\n')
 
+  const getClosingTag = (openTag: string) => {
+    if (openTag === BLOCKQUOTE_OPEN) return BLOCKQUOTE_CLOSE
+    if (openTag === PRE_OPEN) return PRE_CLOSE
+    return ''
+  }
+
   for (const line of lines) {
-    const hasPreOpen = line.includes(TAG_OPEN)
-    const hasPreClose = line.includes(TAG_CLOSE)
+    let newOpenTag: string | null = null
+    if (line.includes(BLOCKQUOTE_OPEN)) newOpenTag = BLOCKQUOTE_OPEN
+    else if (line.includes(PRE_OPEN)) newOpenTag = PRE_OPEN
+
+    const isClosing = line.includes(BLOCKQUOTE_CLOSE) || line.includes(PRE_CLOSE)
 
     const potentialChunk = currentChunk + (currentChunk ? '\n' : '') + line
 
     if (potentialChunk.length > MESSAGE_LIMIT) {
-      if (insidePre) {
-        currentChunk += TAG_CLOSE
+      if (currentOpenTag) {
+        currentChunk += getClosingTag(currentOpenTag)
       }
 
       chunks.push(currentChunk)
 
-      currentChunk = insidePre ? `${TAG_OPEN}\n${line}` : line
+      currentChunk = currentOpenTag ? `${currentOpenTag}\n${line}` : line
     } else {
       currentChunk = potentialChunk
     }
 
-    if (hasPreOpen) insidePre = true
-    if (hasPreClose) insidePre = false
+    if (newOpenTag) currentOpenTag = newOpenTag
+    if (isClosing) currentOpenTag = null
   }
 
   if (currentChunk) {
-    if (insidePre) {
-      currentChunk += `\n${TAG_CLOSE}`
+    if (currentOpenTag) {
+      currentChunk += `\n${getClosingTag(currentOpenTag)}`
     }
     chunks.push(currentChunk)
   }
