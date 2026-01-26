@@ -1,0 +1,18 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+@use "spacepack/build/variables" as *;
+
+.cat_removable				{border: solid 1px $default-border-color; border-radius: 5px; padding: 2px 5px; display: inline-block; margin-bottom: 1px;}
+.cat_removable button		{border: none}
+.status_set_btn				{display: inline-block; padding: 2px 5px; margin: 5px 0; border-style: solid; border-width: 1px;}
+.status_set_btn[disabled]	{background-color: $xxx-moderation-button-disabled-bg}
+.status_set_btn_accept		{color: $xxx-moderation-button-accept-bg; border-color: $xxx-moderation-button-accept-bg; background-color: $xxx-moderation-button-accept-bg}
+.status_set_btn_decline		{color: $xxx-moderation-button-decline-bg; border-color: $xxx-moderation-button-decline-bg; background-color: $xxx-moderation-button-decline-bg}
+.status_set_btn_block		{color: $xxx-moderation-button-block-bg; border-color: $xxx-moderation-button-block-bg; background-color: $xxx-moderation-button-block-bg}
+.status_set_btn_current		{color: $xxx-moderation-button-active-text-color;}
+.status_set_btn_avail		{background-color: inherit;}
+
+.xxx_moderation_item .tiles_block,
+.js-moder-content-item .tiles_block {
+	padding: 0
+}
