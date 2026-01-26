@@ -1,9 +1,0 @@
-@use "Common/Utils" as *;
-
-@include define-sprite("ico_porn") {
-	/*!__PURE__*/ display: inline-block;
-	/*!__PURE__*/ margin-right: $icon-right-margin;
-	@include icon-middle-align(16);
-	@include icon-active-state("ico_porn", "black");
-	@include icon-hover-state("ico_porn", "blue", "black");
-}
