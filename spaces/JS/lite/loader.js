@@ -117,6 +117,10 @@ __require_config		|	Конфиг загрузчика
 					if (!modules_loading[name]) {
 						modules_loading[name] = [];
 						
+						// adblock блокирует ads/mobiads в js-fixes-experimental.txt
+						if (!modules_loading[name])
+							continue;
+
 						if (!define_defer[name] && name.indexOf('.css') > 0) {
 							loadModuleAsset(name);
 							define_defer[name] = [name, [], {}];
