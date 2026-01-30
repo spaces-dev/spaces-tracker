@@ -7,6 +7,9 @@ import {default as page_loader, HistoryManager} from './ajaxify';
 import notifications from './notifications';
 import {L, tick, numeral, ge} from './utils';
 import {copyToClipboard} from './core/clipboard';
+import { closeAllPoppers, getPopperById } from './widgets/popper';
+
+const MENU_CLOSE_TIMEOUT = 1300;
 
 let AttachSelector;
 
@@ -87,11 +90,9 @@ var tpl = {
 	},
 	menuNotification(status, message) {
 		return `
-			<div class="widgets-group">
-				<div class="comm margin0 ${status == 'error' ? 'red' : 'green'}">
-					${status == 'error' ? '' : '<span class="ico ico_ok_green"></span>'}
-					${message}
-				</div>
+			<div class="content-item3 ${status == 'error' ? 'red' : 'green'}">
+				${status == 'error' ? '' : '<span class="ico ico_ok_green"></span>'}
+				${message}
 			</div>
 		`;
 	}
@@ -163,33 +164,19 @@ var CommentsModule = function (wrap) {
 			if (current.lenta)
 				self.setCounter(0, current.counter[0]);
 			
-			// Меню комментария
-			$(wrap).action('comment_menu_open', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				
-				let el = $(this);
-				let comm = el.parents('.js-comm');
-				self.openMenu(el, comm, "links");
-			})
-			
 			// Форма жалобы
-			.action('comment_complaint', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				
-				let el = $(this);
-				let comm = el.parents('.js-comm');
-				self.openMenu(el, comm, "complaint");
-			})
-			
+			wrap.on('popper:beforeOpen', '.js-comm_complaint_menu', function (e) {
+				const template = wrap.find(`.js-tpl-comments-complaint`);
+				$(this).empty().append(template.children().clone());
+			});
+
 			// Отправка жалобы
-			.action('comment_complaint_send', function (e) {
+			wrap.action('comment_complaint_send', function (e) {
 				e.preventDefault();
 				
 				let el = $(this);
 				let comm = el.parents('.js-comm');
-				let menu = comm.find('.js-comm-menu-complaint');
+				let menu = comm.find('.js-comm_complaint_menu');
 				let cid = comm.data('id');
 				
 				var api_data = {
@@ -230,32 +217,23 @@ var CommentsModule = function (wrap) {
 					} else {
 						menu.html(tpl.menuNotification('error', Spaces.apiError(res)));
 					}
-					setTimeout(() => self.closeMenu(comm), 3000);
-					$('html, body').scrollTo(menu, {position: 'center'});
+					setTimeout(() => closeAllPoppers(), MENU_CLOSE_TIMEOUT);
 				}, {
 					onError(err) {
 						menu.html(tpl.menuNotification('error', err));
-						setTimeout(() => self.closeMenu(comm), 3000);
-						$('html, body').scrollTo(menu, {position: 'center'});
+						setTimeout(() => closeAllPoppers(), MENU_CLOSE_TIMEOUT);
 					}
 				});
-			})
-			
-			// Закрыть меню
-			.action('comment_menu_close', function (e) {
-				e.preventDefault();
-				let comm = $(this).parents('.js-comm');
-				self.closeMenu(comm);
-			})
+			});
 			
 			// Скрытие уведомления
-			.on('click', '.js-comments_notif_close', function (e) {
+			wrap.on('click', '.js-comments_notif_close', function (e) {
 				e.preventDefault();
 				self.showMsg(false);
-			})
+			});
 			
 			// Копирование ссылки
-			.action('comment_link', function (e) {
+			wrap.action('comment_link', function (e) {
 				e.preventDefault();
 				
 				let el = $(this);
@@ -281,13 +259,13 @@ var CommentsModule = function (wrap) {
 				};
 				setStatus(true);
 				setTimeout(() => {
-					let comm = el.parents('.js-comm');
-					self.closeMenu(comm);
+					closeAllPoppers();
 					setStatus(false);
-				}, 1500);
-			})
+				}, MENU_CLOSE_TIMEOUT);
+			});
+
 			// Раскрытие субветки комментариев
-			.action('sub_comments_expand sub_comments_collapse', function (e) {
+			wrap.action('sub_comments_expand sub_comments_collapse', function (e) {
 				e.preventDefault();
 				
 				var el = $(this),
@@ -320,8 +298,58 @@ var CommentsModule = function (wrap) {
 					set_busy(false);
 					Spaces.showError(err);
 				});
-			})
-			
+			});
+
+			// Показ селектора реакций
+			wrap.on('popper:beforeOpen', '.js-comm_menu', function (e) {
+				const comment = $(this).parents('.js-comm');
+				const reactionsList = comment.find('.js-reactions_list');
+				if (!reactionsList.length || reactionsList.data('disabled'))
+					return;
+
+				const objectType = comment.data('type');
+				const objectId = comment.data('id');
+
+				const popperOpener = e.target.closest('.js-comm');
+				const popper = getPopperById(`reactions_selector_${objectType}_${objectId}`);
+				popper.open({
+					placement: "bottom-end",
+					offsetTop: -41,
+					offsetLeft: -9,
+					group: `comment_menu_${objectId}`
+				}, popperOpener);
+			});
+
+			// Обновление кол-ва поставленных реакций
+			wrap.on('reactions:updateCounter', '.js-comm', function (e) {
+				const comment = $(this);
+				const link = comment.find('.js-comm_reactions_users_link');
+				link.find('.js-text').html(numeral(e.detail.count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]));
+				link.toggleClass('hide', e.detail.count == 0);
+			});
+
+			// Открытие меню комментария при закрытии селектора реакций
+			wrap.on('reactions:selectorCollapse', '.js-comm', function () {
+				const comment = $(this);
+				const popper = getPopperById(`comment_menu_${comment.data('id')}`);
+				popper.open();
+			});
+
+			// Список поставивших реакцию
+			wrap.action("reactions_list", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+
+				const button = $(this);
+
+				const objectType = button.data('type');
+				const objectId = button.data('nid');
+
+				const messageMenu = getPopperById(`comment_menu_${objectId}`);
+				const usersListMenu = getPopperById(`reaction_users_${objectType}_${objectId}`);
+				usersListMenu.open({}, messageMenu.opener());
+			});
+
 			// Перевод комментария
 			wrap.on('click', '.js-comment_translate', async (e) => {
 				e.preventDefault();
@@ -379,7 +407,7 @@ var CommentsModule = function (wrap) {
 				}
 			});
 
-			if (!pushstream || !page_loader.ok() || current.disable)
+			if (current.disable)
 				return;
 			
 			wrap.on('click', '.js-comments_subscribe', function (e) {
@@ -459,25 +487,6 @@ var CommentsModule = function (wrap) {
 					import("./form_toolbar").then(function ({default: Toolbar}) {
 						Toolbar.expand(form, true);
 					});
-				}
-			}).on('click', '.js-comm_compl', function (e) {
-				e.preventDefault();
-				var el = $(this),
-					comm = el.parents('.js-comm'),
-					comm_id = comm.data("id"),
-					compl_div = wrap.find('.js-tpl-comments_compl'),
-					need_open = compl_div.data('id') != comm_id;
-				self.resetReplyForm();
-				if (need_open) {
-					var root_id = self.getRootIdFromParent(el);
-					
-					var sibling = comm;
-					if (root_id && !comm.next().length)
-						sibling = $('#sub_' + root_id);
-					
-					sibling.after(compl_div.data("id", comm_id));
-					comm.addClass('comm-menu_opened');
-					el.addClass('link_active');
 				}
 			}).on('click', '.js-comm_close', function (e) {
 				e.preventDefault();
@@ -800,45 +809,6 @@ var CommentsModule = function (wrap) {
 		showMsg: function (text) {
 			wrap.find(current.sort[0] ? '.js-comments_top_notif' : '.js-comments_bottom_notif')
 				.toggleClass('hide', !text).html(tpl.notif(text));
-		},
-		closeMenu(comm) {
-			let opened_menu = comm.data('openedMenu');
-			if (opened_menu) {
-				opened_menu.link.removeClass('js-clicked');
-				opened_menu.menu.addClass('hide');
-				comm.data('openedMenu', false);
-			}
-			
-			$('body').off(`click.comm${comm.data('id')}`);
-		},
-		openMenu(link, comm, menu_id) {
-			let self = this;
-			let opened_menu = comm.data('openedMenu');
-			if (opened_menu && opened_menu.id == menu_id) {
-				// Нажали второй раз по "..." для закрытия меню
-				self.closeMenu(comm);
-			} else {
-				// Закрываем предыдущее меню
-				self.closeMenu(comm);
-				
-				// Закрытие по свободному клику
-				$('body').on(`click.comm${comm.data('id')}`, (e) => {
-					if (!$(e.target).parents('.spoiler_inject').length)
-						self.closeMenu(comm);
-				});
-				
-				// Открываем новое
-				let menu = comm.find(`.js-comm-menu-${menu_id}`);
-				menu.removeClass('hide');
-				link.addClass('js-clicked');
-				
-				// Копируем шаблон меню
-				let template = wrap.find(`.js-tpl-comments-${menu_id}`);
-				if (template.length)
-					menu.empty().append(template.children().clone());
-				
-				comm.data('openedMenu', {id: menu_id, link, menu});
-			}
 		},
 		initDelete: function () {
 			var self = this;
@@ -1277,9 +1247,6 @@ var CommentsModule = function (wrap) {
 							self.setCommonCounter(current.commentsCnt + last_deleted_comment.cnt);
 						}
 						
-						// Закроем меню
-						self.closeMenu($('#c' + last_deleted_comment.id));
-						
 						// Удаляем спиннер
 						remove_spinner($('#c' + last_deleted_comment.id));
 						self.removeRestoreComment();
@@ -1560,7 +1527,6 @@ var CommentsModule = function (wrap) {
 			var compl = wrap.find('.js-tpl-comments_compl').removeData();
 			compl.find('.ico_spinner').removeClass('ico_spinner');
 			wrap.find('.js-comments-tpl').append(compl);
-			wrap.find('.js-comm_compl.link_active').removeClass('link_active');
 			
 			import("./form_toolbar").then(function ({default: Toolbar}) {
 				Toolbar.expand(form, false);
