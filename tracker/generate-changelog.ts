@@ -4,7 +4,7 @@ import type { Stats } from './types.ts'
 
 const BLOCKQUOTE_OPEN = '<blockquote expandable>'
 const BLOCKQUOTE_CLOSE = '</blockquote>'
-const PRE_OPEN = '<pre language="text">'
+const PRE_OPEN = '<pre>'
 const PRE_CLOSE = '</pre>'
 
 async function generateAiSummary(diff: string): Promise<{ summary: string, model?: string }> {
@@ -63,64 +63,61 @@ export async function generateChangelog(stats: Stats) {
   const lines = [`chore: Changed ${stats.changed.length + stats.added.length} file(s)`]
 
   if (stats.changed.length > 0) {
-    lines.push(`\nChanged files (${stats.changed.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(`Changed files (${stats.changed.length}):`)
     const formattedChanged = formatTable(stats.changed.map(file => ({
       path: file.path,
       size: file.fileSize,
       date: file.lastCommitDate,
     })))
-    lines.push(...formattedChanged)
+    lines.push(PRE_OPEN + formattedChanged[0])
+    lines.push(...formattedChanged.slice(1))
     lines.push(PRE_CLOSE)
   }
 
   if (stats.added.length > 0) {
-    lines.push(`\nAdded files (${stats.added.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(`Added files (${stats.added.length}):`)
     const formattedAdded = formatTable(stats.added.map(file => ({
       path: file.path,
       size: file.fileSize,
     })))
-    lines.push(...formattedAdded)
+    lines.push(PRE_OPEN + formattedAdded[0])
+    lines.push(...formattedAdded.slice(1))
     lines.push(PRE_CLOSE)
   }
 
   if (stats.removed.length > 0) {
-    lines.push(`\nRemoved files (${stats.removed.length}):`)
-    lines.push(PRE_OPEN)
-    for (const file of stats.removed) {
-      lines.push(file)
-    }
+    lines.push(`Removed files (${stats.removed.length}):`)
+    lines.push(PRE_OPEN + stats.removed[0])
+    lines.push(...stats.removed.slice(1))
     lines.push(PRE_CLOSE)
   }
 
   if (stats.failed.length > 0) {
-    lines.push(`\nFailed downloads (${stats.failed.length}):`)
-    lines.push(PRE_OPEN)
+    lines.push(`Failed downloads (${stats.failed.length}):`)
     const formattedFailed = formatTable(stats.failed.map(file => ({
       path: file.path,
       size: file.error,
     })))
-    lines.push(...formattedFailed)
+    lines.push(PRE_OPEN + formattedFailed[0])
+    lines.push(...formattedFailed.slice(1))
     lines.push(PRE_CLOSE)
   }
 
   const diff = await getGitDiff()
   const { summary, model } = await generateAiSummary(diff)
   if (summary) {
-    lines.push(model ? `\nSummary (${model}):` : '\nSummary:')
-    lines.push(BLOCKQUOTE_OPEN)
-    lines.push(summary.trim())
+    lines.push(model ? `Summary (${model}):` : 'Summary:')
+    lines.push(BLOCKQUOTE_OPEN + summary.trim())
     lines.push(BLOCKQUOTE_CLOSE)
   }
 
   const commitMessage = lines.join('\n')
-    .replaceAll(`${BLOCKQUOTE_OPEN}\n`, '')
+    .replaceAll(BLOCKQUOTE_OPEN, '')
     .replaceAll(BLOCKQUOTE_CLOSE, '')
-    .replaceAll(`${PRE_OPEN}\n`, '')
+    .replaceAll(PRE_OPEN, '')
     .replaceAll(PRE_CLOSE, '')
 
-  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\b'))
+  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\n'))
 
   return {
     commitMessage,
