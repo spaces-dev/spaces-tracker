@@ -62,17 +62,6 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
 export async function generateChangelog(stats: Stats) {
   const lines = [`chore: Changed ${stats.changed.length + stats.added.length} file(s)`]
 
-  if (stats.added.length > 0) {
-    lines.push(`\nAdded files (${stats.added.length}):`)
-    lines.push(PRE_OPEN)
-    const formattedAdded = formatTable(stats.added.map(file => ({
-      path: file.path,
-      size: file.fileSize,
-    })))
-    lines.push(...formattedAdded)
-    lines.push(PRE_CLOSE)
-  }
-
   if (stats.changed.length > 0) {
     lines.push(`\nChanged files (${stats.changed.length}):`)
     lines.push(PRE_OPEN)
@@ -82,6 +71,17 @@ export async function generateChangelog(stats: Stats) {
       date: file.lastCommitDate,
     })))
     lines.push(...formattedChanged)
+    lines.push(PRE_CLOSE)
+  }
+
+  if (stats.added.length > 0) {
+    lines.push(`\nAdded files (${stats.added.length}):`)
+    lines.push(PRE_OPEN)
+    const formattedAdded = formatTable(stats.added.map(file => ({
+      path: file.path,
+      size: file.fileSize,
+    })))
+    lines.push(...formattedAdded)
     lines.push(PRE_CLOSE)
   }
 
@@ -114,17 +114,13 @@ export async function generateChangelog(stats: Stats) {
     lines.push(BLOCKQUOTE_CLOSE)
   }
 
-  const duration = `\nDuration: ${((Date.now() - stats.startTime) / 1000).toFixed(2)}s`
-  console.log(duration)
-  lines.push(duration)
-
   const commitMessage = lines.join('\n')
     .replaceAll(`${BLOCKQUOTE_OPEN}\n`, '')
     .replaceAll(BLOCKQUOTE_CLOSE, '')
     .replaceAll(`${PRE_OPEN}\n`, '')
     .replaceAll(PRE_CLOSE, '')
 
-  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\n'))
+  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\b'))
 
   return {
     commitMessage,

@@ -1,8 +1,10 @@
-import type { SourcemapFile, SourcemapResponse, Stats } from './types.ts'
+import type {
+  SourcemapFile,
+  SourcemapResponse,
+  Stats,
+} from './types.ts'
 
 class TrackerStats {
-  private startTime = Date.now()
-
   private changed: SourcemapFile[] = []
   private added: SourcemapFile[] = []
   private removed: string[] = []
@@ -14,7 +16,6 @@ class TrackerStats {
       && this.removed.length === 0
 
     return {
-      startTime: this.startTime,
       changed: this.changed,
       added: this.added,
       failed: this.failed,

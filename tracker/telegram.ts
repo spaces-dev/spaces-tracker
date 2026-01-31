@@ -24,7 +24,10 @@ export async function sendTelegramMessage(
   return data
 }
 
-export async function sendNotifications(commitSha: string, messageChunks: string[]) {
+export async function sendNotifications(
+  commitSha: string,
+  messageChunks: string[],
+) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
 

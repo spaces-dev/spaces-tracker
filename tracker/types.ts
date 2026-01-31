@@ -13,7 +13,6 @@ export interface SourcemapResponse {
 }
 
 export interface Stats {
-  startTime: number
   isNotChanged: boolean
   changed: SourcemapFile[]
   added: SourcemapFile[]
