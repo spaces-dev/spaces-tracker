@@ -2,17 +2,21 @@ export async function sendTelegramMessage(
   token: string,
   chatId: string,
   text: string,
+  replyMarkup: object,
 ) {
-  const params = new URLSearchParams({
+  const params: Record<string, string> = {
     chat_id: chatId,
     text,
     parse_mode: 'html',
     disable_web_page_preview: 'true',
-  })
+    reply_markup: JSON.stringify(replyMarkup),
+  }
+
+  const body = new URLSearchParams(params)
 
   const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
-    body: params,
+    body,
   })
 
   const data = await response.json()
@@ -39,13 +43,23 @@ export async function sendNotifications(
   const repo = process.env.REPOSITORY
   const repoUrl = `https://github.com/${repo}`
   const commitUrl = `${repoUrl}/commit/${commitSha}`
-  const messageHeader = `<a href="${repoUrl}">${repo}</a> • <a href="${commitUrl}">${commitSha}</a>`
+
+  const keyboard = {
+    inline_keyboard: [
+      [
+        { text: 'GitHub', url: repoUrl },
+        { text: `Commit`, url: commitUrl },
+      ],
+    ],
+  }
 
   for (let i = 0; i < messageChunks.length; i++) {
-    let message = messageChunks[i]
-    if (i === 0) {
-      message = `${messageHeader}\n\n${message}`
-    }
-    await sendTelegramMessage(botToken, chatId, message)
+    const message = messageChunks[i]
+    await sendTelegramMessage(
+      botToken,
+      chatId,
+      message,
+      keyboard,
+    )
   }
 }
