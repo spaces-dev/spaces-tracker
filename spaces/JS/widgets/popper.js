@@ -479,8 +479,10 @@ export function getPopperByOpener(opener) {
 
 export function getPopperById(popperId) {
 	const popperElement = document.querySelector(`#${popperId}`);
-	if (!popperElement)
-		throw new Error(`Popper not found: ${popperId}`);
+	if (!popperElement) {
+		console.error(`Popper not found: ${popperId}`);
+		return undefined;
+	}
 	let popperInstance = popperInstances.get(popperElement);
 	if (!popperInstance) {
 		popperInstance = new Popper(popperElement, {});
