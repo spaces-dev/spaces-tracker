@@ -117,6 +117,9 @@ function hideHotInfo() {
 		return;
 	}
 
+	if (!hotInfoPopper)
+		return;
+
 	if (!hideTimerId) {
 		hideTimerId = setTimeout(() => {
 			hideTimerId = undefined;

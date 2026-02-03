@@ -327,6 +327,9 @@ var tpl = {
 		return L('Добавление файлов в сообщество запрещено.') + '<br />' + 
 			L('Чтобы прикрепить новый файл, воспользуйтесь вкладкой {0} вверху страницы.',
 			'<a href="#" class="js-attach_source" data-source="user">' + L("Мои файлы") + '</a> ');
+	},
+	popper({ flat }) {
+		return `<div class="js-popper_content widgets-group ${flat ? 'dropdown-menu' : ''}"></div>`;
 	}
 };
 
@@ -939,7 +942,9 @@ MAttachSelector = Class({
 			self.form.append(menuElement);
 		}
 
-		$('#' + menuId).append(`<div class="js-popper_content widgets-group"></div>`);
+		// FIXME: тоже костыль из 2015-го
+		const menuElement = $('#' + menuId);
+		menuElement.append(tpl.popper({ flat: !menuElement.data('wrap') }));
 
 		for (const link of self.link) {
 			link.classList.add('js-popper_open');
