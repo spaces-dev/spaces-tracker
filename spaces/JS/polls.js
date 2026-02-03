@@ -4,10 +4,10 @@ import Device from './device';
 import {Spaces, Url, Codes} from './spacesLib';
 import page_loader from './ajaxify';
 import {HistoryManager} from './ajaxify';
-import DdMenu from './dd_menu';
 
 import './form_tools';
 import {tick, L, numeral} from './utils';
+import { closeAllPoppers } from './widgets/popper';
 
 let form, params, poll_id, menu_opened, flag = false;
 
@@ -18,19 +18,18 @@ function init() {
 	menu_opened = false;
 	poll_id = form.find('[name="poll_id"]');
 	
-	form
-	.on('keypress', 'input', function (e) {
+	form.on('keypress', 'input', function (e) {
 		if (e.keyCode == Spaces.KEYS.ENTER || e.keyCode == Spaces.KEYS.MAC_ENTER) {
 			e.stopPropagation();
 			e.preventDefault();
 		}
 	})
 	// Скрытие и показ кнопки при открытии или закрытии окна создания опроса
-	.on('dd_menu_opened', '#polls_form_dd', function () {
+	.on('popper:beforeOpen', '#polls_form_dd', function () {
 		menu_opened = true;
 		updateState();
 	})
-	.on('dd_menu_closed', '#polls_form_dd', function () {
+	.on('popper:afterClose', '#polls_form_dd', function () {
 		menu_opened = false;
 		updateState();
 	})
@@ -70,7 +69,7 @@ function init() {
 		Spaces.api("polls.delete", {CK: null, Pid: poll_id.val()});
 		setPollId(0);
 		updateState();
-		DdMenu.close();
+		closeAllPoppers();
 	})
 	// Сохранение опроса
 	.on('click', '.js-poll_save', function (e) {
@@ -139,7 +138,7 @@ function init() {
 					form.find('.js-poll_variants_cnt').text(res.variantsCntString);
 					setPollId(res.pollId);
 					updateState();
-					DdMenu.close();
+					closeAllPoppers();
 				}
 			}, {
 				onError: function (err) {

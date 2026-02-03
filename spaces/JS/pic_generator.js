@@ -44,7 +44,7 @@ const tpl = {
 				${error}
 			</div>
 			<div class="links-group content-bl__top_sep t_center">
-				<a href="#" class="list-link list-link-grey js-dd_menu_close">
+				<a href="#" class="list-link list-link-grey js-popper_close">
 					<span class="js-ico ico ico_remove"></span> ${L('Закрыть')}
 				</a>
 			</div>
@@ -79,7 +79,7 @@ const tpl = {
 		
 		return `
 			<div data-screen="generator-form" class="error__item_wrapper">
-				<div class="content-bl__top_sep js-pic_gen_form"></div>
+				<div class="js-pic_gen_form"></div>
 
 				<div class="content-bl__top_sep js-pic_gen_balance_widget"></div>
 				
@@ -123,7 +123,7 @@ const tpl = {
 						<span class="js-ico ico ico_reload"></span>
 						${L('Создать другую картинку')}
 					</a>
-					<a href="#" class="list-link list-link-grey js-dd_menu_close">
+					<a href="#" class="list-link list-link-grey js-popper_close">
 						<span class="js-ico ico ico_remove"></span>
 						${L('Закрыть')}
 					</a>

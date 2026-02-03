@@ -11,7 +11,6 @@ import {Notifications} from './notifications';
 import GALLERY from './gallery';
 import AttachSelector from './widgets/attach_selector';
 
-import DdMenu from './dd_menu';
 import './form_toolbar';
 import {L, html_wrap, ge, numeral, tick, throttle} from './utils';
 import { closeVoiceRecoder, destroyVoiceMessages, initVoiceMessages, startVoiceRecording, stopVoiceRecording } from './mail/voice-messages';
@@ -1250,7 +1249,7 @@ var mailCore = {
 				if (for_all)
 					msg = messagesLength > 1 ? L('Сообщения удалены у вас и у собеседника') : L('Сообщение удалено у вас и у собеседника');
 				
-				DdMenu.close();
+				closeAllPoppers();
 				mailCore.callbackAction(msg, 'message', data.messages, response);
 			}
 		});
@@ -1320,7 +1319,6 @@ var mailServices = {
 			const popperOpener = e.target.closest('.js-message');
 			const popper = getPopperById(`reactions_selector_${objectType}_${objectId}`);
 			popper.open({
-				type: "toolbar",
 				placement: "bottom-end",
 				offsetTop: -41,
 				offsetLeft: -9,
@@ -2779,7 +2777,7 @@ var mailTemplates = {
 
 		html +=
 			'>' +
-			'<a class="list-link list-link_single t_center triangle-show triangle-show_top" href="javascript: void();">+ ' + newMessagesCnt + " " + numeral(newMessagesCnt, [L('новое сообщение'), L('новых сообщения'), L('новых сообщений')]) + '</a>' +
+			'<a class="list-link list-link_single t_center" href="javascript: void();">+ ' + newMessagesCnt + " " + numeral(newMessagesCnt, [L('новое сообщение'), L('новых сообщения'), L('новых сообщений')]) + '</a>' +
 			'</div>';
 		return html;
 	}

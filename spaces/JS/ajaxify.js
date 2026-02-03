@@ -333,9 +333,7 @@ var PageLoader = Class({
 			}
 			
 			if (self.loadPage({url: this.href, app: android_app, el: this})) {
-				e.stopImmediatePropagation();
 				e.preventDefault();
-				e.stopPropagation();
 				return false;
 			}
 			
@@ -356,9 +354,7 @@ var PageLoader = Class({
 				return true;
 			
 			if (self.loadPage({url: this.action, form: this, el: this})) {
-				e.stopImmediatePropagation();
 				e.preventDefault();
-				e.stopPropagation();
 				return false;
 			}
 			

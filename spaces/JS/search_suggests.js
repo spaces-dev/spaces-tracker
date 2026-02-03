@@ -4,7 +4,6 @@ import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
 import fixPageHeight from './min_height';
-import DdMenu from './dd_menu';
 
 import './select_item';
 import {html_wrap} from './utils';
@@ -267,16 +266,7 @@ var SearchSuggests = {
 		var self = this;
 		state.list.empty().removeClass('suggest__list_on');
 		fixPageHeight();
-		self._restoreTriangles();
 		self.cancelRequest();
-	},
-	_restoreTriangles: function () {
-		if (state.triangles) {
-			$.each(state.triangles, function () {
-				this.removeClass('triangle-hide');
-			});
-			delete state.triangles;
-		}
 	},
 	submitForm: function () {
 		if (state.autoSubmit) {
@@ -359,27 +349,6 @@ var SearchSuggests = {
 							self.hideSuggests();
 						}
 						
-						// Костыли для ddmenu
-						var menu = state.list.parents('.dropdown-menu__wrap');
-						if (menu.length) {
-							self._restoreTriangles();
-							var links = DdMenu.findOpeners(menu.attr("id"));
-							for (var i = 0; i < links.length; ++i) {
-								var link = $(links[i]);
-								if (link.hasClass('triangle-show_top')) {
-									var max_y = state.list.offset().top + state.list.outerHeight();
-									if (link.offset().top <= max_y) {
-										if (!link.hasClass('triangle-hide')) {
-											if (!state.triangles)
-												state.triangles = [];
-											state.triangles.push(link);
-											link.addClass('triangle-hide');
-										}
-									}
-									// link.addClass('triangle-hide');
-								}
-							}
-						}
 						state.last_api_result = res;
 						state.last_result = results;
 					}

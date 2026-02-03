@@ -1,12 +1,12 @@
 import module from 'module';
 import $ from '../jquery';
 import Spaces from '../spacesLib';
-import DdMenu from '../dd_menu';
 
 import '../form_controls';
 import { L } from '../utils';
 
 import dayjs from 'dayjs';
+import { closeAllPoppers } from '../widgets/popper';
 
 const WEEK_DAYS = [L('Пн'), L('Вт'), L('Ср'), L('Чт'), L('Пт'), L('Сб'), L('Вс')];
 const WEEK_NUM = [6, 0, 1, 2, 3, 4, 5];
@@ -270,7 +270,7 @@ function clampDateRange(root, date) {
 }
 
 module.on('componentpage', () => {
-	$('#main').on('dd_menu_open', '.js-date_picker', function () {
+	$('#main').on('popper:beforeOpen', '.js-date_picker', function () {
 		const root = $(this);
 
 		root.data('date', getSelectedDate(root));
@@ -318,7 +318,7 @@ module.on('componentpage', () => {
 				} else {
 					root.data('date', root.data('date').date(val));
 					setSelectedDate(root, root.data('date'));
-					DdMenu.close();
+					closeAllPoppers();
 				}
 			});
 		}

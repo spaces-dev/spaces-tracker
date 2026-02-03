@@ -16,11 +16,12 @@ $text-input-height: calc(1.15em + 9px * 2);
 	margin-right:0 !important;
 }
 
-.url-btn{
+.url-btn {
 	vertical-align: middle;
     display: inline-block;
     padding: 4px;
-    outline: 0
+    outline: 0;
+	--popper-arrow-offset: -4;
 }
 
 .js-clicked .url-btn {
@@ -747,12 +748,18 @@ input[type="reset"].btn_ico,
 }
 
 .btn-light,
-.btn-tools{
+.btn-tools {
 	width: 49px;
 	height: 16px;
 	padding: 11px 0;
 	border: 1px solid $default-border-color;
 	border-right-width: 0;
+	--popper-arrow-offset: -11;
+}
+
+// Да кто такой этот ваш BEM :(
+.btn-light.user__tools-link {
+	--popper-arrow-offset: 0;
 }
 
 .action-bar .btn-light,
@@ -959,6 +966,7 @@ form{
 	transform: translateY(-50%);
 	display: flex;
 	align-items: center;
+	justify-content: center;
 }
 
 .btn-tools_centered-indent {

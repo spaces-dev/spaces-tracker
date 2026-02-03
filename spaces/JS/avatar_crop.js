@@ -1,10 +1,10 @@
 import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
-import DdMenu from './dd_menu';
 import './anim';
 import './draggable';
 import {L, pad, tick} from './utils';
+import { closeAllPoppers } from './widgets/popper';
 
 var crop_window,
 	MIN_CROP_SIZE = 100,
@@ -69,7 +69,7 @@ var tpl = {
 							'</a>' + 
 						'</td>' + 
 						'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
-							'<a href="#" class="list-link js-dd_menu_close">' + 
+							'<a href="#" class="list-link js-popper_close">' +
 								'<span class="t">' + L('Отмена') + '</span>' + 
 							'</a>' + 
 						'</td>' + 
@@ -187,7 +187,7 @@ var AvatarCrop = {
 				if (res.code != 0)
 					Spaces.showApiError(res);
 				params.onAvatarCrop(res.avatar, res.avatar_2x, value);
-				DdMenu.close();
+				closeAllPoppers();
 			});
 		});
 		
@@ -375,8 +375,6 @@ var AvatarCrop = {
 			}
 		});
 		
-		DdMenu.fixSize();
-		
 		function init_image(tmp_img) {
 			for (var i = 0; i < shadows.length; ++i)
 				shadows_jq.push($(shadows[i]));
@@ -418,7 +416,7 @@ var AvatarCrop = {
 				image_size.width = image_size.height * 3;
 			
 				var crop_aspect = image_size.width / image_size.originalWidth,
-					max_width = Math.min(wrap.parents('.js-ddmenu_content').innerWidth() - thumbs_wrap.width(), image_size.width),
+					max_width = Math.min(wrap.parents('.js-popper_element').innerWidth() - thumbs_wrap.width(), image_size.width),
 					new_aspect = (max_width / crop_aspect) / image_size.originalWidth;
 				
 				wrap.css({

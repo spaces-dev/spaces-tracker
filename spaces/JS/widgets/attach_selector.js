@@ -6,7 +6,6 @@ import * as pushstream from '../core/lp';
 import {Spaces, Codes, Url} from '../spacesLib';
 import page_loader from '../ajaxify';
 import fixPageHeight from '../min_height';
-import DdMenu from '../dd_menu';
 import FilesMonitor from '../files_monitor';
 
 // Загрузчик файлов загрузить позже
@@ -21,6 +20,7 @@ import "Anketa/AvatarSelector.css";
 import "Files/Tile.css";
 import "Files/Gallery.css";
 import "Common/Attaches.css";
+import { closeAllPoppers, getPopperById } from './popper';
 
 /*
 	Параметры кнопки:
@@ -122,7 +122,7 @@ var tpl = {
 			html += '<a href="#" class="list-link js-select_file" data-type="' + type.type + '">' + 
 				'<span class="' + type.icon + '"></span> ' + type.name + '</a>';
 		}
-		html += '<a href="#" class="list-link js-dd_menu_close"><span class="ico ico_remove"></span> ' + L('Закрыть') + '</a></div>';
+		html += '<a href="#" class="list-link js-popper_close"><span class="ico ico_remove"></span> ' + L('Закрыть') + '</a></div>';
 		return html;
 	},
 	quickSelector: function (data) {
@@ -235,14 +235,14 @@ var tpl = {
 									'</a>' + 
 								'</td>' + 
 								'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
-									'<a href="#" class="list-link js-dd_menu_close" id="upload_cancel_btn">' + 
+									'<a href="#" class="list-link js-popper_close" id="upload_cancel_btn">' +
 										'<span class="ico ico_remove"></span> ' + 
 										'<span class="t">' + L('Закрыть') + '</span>' + 
 									'</a>' + 
 								'</td>' + 
 							'</tr>' + 
 						'</table>' : 
-						'<a href="#" class="list-link list-link_last js-dd_menu_close"><span class="ico ico_remove"></span> ' + L('Закрыть') + '</a>'
+						'<a href="#" class="list-link list-link_last js-popper_close"><span class="ico ico_remove"></span> ' + L('Закрыть') + '</a>'
 					) + 
 				'</div>' + 
 			'</div>' + 
@@ -697,7 +697,7 @@ MAttachSelector = Class({
 				var self = MAttachSelector.active();
 				if (self) {
 					if (self.upload_inited) {
-						var form = self.menu.content();
+						var form = $(self.menu.content());
 						form.addClass('upload-dnd_msg_show');
 						drag_msg_toggle(form, false);
 					}
@@ -715,7 +715,7 @@ MAttachSelector = Class({
 				var self = MAttachSelector.active();
 				if (self) { // Окно могли уже закрыть
 					if (self.upload_inited)
-						self.menu.content().removeClass('upload-dnd_msg_show');
+						$(self.menu.content()).removeClass('upload-dnd_msg_show');
 				} else {
 					for (var i = 0; i < instances.length; ++i) {
 						var self = instances[i];
@@ -908,12 +908,8 @@ MAttachSelector = Class({
 		if (self.state.attaches)
 			self.state.linkDownload = true;
 		
-		self.state.flat = true;
-		if (!self.state.spoiler || !self.state.spoiler.length) {
+		if (!self.state.spoiler || !self.state.spoiler.length)
 			self.state.spoiler = false;
-		} else {
-			self.state.flat = !self.state.spoiler.data('wrap');
-		}
 		
 		if (!self.state.proxyUpload) {
 			var dnd_palce = $(tpl.dndPlace());
@@ -930,49 +926,55 @@ MAttachSelector = Class({
 		self._setup();
 	},
 	_setup: function () {
-		var self = this;
+		const self = this;
 		
-		var menu = new DdMenu({
-			flat: self.state.flat,
-			data: {
-				scroll: true,
-				spoiler: self.state.spoiler,
-				toggle_same: true
-			}
-		});
-		
-		self.link.each(function () {
-			menu.link($(this).data('no_label', !!self.state.spoiler));
-		});
-		
-		menu.element().on('dd_menu_open', function () {
-			if (menu.opener().data('locked'))
+		// FIXME: дичь
+		const menuId = `attaches_sel_${this.key()}`;
+		if (self.state.spoiler) {
+			self.state.spoiler.prop("id", menuId);
+		} else {
+			const menuElement = document.createElement('div');
+			menuElement.id = menuId;
+			menuElement.className = 'popper-dropdown';
+			self.form.append(menuElement);
+		}
+
+		$('#' + menuId).append(`<div class="js-popper_content widgets-group"></div>`);
+
+		for (const link of self.link) {
+			link.classList.add('js-popper_open');
+			link.dataset.popperId = menuId;
+		}
+
+		self.menu = getPopperById(menuId);
+
+		$(self.menu.element()).on('popper:beforeOpen', function () {
+			if ($(self.menu.opener()).data('locked'))
 				return false;
-		}).on('dd_menu_toggle', function (e, data) {
-			var btn_types = data.link.data('selectTypes');
-			if (!data.sameLink && btn_types && btn_types.length == 1) {
-				menu.close();
-				data.link.click();
-				return false;
-			}
-		}).on('dd_menu_opened', function () {
-			var link = menu.opener();
+		}).on('popper:toggle', function (e, data) {
+			if (!e.detail.popper.isOpen())
+				return;
+
+			const selectTypes = $(e.detail.newOpener).data('selectTypes');
+			if (e.detail.oldOpener !== e.detail.newOpener && selectTypes && selectTypes.length == 1)
+				self.menu.close();
+		}).on('popper:afterOpen', function () {
+			var link = $(self.menu.opener());
 			
 			current_section = self.state.onlyComm ? 'comm' : Spaces.LocalStorage.get('attach_selector_source', 'comm');
 			
 			var btn_types = link.data('selectTypes');
 			var file_type = (btn_types && btn_types.length == 1 && btn_types[0]) || link.data('temp_type') || self.state.file_type;
 			if (!file_type) {
-				menu.content().empty().append(tpl.typeSelect({
+				$(self.menu.content()).empty().append(tpl.typeSelect({
 					types: self.state.enabledTypes
 				}));
-				DdMenu.fixSize();
 			} else {
 				link.removeData('temp_type');
 				self.quickSelector(file_type);
 			}
 			MAttachSelector.active(self);
-		}).on('dd_menu_close', function (e) {
+		}).on('popper:beforeClose', function (e) {
 			if (lock_close) {
 				e.preventDefault();
 				return;
@@ -1039,7 +1041,7 @@ MAttachSelector = Class({
 						btn = btn.find('button, input[type="submit"]').first();
 					var form = btn.parents('form');
 					if (btn.length && form.length) {
-						DdMenu.close();
+						closeAllPoppers();
 						self.link.data('disabled', true);
 						setTimeout(function () {
 							form.on('submit._att_select', function (e) {
@@ -1072,7 +1074,7 @@ MAttachSelector = Class({
 			e.preventDefault(); e.stopPropagation();
 			var view_id = $(this).data('back_view');
 			if (view_id == 'exit') {
-				menu.close();
+				self.menu.close();
 			} else {
 				self.view(view_id, true);
 			}
@@ -1093,7 +1095,7 @@ MAttachSelector = Class({
 				return;
 			
 			self.sliderSelect();
-			menu.close();
+			self.menu.close();
 		}).on('click', '.js-qsel_select_music', function (e) {
 			e.preventDefault(); e.stopPropagation();
 			var file = Spaces.core.extractFile($(this));
@@ -1103,7 +1105,7 @@ MAttachSelector = Class({
 					return false;
 				}
 				if (self.onAttachSelect(file))
-					menu.close();
+					self.menu.close();
 				return false;
 			}
 			
@@ -1167,7 +1169,7 @@ MAttachSelector = Class({
 						self.new_attaches = [];
 					},
 					onExit: function () {
-						menu.close();
+						self.menu.close();
 					}
 				});
 			});
@@ -1186,16 +1188,12 @@ MAttachSelector = Class({
 			}, 50);
 			el.prop("delayed_check", id);
 		});
-		
-		menu.element().find('.js-qsel_link_input');
-		
-		var spoiler = self.state.spoiler;
-		if (spoiler) {
-			spoiler.after(menu.element().detach().addClass(spoiler.attr("class")));
-			spoiler.remove();
-		}
-		
-		self.menu = menu;
+	},
+	key() {
+		return `${this.state.ot ?? 0}_${this.state.oid ?? 0}_${this.state.pid ?? 0}`;
+	},
+	getForm() {
+		return this.form;
 	},
 	showProgress: function (flag) {
 		var self = this;
@@ -1212,9 +1210,9 @@ MAttachSelector = Class({
 	},
 	setSection: function (section) {
 		var self = this;
-		self.menu.content().find('.list-link.js-attach_source.clicked')
+		$(self.menu.content()).find('.list-link.js-attach_source.clicked')
 			.removeClass('clicked');
-		self.menu.content().find('.list-link.js-attach_source[data-source="' + section + '"]')
+		$(self.menu.content()).find('.list-link.js-attach_source[data-source="' + section + '"]')
 			.addClass('clicked');
 		current_section = section;
 	},
@@ -1384,7 +1382,7 @@ MAttachSelector = Class({
 	quickSelector: function (type, first_open, callback, wait_upload) {
 		var self = this;
 		
-		var wrap = self.menu.content().empty(),
+		var wrap = $(self.menu.content()).empty(),
 			el = $(tpl.quickSelector({
 				type:				type,
 				showSlider:			!self.state.onlyUpload,
@@ -1417,9 +1415,8 @@ MAttachSelector = Class({
 		
 		self.current_type = type;
 		self.setSection(current_section);
+
 		// wait_upload
-		DdMenu.fixSize();
-		
 		var callback_uploader = function () {
 			if (!wait_upload)
 				self.setLoadling(false);
@@ -1467,7 +1464,6 @@ MAttachSelector = Class({
 								for (var i = 0; i < attaches.length; ++i)
 									self.markMusic(attaches[i].nid);
 							}
-							DdMenu.fixSize();
 						} else {
 							var error_msg = Spaces.apiError(res);
 							if (res.code == Codes.FILES.ERR_DIR_ACCESS_DENIED && current_section == 'comm')
@@ -1516,7 +1512,7 @@ MAttachSelector = Class({
 						var error_msg = e.message || L("Неизвестная ошибка загрузки.");
 						if (e.type == "api" && e.res.code == Codes.FILES.ERR_DIR_ACCESS_DENIED) {
 							if (self.state.onlyComm) {
-								self.menu.content().find('.js-qsel_all').hide();
+								$(self.menu.content()).find('.js-qsel_all').hide();
 								slider.resetItems();
 								slider.insert($('<div>' + Spaces.apiError(e.res) + '</div>'));
 								slider.update();
@@ -1547,12 +1543,9 @@ MAttachSelector = Class({
 						
 						if (!first_chunk) {
 							first_chunk = true;
-							DdMenu.fixSize();
 						}
 					}).on('firstPhotosLoad', function () {
-						tick(function () {
-							DdMenu.fixSize();
-						});
+						// ???
 					}).on('selectFile', function (slide, file) {
 						if (!slider || !file.nid)
 							return;
@@ -1579,18 +1572,15 @@ MAttachSelector = Class({
 								self.limitError();
 							}
 						}
-						DdMenu.fixSize();
 						return false;
 					});
 					self.slider = slider;
-					DdMenu.fixSize();
 				}
 			}
 			self.state.form.trigger('AttachSelectorOpen', {
 				ui: wrap
 			});
 			setTimeout(function () {
-				DdMenu.fixSize();
 				callback && callback();
 			}, 0);
 		};
@@ -1640,7 +1630,7 @@ MAttachSelector = Class({
 				inlineFileWidget: self.state.limit < 2,
 				maxFiles: self.state.limit,
 				maxSize: info.maxSize * 1024 * 1024,
-				uploadDrag: self.menu.content(),
+				uploadDrag: $(self.menu.content()),
 				selectButton: main_view ? upload_btn : false,
 				uploadWidget: upload_view ? upload_view.find('.js-qsel_upload_widget') : false,
 				buttonClass: {
@@ -1754,7 +1744,6 @@ MAttachSelector = Class({
 		var self = this;
 		var ret = self.view("main", true).find('.js-qsel_error')
 			.html(text ? tpl.error({text: text, no_button: true}) : '');
-		DdMenu.fixSize();
 		return ret;
 	},
 	setLoadling: function (flag) {
@@ -2053,7 +2042,7 @@ MAttachSelector = Class({
 		
 		if (!self.views_cache || $.isEmptyObject(self.views_cache)) {
 			self.views_cache = {};
-			var list = self.menu.content().find('[data-view]');
+			var list = $(self.menu.content()).find('[data-view]');
 			for (var i = 0; i < list.length; ++i) {
 				var el = $(list[i]);
 				self.views_cache[el.data('view')] = el;
@@ -2077,9 +2066,6 @@ MAttachSelector = Class({
 		}
 		
 		self.last_view_name = name;
-		tick(function () {
-			DdMenu.fixSize();
-		});
 		
 		return ret;
 	},
@@ -2106,7 +2092,6 @@ MAttachSelector = Class({
 				url_button.attr("disabled", "disabled");
 			
 			url_input.toggleClass('text-input_error text-input_error_bg', has_url && !valid_url);
-			DdMenu.fixSize();
 		}
 	},
 	loadUrl: function () {
@@ -2138,7 +2123,7 @@ MAttachSelector = Class({
 		var self = this;
 		
 		if (self.menu)
-			self.menu.content().empty();
+			$(self.menu.content()).empty();
 		if (self.slider)
 			self.slider = null;
 		

@@ -2,10 +2,10 @@ import module from 'module';
 import $ from './jquery';
 import {Class} from './class';
 import Spaces from './spacesLib';
-import DdMenu from './dd_menu';
-import {L, html_wrap, tick} from './utils';
+import {L, html_wrap} from './utils';
 import './select_item';
 import './search';
+import { closeAllPoppers } from './widgets/popper';
 
 var RENDER_INPUT	= 1, // Выглядит, как поле ввода
 	RENDER_DROPDOWN	= 2, // Выглядит, как выпадающее меню
@@ -220,23 +220,6 @@ var ObjectSelector = Class({
 			external:		true
 		});
 		
-		if (self.opts.render == RENDER_INPUT) {
-			self.input.on('blur', function () {
-				// Костыли костылики
-				var menu_id = DdMenu.currentId();
-				tick(function () {
-					if (document.activeElement) {
-						var $focused = $(document.activeElement);
-						if ($focused.parents('#search_selector__menu_' + self.opts.uniq).length || !$focused.parents('body').length) {
-							// костыль для <tab>
-							return;
-						}
-						DdMenu.close(menu_id);
-					}
-				});
-			});
-		}
-		
 		// Поиск
 		var last_empty = self.input.val().length < 1;
 		self.usearch = wrap.find('.js-usearch_parent').usearch({
@@ -269,8 +252,6 @@ var ObjectSelector = Class({
 					if (empty)
 						self.result.html('');
 					
-					DdMenu.fixSize();
-					
 					last_empty = empty;
 				}
 			},
@@ -286,7 +267,7 @@ var ObjectSelector = Class({
 			}
 		});
 		
-		wrap.on('dd_menu_open', function () {
+		wrap.on('popper:beforeOpen', function () {
 			self.stop_search = false;
 			self.original_value = self.input.val();
 			if (self.opts.render == RENDER_INPUT) {
@@ -306,7 +287,7 @@ var ObjectSelector = Class({
 					el.toggle(!hide);
 				});
 			}
-		}).on('dd_menu_closed', function () {
+		}).on('popper:afterClose', function () {
 			self.stop_search = true;
 			
 			self.empty.show();
@@ -389,7 +370,7 @@ var ObjectSelector = Class({
 		
 		if (manual) {
 			// Закрываем окно после выбора
-			DdMenu.close();
+			closeAllPoppers();
 			
 			self.input.blur();
 		}
@@ -489,14 +470,12 @@ var ObjectSelector = Class({
 			return;
 		} else if (error) {
 			self.result.html(tpl.message(error));
-			DdMenu.fixSize();
 			ui_change_on_results();
 			callback();
 			return;
 		} else if (force_not_found) {
 			show_not_found();
 			ui_change_on_results();
-			DdMenu.fixSize();
 			callback();
 			return;
 		}
@@ -528,8 +507,6 @@ var ObjectSelector = Class({
 					}));
 				}
 			}
-			
-			DdMenu.fixSize();
 		}, {
 			onError: function () {
 				callback();

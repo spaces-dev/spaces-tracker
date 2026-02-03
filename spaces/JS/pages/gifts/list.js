@@ -1,8 +1,8 @@
 import module from 'module';
 import $ from '../../jquery';
 import Spaces from '../../spacesLib';
-import DdMenu from '../../dd_menu';
 import {L, debounce} from '../../utils';
+import { closeAllPoppers } from '../../widgets/popper';
 
 var tpl = {
 	deleting(id) {
@@ -43,7 +43,7 @@ module.on("componentpage", function () {
 		e.stopImmediatePropagation();
 		
 		var $this = $(this),
-			gift_id = $this.parents('.js-dd_menu_item').data('gift_id'),
+			gift_id = $this.parents('.js-popper_element').data('gift_id'),
 			cnt = $('.cnt_tabs').first(),
 			gift = $('#gift' + gift_id),
 			deleted = $('#gift_delete_' + gift_id);
@@ -59,7 +59,7 @@ module.on("componentpage", function () {
 			cnt.text(parseInt(cnt.text()) + (flag ? -1 : 1));
 		};
 		
-		DdMenu.close();
+		closeAllPoppers();
 		
 		toggle_state(true);
 		Spaces.api("gifts.delete", {Gift: gift_id, CK: null}, function (res) {

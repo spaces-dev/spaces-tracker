@@ -4,12 +4,12 @@ import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
 import fixPageHeight from './min_height';
-import DdMenu from './dd_menu';
 import AttachSelector from './widgets/attach_selector';
 
 import './form_tools';
 import './colorpicker';
 import {L, html_wrap, extend, tick, html_unwrap, base_domain, set_caret_pos} from './utils';
+import { closeAllPoppers } from './widgets/popper';
 
 /*
 	.js-toolbar_wrap - родительский элемент вокруг поля ввода, в котором ищутся
@@ -243,7 +243,6 @@ var tpl = {
 				'</td>';
 		});
 		html += '</tr><tr class="hide"></tr><tr class="hide"></tr><tr class="hide"></tr></table></div>';
-		// html += '<div class="spoiler_inject"><div class="widgets-group donotblockme"><div class="content-bl">efewfewfefwefw</div></div></div>';
 		return html;
 	},
 	inlineToolbar: function (data) {
@@ -274,7 +273,7 @@ var tpl = {
 		return '' +
 			'<div class="hide"><span class="js-bb_hid_attach"></span></div>' + // Тут будет скрытая кнопка открытия аттач-меню, чтобы из JS открывать его
 			'<div class="js-bb_smile_menu"></div>' + // тут будет само аттач-меню
-			'<div class="hide spoiler_inject" id="ddspoiler_' + id + '"></div>' +
+			'<div class="popper-spoiler spoiler_inject" id="ddspoiler_' + id + '"></div>' +
 			'<div class="js-bb_menu" style="position:relative;display:none"></div>';
 	},
 	attachesMenu: function (data) {
@@ -669,7 +668,7 @@ function Toolbar(el, opts) {
 						showMenu();
 				});
 			});
-			DdMenu.close();
+			closeAllPoppers();
 			fixPageHeight(current_menu);
 
 			onAfterCreateMenu(current_menu, tag);
@@ -775,7 +774,7 @@ function Toolbar(el, opts) {
 
 		if (!link.hasClass('js-attach')) { // Ленивая инициализация
 			var form = link.parents('form'),
-				att_parent = $('<div id="azzzkoe_kostilishe_' + Date.now() + '"></div>'),
+				att_parent = $('<div id="azzzkoe_kostilishe_' + Date.now() + '"></div>'), // FIXME: блять что
 				attach_btn = form.find('.js-attach'),
 				max_files = attach_btn.data("max_files"),
 				chunk_files = [];
@@ -811,9 +810,7 @@ function Toolbar(el, opts) {
 				linkDownload: true,
 				upload: true,
 				spoiler: '#ddspoiler_' + id,
-				proxyUpload: max_files > 1,
-				fix_position: -10,
-				no_label: true
+				proxyUpload: max_files > 1
 			});
 
 			AttachSelector.init();

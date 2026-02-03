@@ -191,7 +191,12 @@ button.list-link {
 
 .list-link.list-link__short {
 	padding: 4px 15px;
-	line-height: 100%
+	line-height: 100%;
+
+	&:active {
+		padding-top: 5px;
+		padding-bottom: 3px;
+	}
 }
 
 .list-link__short .list-link__name {
@@ -650,10 +655,6 @@ body .btn-single.stnd-link_disabled:active * {
 
 .stnd-link_disabled[onclick] {
 	pointer-events: none;
-}
-
-.stnd-link_disabled.js-dd_menu_link {
-	cursor: pointer;
 }
 
 body .stnd-link_disabled:hover {

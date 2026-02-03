@@ -1,5 +1,6 @@
 import videojs from 'video.js';
 import { throttleRaf } from '../../../../utils';
+import { resizeContain, resizeLimit } from '../../../../utils/resize'; // ехал ../ через ../
 
 const Component = videojs.getComponent('Component');
 
@@ -190,27 +191,4 @@ function loadImage(src, src_2x, callback) {
 
 	img.onload = handleLoad;
 	img.onerror = handleError;
-}
-
-function resizeLimit(w, h, limitW, limitH) {
-	const aspectRatio = w / h;
-	if (h > limitH) {
-		w = limitH * aspectRatio;
-		h = limitH;
-	}
-	if (w > limitW) {
-		w = limitW;
-		h = limitW / aspectRatio;
-	}
-	return [Math.round(w), Math.round(h)];
-}
-
-function resizeContain(w, h, containerW, containerH) {
-	const aspectRatio = w / h;
-	const containerAspectRatio = containerW / containerH;
-	if (aspectRatio > containerAspectRatio) {
-		return [Math.round(containerW), Math.round(containerW / aspectRatio)];
-	} else {
-		return [Math.round(containerH * aspectRatio), Math.round(containerH)];
-	}
 }

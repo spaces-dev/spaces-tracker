@@ -3,7 +3,6 @@ import $ from './jquery';
 import * as pushstream from './core/lp';
 import {Spaces, Codes} from './spacesLib';
 import page_loader from './ajaxify';
-import DdMenu from './dd_menu';
 import notifications from './notifications';
 import {L, tick} from './utils';
 
@@ -40,7 +39,6 @@ module.on("componentpage", function () {
 				_setButtonStyle(queue.el, "default");
 				if (res.res_fail) { // Ошибка
 					Spaces.view.setInputError(queue.email.password, res.msg);
-					DdMenu.fixSize();
 					$('#js-auth-message_' + queue.type).remove();
 				} else if (res.res_ok) { // Успешно прибиндили
 					page_loader.on('pageloaded', 'recomendations', function () {
@@ -57,12 +55,7 @@ module.on("componentpage", function () {
 	
 	$(window).on('resize' + ns, _onResize);
 	
-	main.on('dd_menu_close' + ns, '.social__dropdown-menu', function (e) {
-		if (queue) {
-			// Запрещаю открывать и закрывать новые ddmenu до завершения запроса
-			return false;
-		}
-	}).on('click' + ns, '.js-user-tile__similarity', function (e) {
+	main.on('click' + ns, '.js-user-tile__similarity', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 		$(this).parent().find('.user-tile__similarity-wrapper').toggle();
@@ -116,7 +109,6 @@ module.on("componentpage", function () {
 						'</div>'
 					));
 					_setButtonStyle(el, "refresh");
-					DdMenu.fixSize();
 					queue = {el: el, email: email, type: type};
 				} else {
 					if (res.code == Codes.COMMON.ERR_BAD_REQUEST && res.errors) {
@@ -140,8 +132,6 @@ module.on("componentpage", function () {
 					_setButtonStyle(el, "default");
 				}
 			});
-		} else {
-			DdMenu.fixSize();
 		}
 	}).on('focus' + ns, '.text-input', function () {
 		var el = $(this);
@@ -150,7 +140,7 @@ module.on("componentpage", function () {
 		Spaces.view.setInputError(el, false);
 	}).on('change' + ns, '.js-auth-email_selector', function (e) {
 		var el = $(this);
-		el.parentsUntil('.js-dd_menu_item').find('.js-auth-selector-label').html(el.val());
+		el.parentsUntil('.js-popper_element').find('.js-auth-selector-label').html(el.val());
 	});
 });
 

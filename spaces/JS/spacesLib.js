@@ -1180,11 +1180,6 @@ Spaces.view = {
 
 			input.trigger('inputErrorHide', {error: error});
 		}
-
-		// FIXME
-	//	require.loaded(import.meta.id("./dd_menu"), ({default: DdMenu}) => {
-	//		DdMenu.fixSize();
-	//	});
 	},
 	onlyAuthMotivator: function () {
 		var html =

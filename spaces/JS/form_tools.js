@@ -3,8 +3,8 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
-import DdMenu from './dd_menu';
 import {L, numeral, set_caret_pos, html_wrap} from './utils';
+import { closeAllPoppers, getNearestPopper } from './widgets/popper';
 
 var AUTOSAVE_INTERVAL = 2000,
 	TEXTAREA_SIZE = {
@@ -190,10 +190,10 @@ var FormToolsModule = {
 							autofocus.focus();
 							
 							// Закроем меню, если наше поле не находится в этом меню
-							var cmenu = DdMenu.current();
-							if (cmenu && !$.contains(cmenu, autofocus))
-								DdMenu.close(cmenu.attr("id"));
-							
+							const nearestPopper = getNearestPopper(autofocus[0]);
+							if (!nearestPopper)
+								closeAllPoppers();
+
 							if (manual_insert === true) {
 								var el = autofocus[0],
 									chr = String.fromCharCode(key);

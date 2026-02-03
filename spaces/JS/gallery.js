@@ -183,14 +183,22 @@ var tpl = {
 							'<span class="ico_gallery ico_gallery_mess"></span> <span id="g_commentCnt" class="gallery__link_text"></span>' + 
 						'</a>' + 
 					'</td>' +
-					'<td class="gallery__link" id="g_collections" title="' + L('Сохранить к себе') + '" data-no_label="1" data-noclass="1">' + 
-						'<span class="ico ico_plus_white"></span>' + 
-					'</td>' +
-					'<td class="gallery__link js-dd_menu_link" id="g_share" ' +
-						'data-menu_id="g_share_menu" data-position="1" data-no_label="1" data-noclass="1" title="' + L('Поделиться') + '"' +
-					'>' + 
-						'<span class="ico ico_shared_white"></span>' + 
-					'</td>' +
+					`<td
+						id="g_collections"
+						class="gallery__link"
+						title="${L('Сохранить к себе')}"
+					>
+						<span class="ico ico_plus_white"></span>
+					</td>` +
+
+					`<td
+						id="g_share"
+						class="gallery__link js-popper_open"
+						data-popper-id="g_share_menu"
+						title="${L('Поделиться')}"
+					>
+						<span class="ico ico_shared_white"></span>
+					</td>` +
 					(Device.type == 'desktop' ? '<td class="pointer js-descr_wrap">' + 
 						'<div class="gallery__descr_text hide" id="gallery_descr_wrap">' + 
 							'<div id="gallery_descr"></div>' +
@@ -212,9 +220,7 @@ var tpl = {
 			'</div>' + 
 			'<div class="gallery__loader_shadow"></div>' + 
 			'<div class="gallery__shadow_error" id="Gallery_error"></div>' + 
-			'<div class="js-dd_menu_item user__dropdown-menu dropdown-menu__wrap js-share_menu js-fix_height" ' +
-				'data-gallery-inline="1" data-scroll="1" data-toggle_same="1" data-events="1" data-in_gallery="1" id="g_share_menu"' +
-			'>' +
+			'<div class="popper-dropdown" data-popper-type="gallery" id="g_share_menu">' +
 				'<div class="widgets-group dropdown-menu js-ddmenu_content"></div>' +
 			'</div>' +
 		'</div>';
@@ -484,7 +490,7 @@ Gallery = {
 				if (el.hasClass('disabled'))
 					return;
 				
-				if (!current.collectionsLink) {
+				if (!current.collectionsLink) { // FIXME: КОСТЫЛИЩИ!!!
 					e.preventDefault();
 					e.stopPropagation();
 					e.stopImmediatePropagation();
@@ -495,13 +501,16 @@ Gallery = {
 					var ico = el.find('.ico');
 					ico.addClass('ico_spinner');
 					
+					const popperId = `gallery_collections_menu_${current.item.extType}_${current.item.type}_${current.item.nid}`;
 					el.data({
-						nid:		current.item.nid,
-						type:		current.item.type,
-						extType:	current.item.extType,
-						
+						nid: current.item.nid,
+						type: current.item.type,
+						extType: current.item.extType,
+						popperId,
 					});
-					
+
+					$('#Gallery').after(`<div class="popper-dropdown" data-popper-type="gallery" style="z-index:100001" id="${popperId}">`);
+
 					current.collectionsLink = el;
 					
 					// Trigger component
@@ -510,6 +519,7 @@ Gallery = {
 					import('./collections').then(({default: FileCollections}) => {
 						ico.removeClass('ico_spinner');
 						FileCollections.init(el);
+						el.addClass('js-popper_open');
 						el.click();
 					});
 				}
@@ -566,6 +576,10 @@ Gallery = {
 				if (global_lock && code != Spaces.KEYS.ESC)
 					return;
 				
+				const activeElement = document.activeElement;
+				if (activeElement && ["TEXTAREA", "INPUT"].includes(activeElement.nodeName))
+					return;
+
 				e.preventDefault();
 				if (code == Spaces.KEYS.ESC) {
 					self.exit();
@@ -1834,10 +1848,11 @@ Gallery = {
 		
 		let collections = current.collectionsLink;
 		if (collections) {
-			current.collectionsLink = null;
 			import('./collections').then(({default: FileCollections}) => {
 				FileCollections.freeInstance(collections);
+				$('#' + collections.data('popperId')).remove();
 			});
+			current.collectionsLink = null;
 		}
 	},
 	getItemPos: function () {

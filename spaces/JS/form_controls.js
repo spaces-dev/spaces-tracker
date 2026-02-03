@@ -2,9 +2,9 @@ import module from 'module';
 import $ from './jquery';
 import Device from './device';
 import {Spaces, Codes} from './spacesLib';
-import DdMenu from './dd_menu';
 import './form_tools';
 import {L} from './utils';
+import { closeAllPoppers } from './widgets/popper';
 
 var $body = $('body');
 
@@ -141,6 +141,8 @@ $body.on('click', '.js-radio', function(e) {
 
 		$body.trigger('click');
 	}
+
+	closeAllPoppers();
 });
 
 $body.on('click', '.js-toggle', function(e){
@@ -215,7 +217,7 @@ var SWITCHER_GENERIC_TYPES = {
 		updateState: function (state) {
 			var $btn = $('.js-switcher_ghost');
 			$btn.toggleClass('on', !state).html(!state ? $btn.data('value_on') : $btn.data('value_off'));
-			DdMenu.close();
+			closeAllPoppers();
 		},
 		onResult: function (res, state) {
 			if (res.code == Codes.SERVICES.ERR_GHOST_UNCHANGED)

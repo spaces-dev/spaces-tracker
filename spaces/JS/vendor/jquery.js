@@ -1854,6 +1854,13 @@ function internalData( elem, name, data, pvt /* Internal Use Only */ ) {
 		} else {
 			cache[ id ].data = jQuery.extend( cache[ id ].data, name );
 		}
+
+		if (typeof name === "object") {
+			for (let k in name) {
+				if (name[k] != null)
+					elem.dataset[jQuery.camelCase(k)] = name[k] ?? '';
+			}
+		}
 	}
 
 	thisCache = cache[ id ];

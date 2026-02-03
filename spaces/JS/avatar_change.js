@@ -2,13 +2,12 @@ import module from 'module';
 import require from 'require';
 import $ from './jquery';
 import Spaces from './spacesLib';
-import page_loader from './ajaxify';
-import DdMenu from './dd_menu';
 import AttachSelector from './widgets/attach_selector';
 import {L, tick} from './utils';
+import { closeAllPoppers, getNearestPopper, Popper } from './widgets/popper';
 
 var params, spinner_avatar,
-	type, cfg, last_api_request, editor_window, generator_window;
+	type, cfg, last_api_request, editorWidnow, generatorWindow;
 
 let on_destroy = [];
 
@@ -99,14 +98,14 @@ var AvatarChange = {
 	init: function () {
 		var self = this;
 		
-		params = $('#change_avatar-buttons').data();
+		params = $('#change_avatar-form').data();
 		if (!params)
 			return;
 		
 		type = params.type;
 		cfg = TYPES[type] || TYPES['unknown'];
 		
-		$('#change_avatar-buttons').on('onNewAttach', function (e, data) {
+		$('#change_avatar-form').on('onNewAttach', function (e, data) {
 			// AttachSelector.select(data.file.nid, Spaces.TYPES.PICTURE);
 			if (data.file.preview) {
 				self.selectAvatar(data.file.nid, data.file.preview.previewURL, data.file.preview.previewURL_2x);
@@ -136,7 +135,7 @@ var AvatarChange = {
 				
 				var selector_params = {
 					file_type:		Spaces.TYPES.PICTURE,
-					form:			'#change_avatar-buttons',
+					form:			'#change_avatar-form',
 					buttons:		"#change_avatar-buttons",
 					uploadButtons:	"#change_avatar-upload-buttons",
 					allowAlias:		true,
@@ -164,32 +163,33 @@ var AvatarChange = {
 				
 				tick(function () { el.click(); });
 			}
-		}).on('click', '.js-avatar_generator', function (e) {
+		});
+
+		$('#change_avatar-form').on('click', '.js-avatar_generator', async function (e) {
 			e.preventDefault();
 			e.stopPropagation();
 			
-			let link = $(this);
-			let current_link = DdMenu.current().data("menu_opener");
-			
+			const opener = getNearestPopper(this).opener();
+			const link = $(this);
 			link.addClass('disabled').find('.js-ico').addClass('ico_spinner');
 			
-			if (!generator_window) {
-				generator_window = new DdMenu({data: {
-					scroll: true,
-					fix_position: -10,
-					preventCloseByClick: true
-				}});
-				generator_window.on('closed', () => {
-					console.log('dd_menu_closed');
-					import("./pic_generator").then(({default: PicGenerator}) => PicGenerator.destroy());
-				});
+			const { default: PicGenerator } = await import("./pic_generator");
+			if (!generatorWindow) {
+				const att = AttachSelector.instance(this);
+				const windowElement = document.createElement('div');
+				windowElement.className = 'popper-dropdown';
+				att.getForm().append(windowElement);
+
+				generatorWindow = new Popper(windowElement);
+				generatorWindow.on('afterClose', () => PicGenerator.destroy());
 			}
 			
-			import("./pic_generator").then(function ({default: PicGenerator}) {
-				PicGenerator.init(generator_window.content(), {
+			PicGenerator.init(
+				$(generatorWindow.content()),
+				{
 					type: 'avatar',
 					onInit() {
-						generator_window.openAs(current_link);
+						generatorWindow.open({}, opener);
 					},
 					onSelect(file_id, preview, preview_2x) {
 						AvatarChange.selectAvatar(file_id, preview, preview_2x);
@@ -197,31 +197,30 @@ var AvatarChange = {
 					onCancel() {
 						$('.change_avatar_link').click();
 					}
-				});
-			});
-		}).on('click', '.js-avatar_crop', function (e) {
+				}
+			);
+		}).on('click', '.js-avatar_crop', async function (e) {
 			e.preventDefault();
 			e.stopPropagation();
 			
-			let link = $(this);
-			let current_link = DdMenu.current().data("menu_opener");
-			
+			const opener = getNearestPopper(this).opener();
+			const link = $(this);
 			link.addClass('disabled').find('.js-ico').addClass('ico_spinner');
 			
-			if (!editor_window) {
-				editor_window = new DdMenu({data: {
-					scroll: true,
-					fix_position: -10
-				}});
-				editor_window.on('closed', function () {
-					import("./avatar_crop").then(function ({default: AvatarCrop}) {
-						AvatarCrop.destroy(editor_window.content());
-					});
-				});
+			const { default: AvatarCrop } = await import("./avatar_crop");
+			if (!editorWidnow) {
+				const att = AttachSelector.instance(this);
+				const windowElement = document.createElement('div');
+				windowElement.className = 'popper-dropdown';
+				att.getForm().append(windowElement);
+
+				editorWidnow = new Popper(windowElement);
+				editorWidnow.on('afterClose', async () => AvatarCrop.destroy($(editorWidnow.content())));
 			}
-			
-			import("./avatar_crop").then(function ({default: AvatarCrop}) {
-				AvatarCrop.setup(editor_window.content(), {
+
+			AvatarCrop.setup(
+				$(editorWidnow.content()),
+				{
 					image: params.preview,
 					image_2x: params.preview_2x,
 					area: params.photo_area,
@@ -232,11 +231,9 @@ var AvatarChange = {
 						Spaces.view.updateAvatars([url, url_2x]);
 						params.photo_area = area;
 					}
-				}, function () {
-					DdMenu.close();
-					editor_window.openAs(current_link);
-				});
-			});
+				},
+				() => editorWidnow.open({}, opener)
+			);
 		});
 	},
 	destroy: function () {
@@ -250,8 +247,8 @@ var AvatarChange = {
 			Spaces.cancelApi(last_api_request);
 		self.setAvatarLoading(false);
 		last_api_request = cfg = params = null;
-		generator_window = null;
-		editor_window = null;
+		generatorWindow = null;
+		editorWidnow = null;
 	},
 	selectAvatar: function (file_id, file_thumb, file_thumb_2x) {
 		var self = this;
@@ -278,7 +275,6 @@ var AvatarChange = {
 					
 					params.photo_id = file_id;
 					$('.js-avatar_delete, .js-avatar_crop').toggle(file_id > 0);
-					DdMenu.fixSize();
 					
 					let stub = file_id ? res[cfg.params.curPhoto] : res[cfg.params.uplPhoto];
 					let stub_2x = file_id ? res[`${cfg.params.curPhoto}_2x`] : res[`${cfg.params.uplPhoto}_2x`];
@@ -306,7 +302,7 @@ var AvatarChange = {
 						Spaces.showMsg(res.dating_error, {type: "warn"});
 					
 					if (cfg.closeAfterSelect)
-						DdMenu.close();
+						closeAllPoppers();
 				} else {
 					self.setAvatarLoading(false);
 					Spaces.showApiError(res);
@@ -332,7 +328,7 @@ var AvatarChange = {
 			params.rotate = 0;
 			
 			if (cfg.closeAfterSelect)
-				DdMenu.close();
+				closeAllPoppers();
 		}
 	},
 	setAvatarLoading: function (flag, new_image, new_srcset, is_upload) {

@@ -5,7 +5,6 @@ import notifications from './notifications';
 import FileUploader from './files_uploader';
 import FilesMonitor from './files_monitor';
 import FilesUploader from './libs/FilesUploader';
-import DdMenu from './dd_menu';
 import {extend, numeral, L, html_unwrap, tick} from './utils';
 
 import './form_controls';

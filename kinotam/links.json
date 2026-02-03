@@ -678,6 +678,7 @@
   "/js/touch/upload_screenshot.js",
   "/js/touch/utils.js",
   "/js/touch/utils/dom.js",
+  "/js/touch/utils/resize.js",
   "/js/touch/utils/string.js",
   "/js/touch/vendor/@babel/runtime/helpers/extends.js",
   "/js/touch/vendor/@firebase/app/dist/esm/index.esm2017.js",

@@ -2,11 +2,11 @@ import module from 'module';
 import $ from './jquery';
 import {Class} from './class';
 import Spaces from './spacesLib';
-import DdMenu from './dd_menu';
 
 import './form_controls';
 import './search';
-import {L, tick} from './utils';
+import { L } from './utils';
+import { closeAllPoppers } from './widgets/popper';
 
 var MODE_REQUIRED	= 1, // Требовать указание этого
 	MODE_OPTIONAL	= 2, // Не требовать указания этого, но давать возможность
@@ -172,23 +172,6 @@ var GeoSelector = Class({
 			external:		true
 		});
 		
-		if (self.opts.render == RENDER_INPUT) {
-			self.input.on('blur', function () {
-				// Костыли костылики
-				var menu_id = DdMenu.currentId();
-				tick(function () {
-					if (document.activeElement) {
-						var $focused = $(document.activeElement);
-						if ($focused.parents('#city_fw__form' + self.opts.uniq).length || !$focused.parents('body').length) {
-							// костыль для <tab>
-							return;
-						}
-						DdMenu.close(menu_id);
-					}
-				});
-			});
-		}
-		
 		// Поиск
 		var last_empty = self.input.val().length < 1;
 		self.usearch = wrap.find('.js-usearch_parent').usearch({
@@ -222,8 +205,6 @@ var GeoSelector = Class({
 					if (empty)
 						self.result.html('');
 					
-					DdMenu.fixSize();
-					
 					last_empty = empty;
 				}
 			},
@@ -246,7 +227,7 @@ var GeoSelector = Class({
 		console.log("region: " + modes[self.opts.region]);
 		*/
 		
-		wrap.on('dd_menu_open', function () {
+		wrap.on('popper:beforeOpen', function () {
 			self.stop_search = false;
 			
 			if (!self.allowEmpty())
@@ -259,7 +240,7 @@ var GeoSelector = Class({
 			}
 			
 			$('.js-geo_sel_warn').hide();
-		}).on('dd_menu_closed', function () {
+		}).on('popper:afterClose', function () {
 			self.stop_search = true;
 			
 			if (self.allowEmpty())
@@ -393,7 +374,7 @@ var GeoSelector = Class({
 		
 		if (manual) {
 			// Закрываем окно после выбора
-			DdMenu.close();
+			closeAllPoppers();
 			
 			self.input.blur();
 			self.wrap.data("manual", true);
@@ -513,8 +494,6 @@ var GeoSelector = Class({
 					self.result.html(tpl.notFound(error));
 				}
 			}
-			
-			DdMenu.fixSize();
 		}, {
 			onError: function () {
 				callback();

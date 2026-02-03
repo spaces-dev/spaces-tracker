@@ -6,8 +6,8 @@ import {Class} from './class';
 import {Spaces, Url, Codes} from './spacesLib';
 import page_loader from './ajaxify';
 import fixPageHeight from './min_height';
-import DdMenu from './dd_menu';
 import {html_wrap, L, tick} from './utils';
+import { closeAllPoppers, getPopperById } from './widgets/popper';
 
 var FILE_TYPE_2_DIR_TYPE = {
 	[Spaces.TYPES.FILE]:		1,
@@ -44,7 +44,7 @@ var tpl = {
 		var html =
 			'<div class="content-item3 wbg content-bl__sep red t_center">' + error + '</div>' + 
 			'<div class="links-group links-group_grey" data-view="list">' + 
-				'<span class="list-link links-group_grey t_center list-link_last js-dd_menu_close">' + 
+				'<span class="list-link links-group_grey t_center list-link_last js-popper_close">' +
 					'<span class="ico ico_remove js-ico"></span> ' + 
 					L('Закрыть') + 
 				'</span>' + 
@@ -62,7 +62,7 @@ var tpl = {
 		var html = 
 				'<div data-view="error" data-empty="1"></div>' + 
 				'<div data-view="create" data-empty="1"></div>' + 
-				'<div class="links-group" data-view="list">' + 
+				'<div data-view="list">' +
 					'<div class="js-collections_warn stnd-block-yellow stnd-block content-bl__sep hide"></div>' + 
 					'<div class="js-collections_dirs">' + 
 						'<div class="content-item3 wbg t_center grey content-bl__sep">' + 
@@ -90,7 +90,7 @@ var tpl = {
 									'</span>' + 
 								'</td>' + 
 								'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
-									'<span class="list-link js-dd_menu_close list-link_first list-link_last">' + 
+									'<span class="list-link js-popper_close list-link_first list-link_last">' +
 										'<span class="t">' + L('Отменить') + '</span>' + 
 									'</span>' + 
 								'</td>' + 
@@ -102,7 +102,7 @@ var tpl = {
 								'<span class="ico ico_plus_blue js-ico"></span> ' + 
 								'<span class="t">' +  L('Создать коллекцию') + '</span>' + 
 							'</span>' + 
-							'<span class="list-link js-dd_menu_close list-link_last">' + 
+							'<span class="list-link js-popper_close list-link_last">' +
 								'<span class="ico ico_remove js-ico"></span> ' + 
 								'<span class="t">' + L('Отменить') + '</span>' + 
 							'</span>' + 
@@ -227,16 +227,8 @@ var FileCollections = Class({
 				});
 			});
 		} else {
-			var menu = new DdMenu({
-				data: {
-					scroll: true,
-					toggle_same: true,
-					events: true,
-					in_gallery: true
-				}
-			});
-			menu.link(link);
-			menu.element().on('dd_menu_open', function (e) {
+			const menu = $('#' + link.data('popperId'));
+			menu.on('popper:beforeOpen', function (e) {
 				self.msg.addClass('hide');
 				
 				Spaces.api("files.getCollections", {
@@ -262,14 +254,12 @@ var FileCollections = Class({
 			})
 			.on('click', '.js-collections_next', function (e) {
 				e.preventDefault();
-				var el = menu.element();
-				el.data('collectionsOffset', el.data('collectionsOffset') + el.data('collectionsChunk'));
+				self.menu.data('collectionsOffset', self.menu.data('collectionsOffset') + self.menu.data('collectionsChunk'));
 				self.onResize();
 			})
 			.on('click', '.js-collections_rewind', function (e) {
 				e.preventDefault();
-				var el = menu.element();
-				el.data('collectionsOffset', 0);
+				self.menu.data('collectionsOffset', 0);
 				self.onResize();
 			})
 			// Добавление новой коллекции
@@ -350,7 +340,7 @@ var FileCollections = Class({
 						// Удаляем мотиватор
 						$('#collections_motivator_' + self.type + '_' + self.nid).remove();
 						
-						DdMenu.close();
+						closeAllPoppers();
 					} else {
 						self.showError(Spaces.apiError(res));
 					}
@@ -426,16 +416,17 @@ var FileCollections = Class({
 				toggle_save(true);
 			});
 			
-			menu.content().append(tpl.window());
+			menu.append(tpl.window());
 			self.menu = menu;
 		}
-		
+
+		self.resizeHandler = () => self.onResize();
+		$(window).on('resize', self.resizeHandler);
+
 		if ($('#Gallery').length) {
-			menu.on('resize', function () {
-				self.onResize();
-			}).on('opened', function () {
+			self.menu.on('popper:afterOpen', function () {
 				$('#g_sharelink_inner').addClass('js-clicked');
-			}).on('closed', function () {
+			}).on('popper:afterClose', function () {
 				$('#g_sharelink_inner').removeClass('js-clicked');
 			});
 		} else {
@@ -460,10 +451,14 @@ var FileCollections = Class({
 		var self = this;
 		if (self.link) {
 			self.link.removeData('__collections__');
-			self.link.removeClass('js-dd_menu_link');
 		}
-		if (self.menu)
-			self.menu.destroy();
+		if (self.menu) {
+			getPopperById(self.menu.prop("id"))?.destroy();
+			self.menu.empty();
+		}
+
+		$(window).off('resize', self.resizeHandler);
+
 		self.msg = self.menu = self.link = null;
 	},
 	view: function (name, do_switch) { // TODO: вынести в класс
@@ -473,7 +468,7 @@ var FileCollections = Class({
 		
 		if (!self.views_cache || $.isEmptyObject(self.views_cache)) {
 			self.views_cache = {};
-			var list = self.menu.content().find('[data-view]');
+			var list = self.menu.find('[data-view]');
 			for (var i = 0; i < list.length; ++i) {
 				var el = $(list[i]);
 				self.views_cache[el.data('view')] = el;
@@ -497,79 +492,51 @@ var FileCollections = Class({
 		}
 		
 		self.last_view_name = name;
-		tick(function () {
-			DdMenu.fixSize();
-		});
 		
 		return ret;
 	},
-	onResize: function () {
-		var self = this,
-			menu = self.menu.element(),
-			content = self.menu.content();
+	onResize: function () { // FIXME: Что это, если не дичь?
+		const gallery = document.getElementById('Gallery');
+		const maxHeight = gallery ?
+			gallery.getBoundingClientRect().height - 150 :
+			window.innerHeight - 100;
+
+		const next = this.menu.find('.js-collections_next');
+		const rewind = this.menu.find('.js-collections_rewind');
+		const dirs_wrap = this.menu.find('.js-collections_dirs');
+		const dirs = dirs_wrap.children().hide().toArray();
 		
-		var max_height = menu.css("maxHeight").replace("px", "");
-		if (max_height == 'none' || !max_height)
-			return;
-		
-		var paddings = (+menu.css("paddingTop").replace("px", "") || 0) + 
-			(+menu.css("paddingBottom").replace("px", "") || 0);
-		max_height -= paddings;
-		if (max_height != menu.data('oldMaxHeight')) {
-			menu.data('collectionsOffset', 0);
-			menu.data('oldMaxHeight', max_height);
-		}
-		
-		var next = content.find('.js-collections_next'),
-			rewind = content.find('.js-collections_rewind'),
-			dirs_wrap = content.find('.js-collections_dirs'),
-			dirs = dirs_wrap.children().hide().toArray(),
-			offset = menu.data('collectionsOffset') || 0,
-			chunk = 0;
-		
-		next.removeClass('hide');
-		rewind.addClass('hide');
-		
-		var old_h, i = 0, last_show = -1;
-		while (max_height >= content.height() && i < dirs.length) {
-			if (i >= offset) {
-				$(dirs[i]).show();
-				last_show = i;
-				++chunk;
+		if (this.menu.data('lastMaxHeight') !== maxHeight) {
+			next.removeClass('hide');
+			rewind.addClass('hide');
+
+			let maxVisibleCount = 0;
+			for (const dir of dirs) {
+				$(dir).show();
+				if (this.menu.height() >= maxHeight || maxVisibleCount >= 5) {
+					$(dir).hide();
+					break;
+				}
+				maxVisibleCount++;
 			}
-			++i;
-		}
-		
-		if (last_show == -1) {
-			$(dirs[offset]).show();
-			last_show = offset;
-		}
-		
-		if (max_height < content.height()) {
-			if (!offset && last_show == dirs.length - 1) {
-				next.addClass('hide');
-			} else if (last_show && chunk > 1) {
-				$(dirs[last_show]).hide();
-				--last_show;
-				--chunk;
-			}
-		}
-		
-		if (!dirs.length || last_show == dirs.length - 1) {
-			next.addClass('hide');
-			if (offset)
-				rewind.removeClass('hide');
+
+			this.menu.data('collectionsOffset', 0);
+			this.menu.data('collectionsChunk', maxVisibleCount);
+			this.menu.data('lastMaxHeight', maxHeight);
+
+			next.toggleClass('hide', maxVisibleCount >= dirs.length);
 		} else {
-			menu.data('collectionsChunk', chunk);
+			const offset = this.menu.data('collectionsOffset');
+			const maxVisibleCount = this.menu.data('collectionsChunk');
+			for (let i = offset; i < offset + maxVisibleCount; i++)
+				$(dirs[i]).show();
+			next.toggleClass('hide', offset + maxVisibleCount >= dirs.length);
+			rewind.toggleClass('hide', offset + maxVisibleCount < dirs.length);
 		}
 	},
 	fixHeight: function () {
-		var self = this;
-		if ($('#Gallery').length) {
-			self.onResize();
-		} else {
-			fixPageHeight();
-		}
+		this.onResize();
+		fixPageHeight();
 	}
 });
 

@@ -497,12 +497,9 @@ function getMessagesIds() {
 	return messages;
 }
 
-function initDropdownMenu(link, menuId) {
-	link.dataset.menu_id = menuId;
-	link.dataset.position = 1;
-	link.dataset.noclass = 1;
-	link.classList.add('js-dd_menu_link');
-	link.classList.add('triangle-show');
+function initDropdownMenu(link, id) {
+	link.dataset.popperId = id;
+	link.classList.add('js-popper_open');
 }
 
 async function lockUI(flag) {

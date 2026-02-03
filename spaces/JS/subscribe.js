@@ -165,7 +165,7 @@ $body.on('click', '.js-lenta_subscr_add a[data-action=lenta_subscr_add]', functi
 	if (el.data('error'))
 		return;
 	
-	if (!el.hasClass('js-dd_menu_link')) {
+	if (!el.hasClass('js-popper_open')) {
 		Spaces.api("lenta.authorAdd", {Aid: id, At: type, CK: null}, function (res) {
 			if (res.code == Codes.COMMON.SUCCESS){
 				$('div[data-author_type="' + type + '"][data-author_id="' + id + '"]').each(function(){
@@ -198,7 +198,7 @@ $body.on('click', 'a[data-action=lenta_subscr_remove]', function (e) {
 	if (el.data('error'))
 		return;
 	
-	if (!el.hasClass('js-dd_menu_link')) {
+	if (!el.hasClass('js-popper_open')) {
 		Spaces.api("lenta.authorDelete", {Aid: id, At: type, CK: null}, function (res) {
 			if (res.code == Codes.COMMON.SUCCESS){
 				$('div[data-author_type="' + type + '"][data-author_id="' + id +'"]').each(function(){
@@ -345,8 +345,8 @@ $body.on('click', '.js-complaint_link', function (e) {
 			message_textarea.val('').removeClass('text-input_error');
 			message_error.removeClass('pad_t_a').text('');
 			
-			var dd_menu_id = el.parents('.js-dd_menu_item').attr('id');
-			$('a[data-menu_id='+dd_menu_id+'] .ico').get(0).className = 'ico ico_ok_green';
+			var dd_menu_id = el.parents('.js-popper_element').attr('id');
+			$('a[data-popper-id='+dd_menu_id+'] .ico').get(0).className = 'ico ico_ok_green';
 			
 			notifications.showNotification(L('Спасибо! Ваша жалоба будет рассмотрена в ближайшее время.'), 'info');
 		} else{

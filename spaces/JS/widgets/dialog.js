@@ -3,6 +3,7 @@ import interact from 'interactjs';
 import module from "module";
 import require from "require";
 import { parseDataset, waitTransitionEnd } from "../utils/dom";
+import { resizeLimit } from '../utils/resize';
 
 const NS = '.dialogs';
 const dialogInstances = new Map();
@@ -153,7 +154,7 @@ export class Dialog {
 
 		await waitTransitionEnd(this.dialogElement);
 		this.dialogElement.classList.remove('dialog--transition-out');
-		this.handleResize();
+		void this.handleResize();
 	}
 
 	async toggle() {
@@ -197,7 +198,7 @@ export class Dialog {
 		await waitTransitionEnd(this.dialogElement);
 		this.dialogElement.classList.remove('dialog--transition-in');
 		this.update();
-		this.handleResize();
+		void this.handleResize();
 
 		this._triggerEvent("collapsed");
 	}
@@ -212,7 +213,7 @@ export class Dialog {
 		await waitTransitionEnd(this.dialogElement);
 		this.dialogElement.classList.remove('dialog--transition-out');
 		this.update();
-		this.handleResize();
+		void this.handleResize();
 
 		this._triggerEvent("expanded");
 	}
@@ -324,9 +325,9 @@ export class Dialog {
 
 	calcWindowSizeAndLocation() {
 		if (this.isResized()) {
-			[this.w, this.h] = resize(this.w, this.h, window.innerWidth, window.innerHeight);
+			[this.w, this.h] = resizeLimit(this.w, this.h, window.innerWidth, window.innerHeight);
 		} else {
-			[this.w, this.h] = resize(this.options.width, this.options.height, window.innerWidth, window.innerHeight);
+			[this.w, this.h] = resizeLimit(this.options.width, this.options.height, window.innerWidth, window.innerHeight);
 		}
 
 		if (this.isMoved()) {
@@ -368,6 +369,14 @@ export class Dialog {
 		const event = new CustomEvent(`dialog:${eventName}`, { detail: { dialog: this }, bubbles: true, cancelable: true });
 		this.dialogElement.dispatchEvent(event);
 		return !event.defaultPrevented;
+	}
+
+	on(eventName, handler) {
+		this.popperElement.addEventListener(`dialog:${eventName}`, handler);
+	}
+
+	off(eventName, handler) {
+		this.popperElement.removeEventListener(`dialog:${eventName}`, handler);
 	}
 
 	destroy() {
@@ -475,8 +484,6 @@ module.on("componentpage", () => {
 					dialog.expand();
 			}
 		});
-
-	console.log('dialogs inited');
 });
 
 module.on("componentpagedone", () => {
@@ -495,17 +502,4 @@ module.on("componentpagedone", () => {
 
 function isWideScreen() {
 	return window.innerWidth >= 600 && window.innerHeight >= 500;
-}
-
-function resize(w, h, limitW, limitH) {
-	const aspectRatio = w / h;
-	if (h > limitH) {
-		w = limitH * aspectRatio;
-		h = limitH;
-	}
-	if (w > limitW) {
-		w = limitW;
-		h = limitW / aspectRatio;
-	}
-	return [Math.round(w), Math.round(h)];
 }

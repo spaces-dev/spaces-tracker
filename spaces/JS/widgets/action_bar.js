@@ -3,12 +3,12 @@ import $ from '../jquery';
 import Spaces from '../spacesLib';
 import {L} from '../utils';
 import {copyToClipboard} from '../core/clipboard';
-import DdMenu from '../dd_menu';
+import { closeAllPoppers } from './popper';
 
 function init(container) {
 	// Скрываем "Поделиться с помощью..", если браузер не поддерживает
-	container.on('dd_menu_open', '.js-share_menu', function (e) {
-		let menu = $(this);
+	container.on('popper:beforeOpen', '.js-share_menu', function () {
+		const menu = $(this);
 		menu.find('[data-action="share_external"]').toggleClass('hide', typeof navigator.share !== 'function');
 		menu.find('[data-action="save_to_collections"]').addClass('hide');
 	});
@@ -43,10 +43,10 @@ function init(container) {
 		
 		setTimeout(() => {
 			set_status(false);
-			DdMenu.close();
+			closeAllPoppers();
 		}, 1500);
 	}).action('cancel', function (e) {
-		DdMenu.close();
+		closeAllPoppers();
 	});
 }
 

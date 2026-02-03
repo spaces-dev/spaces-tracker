@@ -1,218 +1,134 @@
 import module from 'module';
-import $ from './jquery';
-import Device from './device';
 import Spaces from './spacesLib';
-import page_loader from './ajaxify';
-import fixPageHeight from './min_height';
-import './anim';
+import { Popper } from './widgets/popper';
 
-var SHOW_TIMEOUT = 1000,
-	HIDE_TIMEOUT = 50,
-	ANIM_TIME_SHOW = 150,
-	ANIM_TIME_HIDE = 150,
-	TRIANGLE_SIZE = 20,
-	EVT_NAMESPACE = '.sp_hot_info';
+const SHOW_TIMEOUT = 1000;
+const HIDE_TIMEOUT = 50;
 
-var in_queue = {},
-	loaded = {},
-	show_timeout,
-	hide_timeout,
-	current_item;
-
-var CONFIG = {
+const CONFIG = {
 	user: {
 		method: 'users.popupWidget',
 		param: 'User',
-		typeName: 'u'
+		idKey: 'u'
 	},
 	comm: {
 		method: 'comm.popupWidget',
 		param: 'Comm',
-		typeName: 'c'
+		idKey: 'c'
 	}
 };
 
-var tpl = {
-	wrap(data) {
-		var html = '' + 
-			'<div id="hot_info__' + data.type + '_' + data.nid + '" class="inner__dropdown-menu dropdown-menu__wrap js-fix_height">' + 
-				data.content + 
-				'<div class="triangle js-hot_info_triangle"></div>' + 
-			'</div>';
-		return html;
-	}
-};
-
-module.on("componentpagedone", () => {
-	in_queue = {};
-	loaded = {};
-	destroyHint();
-});
+let cache = {};
+let hotInfoPopper;
+let currentHoveredLink;
+let currentHoveredLinkTime;
+let showTimerId;
+let hideTimerId;
 
 module.on("component", () => {
-	var hovered = document.querySelector(".mysite-link[onmouseover]:hover");
-	if (!hovered)
-		return;
-
-	var el = $(hovered),
-		data = el.data(),
-		nid, type, cfg, rnd = data.rnd;
-
-	if (!data.rnd)
-		data.rnd = Date.now();
-
-	$.each(CONFIG, function (k, v) {
-		if (v.typeName in data) {
-			cfg = v;
-			type = k;
-			nid = data[v.typeName];
-			return false;
-		}
-	});
-	var object_id = type + '_' + nid,
-		id = object_id + '_' + data.rnd;
-
-	if (current_item) {
-		if (current_item.id == id) {
-			stopHideHint();
-			return;
-		}
-		destroyHint();
-	}
-
-	current_item = {
-		oId: object_id,
-		id: id,
-		nid: nid,
-		type: type,
-		el: el,
-		time: Date.now()
-	};
-
-	el.on('mouseout' + EVT_NAMESPACE, function (e) {
-		startHideHint();
-	});
-
-	if (in_queue[object_id])
-		return;
-
-	if (loaded[object_id]) {
-		show_timeout = setTimeout(showHint, SHOW_TIMEOUT);
-	} else {
-		in_queue[object_id] = true;
-
-		var api_data = {Link_id: Spaces.params.link_id};
-		api_data[cfg.param] = nid;
-		Spaces.api(cfg.method, api_data, function (res) {
-			delete in_queue[object_id];
-			if (res.code == 0) {
-				loaded[object_id] = true;
-
-				$('#main').append(tpl.wrap({
-					nid: nid,
-					type: type,
-					content: res.widget
-				}));
-
-				if (current_item)
-					show_timeout = setTimeout(showHint, Math.max(0, SHOW_TIMEOUT - (Date.now() - current_item.time)));
-			} else {
-				console.error('[HOT_INFO:' + id + '] ' + Spaces.apiError(res));
-			}
-		}, {
-			onError: function (err) {
-				delete in_queue[object_id];
-				console.error('[HOT_INFO:' + id + '] ' + err);
-			}
-		});
-	}
+	const hovered = document.querySelector(".mysite-link[onmouseover]:hover");
+	hovered && initHotInfo(hovered);
 });
 
-function stopHideHint() {
-	if (!current_item)
+module.on("componentpagedone", () => {
+	cache = {};
+});
+
+function getConfig(el) {
+	for (const [type, cfg] of Object.entries(CONFIG)) {
+		if (el.dataset[cfg.idKey])
+			return { ...cfg, type, id: +el.dataset[cfg.idKey] };
+	}
+	throw new Error(`No config for hot info!`);
+}
+
+function initHotInfo(el) {
+	if (el.dataset.hotInfoInited)
 		return;
-	if (hide_timeout) {
-		clearTimeout(hide_timeout);
-		hide_timeout = null;
-	}
-}
+	el.dataset.hotInfoInited = true;
 
-function startHideHint() {
-	if (!hide_timeout)
-		hide_timeout = setTimeout(destroyHint, HIDE_TIMEOUT);
-}
-
-function destroyHint() {
-	if (current_item) {
-		var popup = $('#hot_info__' + current_item.oId);
-		
-		if ($.support.nativeAnim) {
-			popup.off(EVT_NAMESPACE).cssAnim('opacity', 'ease-in-out', ANIM_TIME_HIDE, function () {
-				popup.hide();
-			}).css("opacity", 0);
-		} else {
-			popup.hide();
+	const onMouseOver = () => {
+		currentHoveredLink = el;
+		currentHoveredLinkTime = Date.now();
+		loadHotInfo(el);
+	};
+	el.addEventListener('mouseover', onMouseOver);
+	el.addEventListener('mouseout', () => {
+		if (currentHoveredLink == el) {
+			hideHotInfo();
+			currentHoveredLink = undefined;
 		}
-		current_item.el.off(EVT_NAMESPACE);
-		
-		$(window).off(EVT_NAMESPACE);
-		
-		clearTimeout(hide_timeout);
-		clearTimeout(show_timeout);
-		current_item = hide_timeout = show_timeout = null;
-	}
+	});
+	el.removeAttribute("onmouseover");
+	onMouseOver();
 }
 
-function showHint() {
-	if (!current_item)
-		return;
-	
-	var el = current_item.el,
-		popup = $('#hot_info__' + current_item.oId),
-		triangle = popup.find('.js-hot_info_triangle');
-	
-	var menu_position = el.offset().top - (popup.height() + TRIANGLE_SIZE + el.height()),
-		header_pos = $('#siteContent').offset().top;
-	if (Math.max(header_pos, $(window).scrollTop()) > menu_position) {
-		// Рисуем попап снизу, если сверху не влазит
-		triangle.removeClass('triangle-bottom');
-		menu_position = el.offset().top + el.height() + TRIANGLE_SIZE;
-	} else {
-		// Рисуем попап сверху, т.к. снизу мы может расширять страницу бесконечно
-		triangle.addClass('triangle-bottom');
-	}
-	
-	if (!current_item.inited) {
-		if ($.support.nativeAnim && popup.hasAnim())
-			popup.cssAnim(false);
-		
-		popup.css("opacity", 0).show().offset({top: menu_position});
-		
-		if ($.support.nativeAnim) {
-			popup.cssAnim('opacity', 'ease-in-out', ANIM_TIME_SHOW).css("opacity", 1);
-		} else {
-			popup.show();
-		}
-		
-		popup.on('mouseover' + EVT_NAMESPACE, function () {
-			if (!current_item)
-				return;
-			stopHideHint();
-		}).on('mouseout' + EVT_NAMESPACE, function () {
-			if (!current_item)
-				return;
-			startHideHint();
+async function loadHotInfo(el) {
+	const config = getConfig(el);
+	const key = `${config.type}_${config.id}_${config.rnd}`;
+
+	if (!cache[key]) {
+		cache[key] = Spaces.asyncApi(config.method, {
+			Link_id: Spaces.params.link_id,
+			[config.param]: config.id
 		});
-		
-		$(window).on('scroll' + EVT_NAMESPACE + ' resize' + EVT_NAMESPACE, showHint);
-		current_item.inited = true;
-	} else {
-		popup.offset({top: menu_position});
 	}
-	
-	triangle.offset({
-		left: el.offset().left + (el.width() - TRIANGLE_SIZE) / 2
-	})
-	
-	fixPageHeight();
+
+	const response = await cache[key];
+	if (response.code != 0) {
+		delete cache[key];
+		return;
+	}
+
+	if (currentHoveredLink === el) {
+		const timeToShow = Math.max(0, SHOW_TIMEOUT - (Date.now() - currentHoveredLinkTime));
+		showTimerId = setTimeout(() => {
+			showTimerId = undefined;
+			showHotInfo(response.widget);
+		}, timeToShow);
+	}
+}
+
+function showHotInfo(widget) {
+	if (!hotInfoPopper) {
+		const windowElement = document.createElement('div');
+		windowElement.className = 'popper-dropdown popper-dropdown--with-opacity-animation';
+		document.getElementById('main_content').appendChild(windowElement);
+
+		windowElement.addEventListener('mouseover', () => cancelHiding());
+		windowElement.addEventListener('mouseout', () => hideHotInfo());
+
+		hotInfoPopper = new Popper(windowElement, {
+			exclusive: false,
+			autoScroll: false,
+			flip: true,
+			offsetTop: 6,
+			placement: 'top'
+		});
+	}
+	hotInfoPopper.content().innerHTML = widget;
+	hotInfoPopper.open({}, currentHoveredLink);
+}
+
+function hideHotInfo() {
+	if (showTimerId) {
+		clearTimeout(showTimerId);
+		showTimerId = undefined;
+		return;
+	}
+
+	if (!hideTimerId) {
+		hideTimerId = setTimeout(() => {
+			hideTimerId = undefined;
+			hotInfoPopper.closeWithAnimation();
+		}, HIDE_TIMEOUT);
+	}
+}
+
+function cancelHiding() {
+	if (hideTimerId) {
+		clearTimeout(hideTimerId);
+		hideTimerId = undefined;
+		return;
+	}
 }

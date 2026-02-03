@@ -104,7 +104,7 @@
 
 .horiz-menu__link{
 	display: block;
-	padding: if(($PC ), 11px 1px 12px 1px, 10px 1px 11px 1px);
+	padding: if($PC, 11px 1px 12px 1px, 10px 1px 11px 1px);
 	color: $header-text-color !important;
 	font-weight: bold;
 	text-transform: uppercase;

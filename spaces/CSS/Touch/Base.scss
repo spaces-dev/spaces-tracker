@@ -570,8 +570,7 @@ a.hover-item.clicked,
 .s-city__item_city.clicked:active,
 .s-city__item_light.clicked:active,
 a.item_clicked,
-a.item_clicked:hover,
-.js-dd_menu_link.strong_clicked {
+a.item_clicked:hover {
 	background: $default-clicked-bg;
 	-webkit-box-shadow: $default-clicked-shadow;
 	   -moz-box-shadow: $default-clicked-shadow;

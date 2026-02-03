@@ -1,5 +1,4 @@
 import $ from '../jquery';
-import module from "module";
 import require from "require";
 import { createPopper } from '@popperjs/core/lib/popper-lite';
 import popperFlip from '@popperjs/core/lib/modifiers/flip';
@@ -7,15 +6,27 @@ import popperPreventOverflow from '@popperjs/core/lib/modifiers/preventOverflow'
 import popperComputeStyles from '@popperjs/core/lib/modifiers/computeStyles';
 import popperOffset from '@popperjs/core/lib/modifiers/offset';
 import popperEventListeners from '@popperjs/core/lib/modifiers/eventListeners';
-import { parseDataset, scrollIntoViewIfNotVisible } from "../utils/dom";
+import { parseDataset, scrollIntoViewIfNotVisible, waitTransitionEnd } from "../utils/dom";
 import { throttleRaf } from "../utils";
 import fixPageHeight from "../min_height";
+import pageLoader from '../ajaxify';
+
+const ARROW_SIZE = 10;
+const NS = '.popper';
 
 const popperInstances = new Map();
 let popperOpenInstances = [];
 let resizeObserver;
 
 const popperTypes = {
+	custom: {},
+	spoiler: {
+		floating: false,
+		closeOnBodyClick: false,
+		autoScroll: true,
+		exclusive: true,
+		clickedClass: "js-clicked",
+	},
 	toolbar: {
 		placement: "bottom-start",
 		autoScroll: true,
@@ -28,35 +39,87 @@ const popperTypes = {
 		autoScroll: true,
 		fullWidth: true,
 		padding: 0,
-		offsetTop: 20,
+		offsetTop: 10,
 		arrow: true,
+		flip: false,
+		exclusive: true,
+	},
+	gallery: {
+		placement: "top",
+		clickedClass: "js-clicked",
+		autoScroll: false,
+		container: "#Gallery",
+		fullWidth: true,
+		padding: 0,
+		offsetTop: 0,
+		arrow: false,
 		flip: false,
 		exclusive: true,
 	}
 };
 
+initPopperWidget();
+
 export class Popper {
 	popperElement;
 	referenceElement;
-	popper;
+	engine;
+	defaultOptions = {};
+	openerOptions = {};
 	options;
 	ignoreBodyClick = false;
-	clickedClass;
 
 	constructor(popperElement, options = {}) {
 		this.popperElement = popperElement;
-		this.setOptions(options);
-		popperInstances.set(popperElement, this);
 
+		const popperType = options.type ?? this.getType();
+		delete options.type;
+
+		this.setOptions({
+			floating: true,
+			appendTo: undefined,
+			clickedClass: "",
+			placement: "auto",
+			offsetLeft: 0,
+			offsetTop: 0,
+			autoScroll: false,
+			fixed: false,
+			padding: 5,
+			fullWidth: false,
+			container: '#siteContent',
+			arrow: false,
+			flip: false,
+			exclusive: false,
+			group: undefined,
+			closeOnBodyClick: true,
+			...popperTypes[popperType],
+			...parsePopperOptions(this.element()),
+			...options,
+		});
+
+		popperInstances.set(popperElement, this);
+		this.popperElement.dataset.popperType = popperType;
 		this.popperElement.addEventListener('click', () => this._startIgnoreBodyClick());
+		this.popperElement.classList.add('js-popper_element');
+
+		if (!popperElement.id)
+			popperElement.id = `popper_${Date.now()}`;
+	}
+
+	id() {
+		return this.popperElement.id;
 	}
 
 	isOpen() {
-		return !!this.popper;
+		return this.popperElement.dataset.popperOpen === "true";
 	}
 
 	element() {
 		return this.popperElement;
+	}
+
+	content() {
+		return this.popperElement.querySelector('.js-popper_content') ?? this.popperElement;
 	}
 
 	opener() {
@@ -66,43 +129,34 @@ export class Popper {
 	update() {
 		if (!this.isOpen())
 			return;
-		this.popper.update();
+		if (this.engine)
+			this.engine.update();
 	}
 
 	setOptions(options) {
-		const baseOptions = options.type ? popperTypes[options.type] ?? {} : {};
-		this.options = {
-			clickedClass: "",
-			placement: "auto",
-			offsetLeft: 0,
-			offsetTop: 0,
-			autoScroll: false,
-			fixed: false,
-			padding: 5,
-			fullWidth: false,
-			arrow: false,
-			flip: false,
-			exclusive: false,
-			group: undefined,
-			...baseOptions,
-			...options
+		this.defaultOptions = {
+			...this.defaultOptions,
+			...options,
 		};
+		this.options = { ...this.defaultOptions, ...this.openerOptions };
 	}
 
-	mergeOptions(referenceElement, options = {}) {
-		this.setOptions({
-			...parsePopperOptions(this.element()),
-			...parsePopperOptions(referenceElement),
-			...options
-		});
-	}
+	open(openerOptions = {}, referenceElement = undefined) {
+		if (!referenceElement)
+			referenceElement = document.querySelector(`[data-popper-id="${this.element().id}"]`);
+		if (!referenceElement)
+			throw new Error(`No referenceElement!`);
 
-	openWith(referenceElement) {
 		if (this.isOpen())
 			this.close();
 
-		if (!this._triggerEvent("beforeOpen"))
+		this.referenceElement = referenceElement;
+		if (!this._triggerEvent("beforeOpen")) {
+			this.referenceElement = undefined;
 			return;
+		}
+
+		this._applyOpenQuirks();
 
 		if (this.options.exclusive) {
 			for (const popperInstance of popperOpenInstances) {
@@ -111,12 +165,47 @@ export class Popper {
 			}
 		}
 
-		this.referenceElement = referenceElement;
-		this.popperElement.dataset.popperOpen = "true";
+		this.openerOptions = {
+			...parsePopperOptions(this.referenceElement),
+			...openerOptions
+		};
+		this.options = { ...this.defaultOptions, ...this.openerOptions };
 
+		this.popperElement.dataset.popperOpen = "true";
+		this.referenceElement.dataset.popperOpen = "true";
+
+		if (this.options.clickedClass)
+			this.referenceElement.classList.add(this.options.clickedClass);
+
+		if (this.options.floating)
+			this._initPopperJs();
+
+		this._triggerEvent("afterOpen");
+		popperOpenInstances.push(this);
+
+		if (this.options.autoScroll) {
+			if (this.engine)
+				this.engine.forceUpdate();
+			scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
+		}
+	}
+
+	_initPopperJs() {
 		// FIXME: ДИЧЬ
 		const fixPageHeightThrottled = throttleRaf(() => fixPageHeight($(this.popperElement)));
 
+		let offsetTop = this.options.offsetTop;
+		if (this.options.arrow) {
+			const computedStyles = getComputedStyle(this.referenceElement);
+			const cssArrowOffset = parseFloat(computedStyles.getPropertyValue('--popper-arrow-offset') || '0');
+			offsetTop += ARROW_SIZE + cssArrowOffset;
+		} else {
+			this.popperElement.style.setProperty('--popper-arrow-offset', '-9999px');
+		}
+
+		this.popperElement.style.setProperty('--popper-top-offset', offsetTop + 'px');
+
+		const popperContainer = document.querySelector(this.options.container);
 		const popperOptions = {
 			modifiers: [
 				{
@@ -131,13 +220,13 @@ export class Popper {
 					name: 'fullWidth',
 					enabled: this.options.fullWidth,
 					phase: 'beforeWrite',
-					fn({ state }) {
-						const content = document.querySelector('#main');
-						state.styles.popper.minWidth = `${content.getBoundingClientRect().width}px`;
+					fn: ({ state }) => {
+						state.styles.popper.minWidth = popperContainer ? `${popperContainer.getBoundingClientRect().width}px` : "auto";
+						state.styles.popper.maxWidth = state.styles.popper.minWidth;
 					},
-					effect({ state }) {
-						const content = document.querySelector('#main');
-						state.elements.popper.style.minWidth = `${content.getBoundingClientRect().width}px`;
+					effect: ({ state }) => {
+						state.elements.popper.style.minWidth = popperContainer ? `${popperContainer.getBoundingClientRect().width}px` : "auto";
+						state.elements.popper.style.maxWidth = state.elements.popper.style.minWidth;
 					}
 				},
 				popperFlip,
@@ -155,12 +244,13 @@ export class Popper {
 					name: 'preventOverflow',
 					options: {
 						padding: this.options.padding,
+						boundary: popperContainer,
 					},
 				},
 				{
 					name: 'offset',
 					options: {
-						offset: [this.options.offsetLeft, this.options.offsetTop],
+						offset: [this.options.offsetLeft, offsetTop],
 					}
 				},
 				{
@@ -179,7 +269,7 @@ export class Popper {
 					enabled: this.options.flip,
 				},
 				{
-					name: 'FixPageHeight',
+					name: 'fixPageHeight',
 					enabled: true,
 					phase: 'afterWrite',
 					fn() {
@@ -195,12 +285,12 @@ export class Popper {
 						const basePlacement = state.placement.split('-')[0];
 						const axis = ['top', 'bottom'].indexOf(basePlacement) >= 0 ? 'left' : 'top';
 						const len = axis == 'left' ? 'width' : 'height';
-
+						const referenceElemenet = state.elements.reference.querySelector('.js-popper_anchor') ?? state.elements.reference;
 						const border = axis == 'left' ?
 							(state.elements.popper.offsetWidth - state.elements.popper.clientWidth) / 2 :
 							(state.elements.popper.offsetHeight - state.elements.popper.clientHeight) / 2;
 						const popperRect = state.elements.popper.getBoundingClientRect();
-						const refRect = state.elements.reference.getBoundingClientRect();
+						const refRect = referenceElemenet.getBoundingClientRect();
 						const offset = (refRect[axis] + refRect[len] / 2) - popperRect[axis] - border;
 
 						state.elements.popper.style.setProperty('--popper-arrow-offset', `${offset}px`);
@@ -210,18 +300,7 @@ export class Popper {
 			placement: this.options.placement
 		};
 
-		this.popper = createPopper(referenceElement, this.popperElement, popperOptions);
-
-		if (this.options.autoScroll) {
-			this.popper.forceUpdate();
-			scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
-		}
-
-		if (this.options.clickedClass)
-			this.referenceElement.classList.add(this.options.clickedClass);
-
-		this._triggerEvent("afterOpen");
-		popperOpenInstances.push(this);
+		this.engine = createPopper(this.referenceElement, this.popperElement, popperOptions);
 
 		this._startIgnoreBodyClick();
 
@@ -229,30 +308,22 @@ export class Popper {
 			resizeObserver.observe(this.popperElement);
 	}
 
-	toggleWith(referenceElement) {
+	toggle(openerOptions = {}, referenceElement = undefined) {
+		if (this.isOpen()) {
+			const status = this._triggerEvent('toggle', {
+				type: this.isOpen() ? 'close' : 'open',
+				oldOpener: this.opener(),
+				newOpener: referenceElement,
+			});
+			if (!status)
+				return;
+		}
+
 		if (this.isOpen()) {
 			this.close();
 		} else {
-			this.openWith(referenceElement);
+			this.open(openerOptions, referenceElement);
 		}
-	}
-
-	open(options = {}, referenceElement = undefined) {
-		if (!referenceElement)
-			referenceElement = document.querySelector(`[data-popper-id="${this.element().id}"]`);
-		if (!referenceElement)
-			throw new Error(`No referenceElement!`);
-		this.mergeOptions(referenceElement, options);
-		this.openWith(referenceElement);
-	}
-
-	toggle(options = {}, referenceElement = undefined) {
-		if (!referenceElement)
-			referenceElement = document.querySelector(`[data-popper-id="${this.element().id}"]`);
-		if (!referenceElement)
-			throw new Error(`No referenceElement!`);
-		this.mergeOptions(referenceElement, options);
-		this.toggleWith(referenceElement);
 	}
 
 	close() {
@@ -265,11 +336,15 @@ export class Popper {
 		if (this.options.clickedClass)
 			this.referenceElement.classList.remove(this.options.clickedClass);
 
-		this.referenceElement = undefined;
-
 		this.popperElement.dataset.popperOpen = "false";
-		this.popper.destroy();
-		this.popper = undefined;
+		delete this.referenceElement.dataset.popperOpen;
+
+		if (this.engine) {
+			this.engine.destroy();
+			this.engine = undefined;
+		}
+
+		this.referenceElement = undefined;
 
 		this._triggerEvent("afterClose");
 		popperOpenInstances = popperOpenInstances.filter((instance) => instance !== this);
@@ -280,7 +355,17 @@ export class Popper {
 			resizeObserver.unobserve(this.popperElement);
 	}
 
+	closeWithAnimation(timeout = 300) {
+		this.popperElement.dataset.popperIsClosing = true;
+		waitTransitionEnd(this.popperElement, timeout).then(() => {
+			delete this.popperElement.dataset.popperIsClosing;
+			this.close();
+		});
+	}
+
 	handleBodyClick(e) {
+		if (!this.options.closeOnBodyClick)
+			return;
 		if (this.ignoreBodyClick || !this.isOpen())
 			return;
 
@@ -291,12 +376,50 @@ export class Popper {
 	}
 
 	handleResize() {
-		if (this.popper) {
-			if (this.options.autoScroll) {
-				this.popper.forceUpdate();
-				scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
+		if (this.options.autoScroll) {
+			if (this.engine)
+				this.engine.forceUpdate();
+			scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
+		} else {
+			if (this.engine)
+				this.engine.update();
+		}
+	}
+
+	_applyOpenQuirks() {
+		// FIXME: Мы тебе добавили меню в меню чтобы ты мог открывать меню пока открываешь меню 😎
+		// Пример: кнопка "Дружить" в менюшке виджета юзера (раздел /users/)
+		let parentMenu;
+		do {
+			parentMenu = getNearestPopper(this.element().parentNode);
+			if (parentMenu) {
+				console.warn(`[popper] quirks: menu #${this.element().id} in menu #${parentMenu.element().id}`);
+				parentMenu.element().parentNode.insertBefore(this.element(), parentMenu.element());
+			}
+		} while (parentMenu);
+
+		// FIXME: Кто-то не смог разрулить вёрстку и спойлер куда-то перемещается
+		// Пример: переключатель краткий вид/расширенный вид
+		if (this.options.appendTo) {
+			const newParent = document.querySelector(this.options.appendTo);
+			if (newParent) {
+				newParent.appendChild(this.element());
 			} else {
-				this.popper.update();
+				console.error(`[popper] new parent not found: ${this.options.appendTo}`);
+			}
+		}
+
+		// FIXME: Мощнейший костыль для спойлеров
+		if (this.getType() == 'spoiler') {
+			const ddSpoiler = this.element().closest('.js-dd_spoiler');
+			if (ddSpoiler) {
+				console.warn(`[popper] quirks: dd_spoiler shit.............. :( :( :(`);
+				this.element().classList.remove('popper-dropdown');
+				this.element().classList.add('popper-spoiler');
+				for (const className of ddSpoiler.dataset.class.trim().split(/\s+/))
+					this.element().classList.add(className);
+				ddSpoiler.classList.remove('js-dd_spoiler');
+				delete ddSpoiler.dataset.class;
 			}
 		}
 	}
@@ -306,10 +429,33 @@ export class Popper {
 		setTimeout(() => this.ignoreBodyClick = false, 0);
 	}
 
-	_triggerEvent(eventName) {
-		const event = new CustomEvent(`popper:${eventName}`, { detail: { popper: this }, bubbles: true });
+	_triggerEvent(eventName, data = {}) {
+		const event = new CustomEvent(`popper:${eventName}`, { detail: { popper: this, ...data }, bubbles: true, cancelable: true });
 		this.popperElement.dispatchEvent(event);
 		return !event.defaultPrevented;
+	}
+
+	on(eventName, handler) {
+		this.popperElement.addEventListener(`popper:${eventName}`, handler);
+	}
+
+	off(eventName, handler) {
+		this.popperElement.removeEventListener(`popper:${eventName}`, handler);
+	}
+
+	getType() {
+		if (this.popperElement.dataset.popperType)
+			return this.popperElement.dataset.popperType;
+		if (this.popperElement.classList.contains("popper-dropdown")) {
+			// FIXME: Мощнейший костыль для спойлеров
+			const ddSpoiler = this.element().closest('.js-dd_spoiler');
+			if (ddSpoiler)
+				return "spoiler";
+			return "dropdown";
+		}
+		if (this.popperElement.classList.contains("popper-spoiler"))
+			return "spoiler";
+		return "custom";
 	}
 
 	destroy() {
@@ -369,7 +515,7 @@ function handleBodyClick(e) {
 
 function parsePopperOptions(element) {
 	return parseDataset(element, {
-		type: "string",
+		floating: "bool",
 		placement: "string",
 		clickedClass: "string",
 		group: "string",
@@ -380,31 +526,65 @@ function parsePopperOptions(element) {
 		fixed: "bool",
 		arrow: "bool",
 		fullWidth: "bool",
+		container: "string",
 		flip: "bool",
 		exclusive: "bool",
+		closeOnBodyClick: "bool",
+		appendTo: "string",
 	}, 'popper');
 }
 
-module.on("componentpage", () => {
+function initPopperWidget() {
 	if (window.ResizeObserver)
 		resizeObserver = new ResizeObserver(throttleRaf(handleResize));
 
 	document.body.addEventListener("click", handleBodyClick, { passive: true });
-	$('#main')
-		.on('click', '.js-popper_open', function (e) {
-			e.preventDefault();
 
-			const popperByOpener = getPopperByOpener(this);
-			const popperById = getPopperById(this.dataset.popperId);
+	const handlePopperOpen = (opener) => {
+		const popperByOpener = getPopperByOpener(opener);
+		const popperById = getPopperById(opener.dataset.popperId);
+		const popperByReference = getNearestPopper(opener);
 
-			if (popperByOpener && popperByOpener != popperById) {
-				popperByOpener.close();
-				return;
-			}
+		if (popperByOpener && popperByOpener != popperById) {
+			popperByOpener.close();
+			return;
+		}
 
-			popperById.toggle(this);
+		if (popperByReference?.isOpen()) {
+			// Открываем меню из меню (новое меню заменяет текущее)
+			popperById.toggle({}, popperByReference.opener());
+		} else {
+			popperById.toggle({}, opener);
+		}
+	};
+
+	$('body')
+		.on('focus' + NS, '.js-popper_open_focus', function (e) {
+			handlePopperOpen(this);
 		})
-		.on('click', '.js-popper_close', function (e) {
+		.on('blur' + NS, '.js-popper_open_focus', function (e) {
+			const popperByOpener = getPopperByOpener(this);
+			if (popperByOpener) {
+				setTimeout(() => {
+					const hasFocusedElement = (
+						document.activeElement &&
+						document.activeElement !== document.body &&
+						document.activeElement !== document.documentElement
+					);
+					if (hasFocusedElement && !popperByOpener.element().contains(document.activeElement))
+						popperByOpener.close();
+				}, 0);
+			}
+		})
+		.on('click' + NS, '.js-popper_open_focus', function (e) {
+			e.stopPropagation();
+			e.stopImmediatePropagation();
+		})
+		.on('click' + NS, '.js-popper_open, .js-action_link[data-action="popper_open"]', function (e) {
+			e.preventDefault();
+			handlePopperOpen(this);
+		})
+		.on('click' + NS, '.js-popper_close, .js-action_link[data-action="popper_close"]', function (e) {
 			e.preventDefault();
 			if (this.dataset.popperId) {
 				const popper = getPopperById(this.dataset.popperId);
@@ -415,14 +595,18 @@ module.on("componentpage", () => {
 				popper?.close();
 			}
 		});
-});
 
-module.on("componentpagedone", () => {
-	document.body.removeEventListener("click", handleBodyClick, false);
+	pageLoader.on('requeststart', 'popper', () => {
+		for (const popperInstance of popperOpenInstances)
+			popperInstance.close();
+	}, true);
 
-	for (const [_, popperInstance] of popperInstances)
-		popperInstance.destroy();
-
-	if (resizeObserver)
-		resizeObserver.disconnect();
-});
+	pageLoader.on('shutdown', 'popper', () => {
+		setTimeout(() => {
+			for (const [_, popperInstance] of popperInstances) {
+				if (!document.body.contains(popperInstance.element()))
+					popperInstance.destroy();
+			}
+		}, 0);
+	}, true);
+}

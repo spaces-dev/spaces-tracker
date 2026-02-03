@@ -6,10 +6,10 @@ import * as pushstream from './core/lp';
 import {Spaces, Codes} from './spacesLib';
 import page_loader from './ajaxify';
 import notifications from './notifications';
-import DdMenu from './dd_menu';
 import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
+import { closeAllPoppers, getNearestPopper, getPopperById } from './widgets/popper';
 
 var CHAT_REFRESH_INTERVAL = 30 * 1000;
 var tpl = {
@@ -30,10 +30,10 @@ var tpl = {
 				'<tr>' + 
 					'<td class="table__cell links-group links-group_attention table_cell_border" width="50%">' + 
 						'<a href="#" class="list-link js-call_moder_confirm" data-name="' + html_wrap(data.name || '') + '" data-id="' + data.id + '">' + 
-							'<span class="ico ico_att"></span>' + L('Отправить') + '</a>' + 
+							'<span class="ico ico_att_red"></span>' + L('Отправить') + '</a>' +
 					'</td>' + 
 					'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
-						'<a href="#" class="list-link js-dd_menu_close">' + 
+						'<a href="#" class="list-link js-popper_close">' +
 							'<span class="ico ico_history"></span>' + L('Отмена') + '</a>' + 
 					'</td>' + 
 				'</tr>' + 
@@ -111,7 +111,6 @@ var Chat = {
 		if (notifications && chat_params)
 			notifications.setNotifFilter(new RegExp('Rid=' + chat_params.roomid));
 		
-		var complaint_confirm = new DdMenu();
 		$('body').on('click.onRequest', '.js-personal_answer, .js-private_answer', function (e) {
 			if (e.ajaxify)
 				return;
@@ -142,7 +141,7 @@ var Chat = {
 		}).on('click', '.js-call_moder_confirm', function (e) {
 			e.preventDefault();
 			var el = $(this);
-			DdMenu.close();
+			closeAllPoppers();
 			Spaces.api("chat.callModer", {
 				CK: null,
 				Call_moder: el.data('id')
@@ -179,7 +178,7 @@ var Chat = {
 				CK: null,
 				Msg_id: id
 			}, function (res) {
-				DdMenu.close();
+				closeAllPoppers();
 				if (res.code != 0) {
 					attaches_block.html(tpl.hideAttachesError({
 						error:	Spaces.apiError(res),
@@ -199,15 +198,13 @@ var Chat = {
 					}));
 				}
 			});
-		}).on('click', '.js-call_moder', function (e) {
-			e.preventDefault();
-			var el = $(this),
-				opener = DdMenu.current().data("menu_opener");
-			complaint_confirm.content().html(tpl.confirmCompl({
-				id: el.data('id'),
-				name: el.data('name')
+		}).on('popper:beforeOpen', '[id^="chat_complaint_confirm_"]', function (e) {
+			const menu = $(this);
+			const message = menu.parents('.js-message');
+			menu.html(tpl.confirmCompl({
+				id: message.data('id'),
+				name: message.data('author'),
 			}));
-			complaint_confirm.openAs(opener);
 		}).on('click', '#remove_recipient', function (e) {
 			e.preventDefault();
 			Chat.removeRecipient();
@@ -220,7 +217,7 @@ var Chat = {
 		})
 		
 		// Приглашения
-		.on('dd_menu_open', '#invite_friend_menu', function (e) {
+		.on('popper:beforeOpen', '#invite_friend_menu', function (e) {
 			let input = $('#invite_friend_input');
 			Spaces.view.setInputError(input, false);
 		}).on('focus', '#invite_friend_input', function (e) {
@@ -259,7 +256,7 @@ var Chat = {
 					} else {
 						Spaces.showMsg(L('Приглашения отправлены'), {hideTimeout: 1500});
 						$('html, body').scrollTop(0);
-						DdMenu.close('invite_friend_menu');
+						getPopperById("invite_friend_menu")?.close();
 					}
 				}, {
 					onError: function () {
