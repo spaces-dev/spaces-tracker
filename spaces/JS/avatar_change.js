@@ -4,7 +4,7 @@ import $ from './jquery';
 import Spaces from './spacesLib';
 import AttachSelector from './widgets/attach_selector';
 import {L, tick} from './utils';
-import { closeAllPoppers, getNearestPopper, Popper } from './widgets/popper';
+import { closeAllPoppers, getNearestPopper, getPopperById, Popper } from './widgets/popper';
 
 var params, spinner_avatar,
 	type, cfg, last_api_request, editorWidnow, generatorWindow;
@@ -195,7 +195,8 @@ var AvatarChange = {
 						AvatarChange.selectAvatar(file_id, preview, preview_2x);
 					},
 					onCancel() {
-						$('.change_avatar_link').click();
+						const parentPopperId = $('.change_avatar_link').data("popperId");
+						getPopperById(parentPopperId)?.open({}, opener);
 					}
 				}
 			);
@@ -215,7 +216,7 @@ var AvatarChange = {
 				att.getForm().append(windowElement);
 
 				editorWidnow = new Popper(windowElement);
-				editorWidnow.on('afterClose', async () => AvatarCrop.destroy($(editorWidnow.content())));
+				editorWidnow.on('afterClose', () => AvatarCrop.destroy($(editorWidnow.content())));
 			}
 
 			AvatarCrop.setup(

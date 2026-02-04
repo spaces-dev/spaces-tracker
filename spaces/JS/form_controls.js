@@ -4,7 +4,7 @@ import Device from './device';
 import {Spaces, Codes} from './spacesLib';
 import './form_tools';
 import {L} from './utils';
-import { closeAllPoppers } from './widgets/popper';
+import { closeAllPoppers, getNearestPopper, getPopperById } from './widgets/popper';
 
 var $body = $('body');
 
@@ -138,11 +138,12 @@ $body.on('click', '.js-radio', function(e) {
 		} else {
 			$('#'+label_id+ ' .drop-down-label_text').text(el.text());
 		}
-
-		$body.trigger('click');
 	}
 
-	closeAllPoppers();
+	// FIXME: Разрулить красиво, но радио-списков пока слишком много, нет времени на рефакторинг
+	const popper = getNearestPopper(this);
+	if (popper && popper.id().startsWith(`drop-down-list_${chb.get(0).name}`))
+		popper.close();
 });
 
 $body.on('click', '.js-toggle', function(e){

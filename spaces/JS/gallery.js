@@ -220,7 +220,7 @@ var tpl = {
 			'</div>' + 
 			'<div class="gallery__loader_shadow"></div>' + 
 			'<div class="gallery__shadow_error" id="Gallery_error"></div>' + 
-			'<div class="popper-dropdown" data-popper-type="gallery" id="g_share_menu">' +
+			'<div class="popper-dropdown js-share_menu" data-popper-type="gallery" id="g_share_menu">' +
 				'<div class="widgets-group dropdown-menu js-ddmenu_content"></div>' +
 			'</div>' +
 		'</div>';
