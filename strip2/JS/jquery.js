@@ -196,7 +196,10 @@ $.fn.action = function (actions, callback, ns = undefined) {
 		.split(/\s+/)
 		.map((action) => `.js-action_link[data-action="${action}"]`)
 		.join(", ");
-	return this.on('click' + (ns ?? ''), selector, callback);
+	return this.on('click' + (ns ?? ''), selector, function (...args) {
+		args[0].linkAction = this.dataset.action;
+		return callback.apply(this, args);
+	});
 };
 
 $.fn.findByPos = function (cur_pos, dir) {
