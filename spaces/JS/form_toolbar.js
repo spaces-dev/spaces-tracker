@@ -517,7 +517,7 @@ function Toolbar(el, opts) {
 		smiles_menu = toolbar.find('.js-bb_smile_menu');
 		bb_more = toolbar.find('.js-bb_more').parent('td');
 
-		el.parents('form').find('.js-smile').show().off('click').on('click', function (e) {
+		el.parents('form').find('.js-smile').show().removeClass('js-smile').on('click', function (e) {
 			e.preventDefault();
 			toggleSmiles($(this));
 		});

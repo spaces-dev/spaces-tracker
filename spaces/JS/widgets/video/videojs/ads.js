@@ -3,6 +3,7 @@ import 'videojs-ima';
 import { loadGoogleImaSdk } from '../ima';
 import cookie from '../../../cookie';
 import SPACES_PARAMS from '../../../core/env';
+import { reachGoal } from '../../../metrics/track';
 
 const EVENTS_FOR_SAVE = [
 	'play',
@@ -65,6 +66,8 @@ export function setupAds(player, adBreaks) {
 	for (const type of EVENTS_FOR_SAVE)
 		player.on(type, onDeferEvent);
 
+	reachGoal("player_has_ads");
+
 	loadGoogleImaSdk()
 		.then(() => {
 			if (player.isDisposed())
@@ -86,6 +89,8 @@ export function setupAds(player, adBreaks) {
 			});
 		})
 		.catch((e) => {
+			reachGoal("player_ads_sdk_error");
+
 			if (player.isDisposed())
 				return;
 
@@ -93,6 +98,20 @@ export function setupAds(player, adBreaks) {
 			for (const type of EVENTS_FOR_SAVE)
 				player.off(type, onDeferEvent);
 		});
+
+	player.one("adsready", () => {
+		player.ima.addEventListener(google.ima.AdEvent.Type.AD_BREAK_FETCH_ERROR, () => {
+			reachGoal("player_ads_error");
+		});
+		player.ima.addEventListener(google.ima.AdEvent.Type.STARTED, (e) => {
+			reachGoal("player_ads_play");
+			reachGoal(`player_ads_play_${getAdTypeFromAdEvent(e)}`);
+		});
+		player.ima.addEventListener(google.ima.AdEvent.Type.CLICK, (e) => {
+			reachGoal("player_ads_click");
+			reachGoal(`player_ads_click_${getAdTypeFromAdEvent(e)}`);
+		});
+	});
 }
 
 // google ima не поддерживает ленивую инициализацию
@@ -147,6 +166,22 @@ function initGoogleIma(player, deferEvents, options) {
 		player.el().removeEventListener(startEvent, initAdsContainer, false);
 	};
 	player.el().addEventListener(startEvent, initAdsContainer, false);
+}
+
+function getAdTypeFromAdEvent(e) {
+	const ad = e.getAd();
+	const pod = ad.getAdPodInfo();
+
+	const podIndex = pod.getPodIndex();
+	const timeOffset = pod.getTimeOffset();
+
+	if (podIndex === 0 && timeOffset === 0) {
+		return 'preroll';
+	} else if (timeOffset === -1) {
+		return 'postroll';
+	} else {
+		return 'midroll';
+	}
 }
 
 function createVmap(adBreaks) {
