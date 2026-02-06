@@ -1,6 +1,5 @@
 import {executeScripts} from 'loader';
 import $ from './vendor/jquery';
-import Device from './device';
 
 // For debug
 window.$ = $;
@@ -192,19 +191,15 @@ $.fn.fontMetrics = function (word) {
 	return res;
 };
 
-$.fn.action = function (actions, callback) {
-	var el = this;
-	actions = $.trim(actions).split(/\s+/);
-	el.on('click', '.js-action_link', function (e) {
-		var args = arguments,
-			link = $(this),
-			action = link.data('action');
-		if ($.inArray(action, actions) >= 0) {
-			e.linkAction = action;
-			return callback.apply(this, args);
-		}
+$.fn.action = function (actions, callback, ns = undefined) {
+	const selector = actions.trim()
+		.split(/\s+/)
+		.map((action) => `.js-action_link[data-action="${action}"]`)
+		.join(", ");
+	return this.on('click' + (ns ?? ''), selector, function (...args) {
+		args[0].linkAction = this.dataset.action;
+		return callback.apply(this, args);
 	});
-	return el;
 };
 
 $.fn.findByPos = function (cur_pos, dir) {
