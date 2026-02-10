@@ -227,10 +227,6 @@
 	padding-top: 7px;
 }
 
-#mail__members_cnt, #mail_typing {
-	padding-bottom: 7px;
-}
-
 @if ($DARK_MODE) {
 	.mail__dialog_message {
 		.blog-item_short_shared, .quote, .code_tag, .att_wrap {
@@ -386,8 +382,9 @@
 	margin-left: 50px;
 }
 
-.mail__typing,
-.mail__members_cnt{
+#mail_user_activity,
+#mail_typing,
+#mail_members_cnt {
 	color: $secondary-text-color !important;
 	min-height: 18px;
 }

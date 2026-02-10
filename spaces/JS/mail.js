@@ -945,7 +945,7 @@ var mailCore = {
 		if (!enable) {
 			place.typing.empty().hide();
 			place.text.show();
-			$('#user_activity, #mail__members_cnt').show();
+			$('#mail_user_activity, #mail_members_cnt').show();
 			
 			if (!typing.talk_id || (!typing.users && !typing.voice) || force) {
 				delete mailCore.typings[typing.key];
@@ -1022,7 +1022,7 @@ var mailCore = {
 						if (from_cl) {
 							place.typing.show().html('<span class="ico_mail ico_mail_write"></span> ' + writing + points[mailCore.typing.cnt]);
 						} else {
-							$('#user_activity, #mail__members_cnt').hide();
+							$('#mail_user_activity, #mail_members_cnt').hide();
 							place.typing.show().html(
 								'<span class="ico_mail ico_mail_write"></span> ' + 
 								writing + points[mailCore.typing.cnt]
