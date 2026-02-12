@@ -62,7 +62,8 @@ var tpl = {
 		if (!data.additionalMenu)
 			return tpl.fileItemLite(data);
 		
-		let file_fields_html = $('#upload_fields_template').text().replace(/x-script/g, 'script');
+		const fileFields = $('#upload_fields_template').text().replace(/x-script/g, 'script');
+		const fileSize = data.size ? Spaces.getHumanSize(data.size) : "";
 		
 		return `
 			<div
@@ -75,7 +76,7 @@ var tpl = {
 					<div class="upload_preview t_center">
 						<img src="${filters[data.type].thumb}" alt="" class="preview m" id="upload_thumb_${data.id}" style="width: 100%" />
 					</div>
-					<div class="t_center normal-stnd stnd_padd4">${(data.size ? Spaces.getHumanSize(data.size) : "")}</div>
+					${Device.type == 'touch' ? `` : `<div class="t_center normal-stnd stnd_padd4">${fileSize}</div>`}
 				</td>
 				<td style="width: 100%; vertical-align: top">
 					<div class="cl break-word">
@@ -84,10 +85,9 @@ var tpl = {
 						</a>
 						<span class="grey">Файл <span class="js-upload_file_number">0</span>:</span> ${html_wrap(data.name)}
 					</div>
+					${Device.type == 'touch' ? `<div class="grey pad_t_a">${fileSize}</div>` : ``}
 					<div class="normal-stnd">
-						<div class="js-upload_file_fields">
-							${file_fields_html}
-						</div>
+						${Device.type == 'touch' ? '' : `<div class="js-upload_file_fields">${fileFields}</div>`}
 						<div class="cl">
 							<div class="pad_t_a hide js-upload_pb_ui">
 								<table class="table__wrap table_progress table_progress-full">
@@ -112,6 +112,7 @@ var tpl = {
 					</div>
 				</td>
 				</tr></table>
+				${Device.type == 'touch' ? `<div class="js-upload_file_fields">${fileFields}</div>` : ''}
 			</div>
 		`;
 	},

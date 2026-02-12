@@ -1,0 +1,80 @@
+@use "Common/Theme" as *;
+
+.categories-selector {
+	padding: 10px 15px;
+	background: $content-bg;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+
+	&__error {
+		color: $error-message-color;
+		background: $error-message-bg;
+		padding: 10px;
+	}
+
+	&__categories {
+		border: 1px solid $separator-color;
+	}
+
+	&--is-collapsed {
+		.categories-selector__categories {
+			display: none;
+		}
+
+		.categories-selector__offers {
+			display: none;
+		}
+
+		.categories-selector__search {
+			display: none;
+		}
+	}
+
+	/* FIXME: фиджет должен знать что он внутри upload формы и щадавать флаг через BEM */
+	#upload_form & {
+		padding: 0;
+		padding-top: 15px;
+	}
+}
+
+.categories-selector-grid {
+	.error__item { /* Костыль :( */
+		flex: 1;
+		margin: 0 !important;
+		padding: 0 !important;
+		border-top: none !important;
+		border-left: none !important;
+		border-right: none !important;
+		border-bottom: 0 !important;
+	}
+}
+
+@media all and (min-width: 600px) {
+	.categories-selector-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		background: $separator-color;
+		gap: 1px;
+		border-bottom: 1px solid $separator-color;
+
+		&__item {
+			display: flex;
+			background: $content-bg;
+			&--is-active {
+				background: $default-hover-bg
+			}
+		}
+
+		.form-checkbox {
+			border-bottom: none;
+		}
+	}
+}
+
+/**
+ * КОСТЫЛИШИ
+ */
+.xxx_cats_item-active {
+	background: $default-hover-bg
+}

@@ -92,8 +92,8 @@ $body.on('change', '.js-select', function() {
 });
 
 $body.on('click', '.js-radio', function(e) {
-	// e.preventDefault();
-	// e.stopPropagation();
+	e.preventDefault();
+	e.stopPropagation();
 
 	var el = $(this),
 		chb = el.find('input[type=radio]'),
@@ -103,8 +103,24 @@ $body.on('click', '.js-radio', function(e) {
 		change_ico = el.data('change_ico'),
 		checked_class = el.data('checked_class') || 'form-checkbox_checked';
 
-	chb.get(0).checked = true;
-	chb.trigger('change');
+	const closePopper = () => {
+		// FIXME: Разрулить красиво, но радио-списков пока слишком много, нет времени на рефакторинг
+		const popper = getNearestPopper(this);
+		if (popper && popper.id().startsWith(`drop-down-list_${chb.get(0).name}`))
+			popper.close();
+	};
+
+	const prevChecked = $(`.js-radio-${chb.prop("name")} input[type="radio"]:checked`);
+	chb.prop("checked", true);
+
+	const evt = $.Event('change');
+	chb.trigger(evt);
+	if (evt.isDefaultPrevented()) {
+		console.log("prevChecked=", prevChecked.val(), prevChecked);
+		prevChecked.prop("checked", true);
+		closePopper();
+		return;
+	}
 
 	$('.js-radio-' + radioName).each(function () {
 		var radio = $(this);
@@ -140,10 +156,7 @@ $body.on('click', '.js-radio', function(e) {
 		}
 	}
 
-	// FIXME: Разрулить красиво, но радио-списков пока слишком много, нет времени на рефакторинг
-	const popper = getNearestPopper(this);
-	if (popper && popper.id().startsWith(`drop-down-list_${chb.get(0).name}`))
-		popper.close();
+	closePopper();
 });
 
 $body.on('click', '.js-toggle', function(e){
@@ -184,9 +197,15 @@ $body.on('click', '.js-horiz_mode', function(e){
 	const radioName = chb.attr('name');
 	const wrap = el.parents('.js-input_error_wrap');
 
-	chb.trigger('change');
+	const prevChecked = $(`.js-horiz_mode-${chb.prop("name")} input[type="radio"]:checked`);
+	chb.prop("checked", true);
 
-	chb.get(0).checked = true;
+	const evt = $.Event('change');
+	chb.trigger(evt);
+	if (evt.isDefaultPrevented()) {
+		prevChecked.prop("checked", true);
+		return;
+	}
 
 	const descriptionBlock = wrap.find('.js-input_description');
 	descriptionBlock

@@ -152,7 +152,7 @@ function initItem( item ) {
 					File_id: item.dataset.fileId,
 					Ftype: item.dataset.fileType,
 					CK: null,
-					caT: nextCats,
+					CaT: nextCats,
 				},
 				res => {
 					if ( res.code != 0 )

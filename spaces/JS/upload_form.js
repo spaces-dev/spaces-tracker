@@ -378,14 +378,26 @@ function showFileErrors(file) {
 		new_filename:	'fn',
 		name:			'descrR',
 		CaT:			'cats_q',
-		caT:			'cats_q',
+		CaT:			'cats_q',
 	};
 	
 	let focused = document.activeElement;
 	let common_error = [];
 	
-	for (let k in file.errors) {
-		let element = file_wrap.find(`[name=${errors_map[k] || k}]`);
+	for (const k in file.errors) {
+		const evt = new CustomEvent('uploadError', {
+			cancelable: true,
+			detail: {
+				name: k,
+				error: file.errors[k],
+			}
+		});
+		file_wrap[0].dispatchEvent(evt);
+
+		if (evt.defaultPrevented)
+			continue;
+
+		const element = file_wrap.find(`[name=${errors_map[k] || k}]`);
 		if (element.length) {
 			if (element[0] != focused)
 				Spaces.view.setInputError(element, file.errors[k]);
