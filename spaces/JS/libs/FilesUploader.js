@@ -76,6 +76,7 @@ $.extend(FilesUploader.prototype, {
 			multiple: false,
 			maxFiles: 1,
 			responseType: "json",
+			formPostfixes: [],
 
 			allowedExtensions: [],
 			notAllowedExtensions: []
@@ -362,6 +363,9 @@ $.extend(FilesUploader.prototype, {
 				break;
 			}
 
+			const usedPostfixes = self.files.map((f) => f.postfix);
+			const postfix = self.params.formPostfixes.find((p) => !usedPostfixes.includes(p)) ?? '';
+
 			if (self.ajax && !FilesUploader.inAppUpload()) {
 				if (!(file instanceof File) || !file.name) {
 					var ext = mime2ext[file.type];
@@ -377,7 +381,7 @@ $.extend(FilesUploader.prototype, {
 
 			var id = Date.now() + '_' + i,
 				file_struct = {id: id, file: file, name: filename, ext: fileext, size: filesize,
-					postData: self.params.postData, action: self.params.action, formName: self.params.name};
+					postData: self.params.postData, action: self.params.action, formName: self.params.name, postfix};
 
 			if (self.params.maxSize && filesize !== undefined && filesize !== null) {
 				if (self.params.maxSize < filesize) {

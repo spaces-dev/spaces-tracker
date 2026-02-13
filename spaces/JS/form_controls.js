@@ -355,6 +355,18 @@ $body.on('click', '.js-switcher', function (e) {
 			}
 		});
 	} else {
+		const evt = new CustomEvent(`switchToggle`, {
+			detail: {
+				action: data.action,
+				state,
+				setState: update_state,
+			},
+			cancelable: true,
+			bubbles: true,
+		});
+		this.dispatchEvent(evt);
+		if (evt.defaultPrevented)
+			return;
 		update_state(state);
 	}
 }).on('click', '.js-addremove', function (e) {

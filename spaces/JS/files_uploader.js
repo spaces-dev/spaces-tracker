@@ -62,7 +62,10 @@ var tpl = {
 		if (!data.additionalMenu)
 			return tpl.fileItemLite(data);
 		
-		const fileFields = $('#upload_fields_template').text().replace(/x-script/g, 'script');
+		const fileFields = $('#upload_fields_template')
+			.text()
+			.replace(/x-script/g, 'script')
+			.replace(/__PARAM_POSTFIX__/g, data.postfix);
 		const fileSize = data.size ? Spaces.getHumanSize(data.size) : "";
 		
 		return `
@@ -298,7 +301,7 @@ var FileUploader = new (Class({
 				type = $(this).data('type');
 			if (id !== undefined) {
 				uploader.remove(id);
-				self.removeTmpFile(id);
+				self.removeTmpFile(id);formPostfixes
 			} else
 				uploader.reset();
 		});
@@ -421,7 +424,7 @@ var FileUploader = new (Class({
 				
 				// Добавляем прогрессбар
 				current_progress_wrap = $(params.multiple ? 
-					'#upload_pb_wrap_' + file.id : '#upload_main_pb');
+					'#upload_pb_wrap_' + file.id : '#formPostfixesupload_main_pb');
 				current_progress_wrap.html(tpl.fileProgress({
 					id: file.id
 				})).show();
@@ -620,6 +623,7 @@ var FileUploader = new (Class({
 			uploadWidget: null,
 			noDragClass: false,
 			buttonClass: {},
+			formPostfixes: [],
 			mode: MODES.BUTTON
 		}, args);
 		
@@ -672,6 +676,7 @@ var FileUploader = new (Class({
 			name: state_params.name,
 			maxSize: max_size ? max_size + 2 * 1024 * 1024 : 0,
 			maxFiles: state_params.maxFiles,
+			formPostfixes: state_params.formPostfixes,
 			postData: {json: 1},
 			accept: filters[current_type].accept,
 			allowedExtensions: filters[current_type].exts,
@@ -749,7 +754,7 @@ var FileUploader = new (Class({
 			type: state_params.type
 		}, file, {
 			noWrap:				state_params.inlineFileWidget,
-			additionalMenu:		state_params.additionalMenu
+			additionalMenu:		state_params.additionalMenu,
 		})));
 		
 		if (state_params.filenameAutocomplete) {

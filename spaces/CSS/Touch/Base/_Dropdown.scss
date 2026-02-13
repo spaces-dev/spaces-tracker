@@ -376,7 +376,16 @@
 	display: inline-block;
 	position: relative;
 	cursor: pointer;
-	color: $inline-link-darkblue-color
+	color: $inline-link-darkblue-color;
+
+	&--is-disabled {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
+	&--is-readonly {
+		pointer-events: none;
+	}
 }
 
 .touch .drop-down-label_area {

@@ -15,6 +15,8 @@ const tpl = {
 };
 
 function initModule(parent) {
+	const postfix = parent.data('postfix') ?? "";
+
 	parent.itemsSelector({
 		selector:		'.categories-selector-grid__item:not(.hide):not([data-stub])',
 		activeSelector:	'.categories-selector-grid__item--is-active',
@@ -73,7 +75,7 @@ function initModule(parent) {
 
 	parent.on('input clearSearchForm', '.js-search__input', () => searchCategoriesByWord());
 
-	parent.on('change', 'input[name="Forient"]', function (e) {
+	parent.on('change', `input[name="Forient${postfix}"]`, function (e) {
 		if (parent.data('isNew'))
 			removeConflicts();
 
@@ -164,7 +166,7 @@ function initModule(parent) {
 	parent.action('add_file_cat', async function (e) {
 		e.preventDefault();
 		const link = $(this);
-		const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="CaT"][value="${link.data('category')}"])`);
+		const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="CaT${postfix}"][value="${link.data('category')}"])`);
 		if (!categoryCheckbox.hasClass('form-checkbox_checked'))
 			categoryCheckbox.click();
 	});
@@ -185,7 +187,7 @@ function initModule(parent) {
 		toggleLoading(false);
 
 		if (link.data('accept')) {
-			const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="CaT"][value="${link.data('category')}"])`);
+			const categoryCheckbox = parent.find(`.js-checkbox:has(input[name="CaT${postfix}"][value="${link.data('category')}"])`);
 			if (!categoryCheckbox.hasClass('form-checkbox_checked'))
 				categoryCheckbox.click();
 		}
@@ -239,10 +241,11 @@ function initModule(parent) {
 		setError(undefined);
 
 		const apiData = $.extend({
+			pp: postfix,
 			File_id: fileId,
 			FiLe_id: parent.data('filesIds'),
 			Ftype: fileType,
-			CK: null
+			CK: null,
 		}, Url.serializeForm(parent));
 
 		const toggleLoading = (flag) => {
@@ -362,7 +365,7 @@ function initModule(parent) {
 	}
 
 	function getCurrentOrientation() {
-		const selectedOrientation = parent.find('input[name="Forient"]:checked');
+		const selectedOrientation = parent.find(`input[name="Forient${postfix}"]:checked`);
 		return [+selectedOrientation.val(), selectedOrientation.parent().text().trim()];
 	}
 }

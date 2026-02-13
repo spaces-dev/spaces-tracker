@@ -44,7 +44,8 @@ function initForm() {
 	options = $.extend({
 		type:			Spaces.TYPES.FILE,
 		maxFiles:		1,
-		maxSize:		0
+		maxSize:		0,
+		formPostfixes:	[],
 	}, form.data());
 	
 	// Для кривых устройств
@@ -128,7 +129,7 @@ function initUploader() {
 	let use_native_button = FilesUploader.needNtiveControls();
 	
 	let files_place = $('#upload_files_list');
-	let files_place_wrap = $('#upload_files_wrap');
+	let files_place_wrap = $('#upload_files_wrap');sync_queue
 	let native_select_btn = $('#upload_native_btn');
 	let select_btn = $('#upload_select_btn');
 	let save_btn = $('#upload_save_btn');
@@ -197,7 +198,8 @@ function initUploader() {
 				ext:		data.file.ext,
 				type:		options.type,
 				fields:		Url.serializeForm($(`#upload_file_${data.file.id}`)),
-				errors:		{}
+				errors:		{},
+				postfix:	data.file.postfix,
 			};
 			
 			// Убираем лимиты
@@ -249,7 +251,8 @@ function initUploader() {
 		type:			options.type,
 		firstReset:		true,
 		additionalMenu:	true,
-		filenameAutocomplete:	options.filenameAutocomplete
+		formPostfixes:	options.formPostfixes,
+		filenameAutocomplete:	options.filenameAutocomplete,
 	});
 	
 	select_btn.on('click', (e) => {
@@ -310,9 +313,8 @@ function syncFileFieldsTask() {
 
 function syncFileFieldsAsync(file, callback) {
 	let new_fields = Url.serializeForm($(`#upload_file_${file.id}`));
-	
 	let changed = 0;
-	
+
 	for (let k in new_fields) {
 		if (file.fields[k] !== new_fields[k])
 			changed++;
@@ -325,9 +327,6 @@ function syncFileFieldsAsync(file, callback) {
 	
 	file.fields = new_fields;
 	
-	if (!new_fields.Adult)
-		new_fields.Adult = 0;
-
 	if (changed > 0 || !file.validated) {
 		saveFile(file, callback);
 	} else {
@@ -397,7 +396,7 @@ function showFileErrors(file) {
 		if (evt.defaultPrevented)
 			continue;
 
-		const element = file_wrap.find(`[name=${errors_map[k] || k}]`);
+		const element = file_wrap.find(`[name=${(errors_map[k] || k) + file.postfix}]`);
 		if (element.length) {
 			if (element[0] != focused)
 				Spaces.view.setInputError(element, file.errors[k]);
@@ -423,6 +422,16 @@ function saveFile(file, callback) {
 		
 		api_method = "files.edit";
 		
+		if (file.postfix) {
+			for (const keyWithPostfix in new_fields) {
+				const key = keyWithPostfix.replace(new RegExp(file.postfix + '$'), '');
+				if (key != keyWithPostfix) {
+					new_fields[key] = new_fields[keyWithPostfix];
+					delete new_fields[keyWithPostfix];
+				}
+			}
+		}
+
 		api_data = $.extend({
 			CK:			null,
 			File_id:	file.nid,
@@ -436,7 +445,8 @@ function saveFile(file, callback) {
 			TempId:		file.tid,
 			Type:		file.type,
 			Dir:		form.find('[name=dir]').val(),
-			ext:		file.ext
+			ext:		file.ext,
+			pp:			file.postfix,
 		}, file.fields);
 	}
 	
