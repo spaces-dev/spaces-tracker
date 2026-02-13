@@ -336,7 +336,8 @@ var FileUploader = new (Class({
 		};
 		
 		var set_progress = function (file, pct) {
-			current_progress[0].style.width = pct + '%';
+			if (current_progress[0])
+				current_progress[0].style.width = pct + '%';
 			if (current_progress_pct[0])
 				current_progress_pct[0].innerHTML = Math.round(pct) + '%';
 			if (!show_native_btn)
@@ -395,7 +396,6 @@ var FileUploader = new (Class({
 						self.error(state_params.denyUpload.error);
 					return false;
 				}
-				
 				self.error(false);
 				if (params.multiple) {
 					return self.addFile(file);
@@ -521,7 +521,7 @@ var FileUploader = new (Class({
 								name: res.data.name,
 								ext: res.data.fileext
 							}));
-							
+
 							var name = $('#upload_file_info_' + file.id);
 							name.replaceWith($('<a>').prop("href", res.redirect_link).html(name.html()));
 						}
