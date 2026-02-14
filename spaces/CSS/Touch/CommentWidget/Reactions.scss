@@ -111,85 +111,28 @@
 	--reaction-icon-color: #{$default-text-color};
 	--reaction-selected-icon-color: var(--reaction-selected-text);
 
-	// MESSAGE OUT
-	&--style-message-my-object {
-		--reaction-text: #{$reaction-message-out-text};
-		--reaction-bg: #{$reaction-message-out-bg};
-		--reaction-border: #{$reaction-message-out-border};
-		--reaction-hover-bg: #{$reaction-message-out-hover-bg};
-		--reaction-active-bg: #{$reaction-message-out-active-bg};
-		--reaction-selected-bg: #{$reaction-message-out-selected-bg};
-		--reaction-selected-text: #{$reaction-message-in-selected-text};
-
+	&--variant-message {
 		&[data-count="0"] {
 			display: none;
 		}
 	}
 
-	// MESSAGE IN
-	&--style-message-our-object {
-		--reaction-text: #{$reaction-message-in-text};
-		--reaction-bg: #{$reaction-message-in-bg};
-		--reaction-border: #{$reaction-message-in-border};
-		--reaction-hover-bg: #{$reaction-message-in-hover-bg};
-		--reaction-active-bg: #{$reaction-message-in-active-bg};
-		--reaction-selected-bg: #{$reaction-message-in-selected-bg};
-		--reaction-selected-text: #{$reaction-message-in-selected-text};
-
-		&[data-count="0"] {
-			display: none;
-		}
-	}
-
-	// TOPIC
-	&--style-topic {
-		--reaction-text: #{$reaction-topic-text};
-		--reaction-bg: #{$reaction-topic-bg};
-		--reaction-border: #{$reaction-topic-border};
-		--reaction-hover-bg: #{$reaction-topic-hover-bg};
-		--reaction-active-bg: #{$reaction-topic-active-bg};
-		--reaction-selected-bg: #{$reaction-topic-selected-bg};
-		--reaction-selected-text: #{$reaction-topic-selected-text};
-
-		--reaction-button-primary-icon-color: #{$reaction-button-topic-primary-icon};
-		--reaction-button-secondary-icon-color: #{$reaction-button-topic-secondary-icon};
-		--reaction-button-selected-icon-color: #{$reaction-button-topic-selected-icon};
-
+	&--variant-topic {
 		&[data-disabled="true"][data-count="0"] {
 			display: none;
 		}
+
+		@include reactions-use-theme($reactions-theme-topic);
 	}
 
-	// COMMENT
-	&--style-comment {
-		--reaction-text: #{$reaction-topic-text};
-		--reaction-bg: #{$reaction-topic-bg};
-		--reaction-border: #{$reaction-topic-border};
-		--reaction-hover-bg: #{$reaction-topic-hover-bg};
-		--reaction-active-bg: #{$reaction-topic-active-bg};
-		--reaction-selected-bg: #{$reaction-topic-selected-bg};
-		--reaction-selected-text: #{$reaction-topic-selected-text};
-
-		&[data-count="0"] {
-			display: none;
-		}
-	}
-
-	// PILLS
-	&--style-pills {
+	&--variant-pills {
 		gap: 8px;
 		margin-top: 0;
 		margin-bottom: 0;
 		padding: 12px 15px;
 		border-bottom: 1px solid $separator-color;
 
-		--reaction-text: #{$reaction-pills-text};
-		--reaction-bg: #{$reaction-pills-bg};
-		--reaction-border: #{$reaction-pills-border};
-		--reaction-hover-bg: #{$reaction-pills-hover-bg};
-		--reaction-active-bg: #{$reaction-pills-active-bg};
-		--reaction-selected-bg: #{$reaction-pills-selected-bg};
-		--reaction-selected-text: #{$reaction-pills-selected-text};
+		@include reactions-use-theme($reactions-theme-pills);
 	}
 }
 

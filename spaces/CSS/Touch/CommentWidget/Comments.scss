@@ -4,6 +4,7 @@
 	background: $content-bg;
 	border-bottom: 1px solid $separator-color;
 	word-wrap: break-word;
+	@include reactions-use-theme($reactions-theme-comment);
 }
 
 .comments-block-title {
@@ -145,8 +146,9 @@
 	margin: 10px;
 }
 
-.comm_hidden{
+.comm_hidden {
 	background: $comment-hidden-bg;
+	@include reactions-use-theme($reactions-theme-comment-hidden);
 }
 
 .com_attach{
@@ -302,6 +304,7 @@
 }
 .comm_selected .comm {
 	background: $comment-selected-bg;
+	@include reactions-use-theme($reactions-theme-comment-focused);
 }
 .links-group_important .bordered{
 	border: 1px solid $bordered-blue-color;

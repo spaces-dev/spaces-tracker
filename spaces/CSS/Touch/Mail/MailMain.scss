@@ -317,8 +317,13 @@
 	color: $secondary-text-color;
 }
 
+.mail__dialog_my {
+	@include reactions-use-theme($reactions-theme-message-out);
+}
+
 .mail__dialog_answer {
-	background: $mail-message-in-bg
+	background: $mail-message-in-bg;
+	@include reactions-use-theme($reactions-theme-message-in);
 }
 
 .mail__dialog_answer.mail__dialog_message--is-new {

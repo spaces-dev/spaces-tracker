@@ -1,43 +1,102 @@
+@use "sass:map";
 @use "./Base" as *;
 
-$reaction-message-out-text:				$default-text-color;
-$reaction-message-out-bg:				theme(#C4E9BE, #303033);
-$reaction-message-out-border:			transparent;
-$reaction-message-out-hover-bg:			theme(#ADDEA6, #353539);
-$reaction-message-out-active-bg:		theme(#94CF8C, #3B3B3F);
-$reaction-message-out-selected-bg:		theme(#78BC6F, #414145);
-$reaction-message-out-selected-text:	#FFFFFF;
+$reactions-theme-message-out: (
+	"text": $default-text-color,
+	"bg": theme(#C4E9BE, #303033),
+	"border": transparent,
+	"hover-bg": theme(#ADDEA6, #353539),
+	"active-bg": theme(#94CF8C, #3B3B3F),
+	"selected-bg": theme(#78BC6F, #414145),
+	"selected-text": #FFFFFF
+);
 
-$reaction-message-in-text:				$default-text-color;
-$reaction-message-in-bg:				theme(#D1D9E3, #3A3B3E);
-$reaction-message-in-border:			transparent;
-$reaction-message-in-hover-bg:			theme(#BFCBDB, #3F4144);
-$reaction-message-in-active-bg:			theme(#ADBED2, #45474B);
-$reaction-message-in-selected-bg:		theme(#94A9C3, #4B4D51);
-$reaction-message-in-selected-text:		#FFFFFF;
+$reactions-theme-message-in: (
+	"text": $default-text-color,
+	"bg": theme(#D1D9E3, #3A3B3E),
+	"border": transparent,
+	"hover-bg": theme(#BFCBDB, #3F4144),
+	"active-bg": theme(#ADBED2, #45474B),
+	"selected-bg": theme(#94A9C3, #4B4D51),
+	"selected-text": #FFFFFF
+);
 
-$reaction-topic-text:					$default-text-color;
-$reaction-topic-bg:						theme(#EBEFF4, #494B4D);
-$reaction-topic-border:					transparent;
-$reaction-topic-hover-bg:				theme(#DAE1E9, #56595C);
-$reaction-topic-active-bg:				theme(#C9D3DF, #595D60);
-$reaction-topic-selected-bg:			theme(#B8C5D4, #5F6367);
-$reaction-topic-selected-text:			#FFFFFF;
+$reactions-theme-topic: (
+	"text": $default-text-color,
+	"bg": theme(#EBEFF4, #494B4D),
+	"border": transparent,
+	"hover-bg": theme(#DAE1E9, #56595C),
+	"active-bg": theme(#C9D3DF, #595D60),
+	"selected-bg": theme(#B8C5D4, #5F6367),
+	"selected-text": #FFFFFF,
 
-$reaction-button-topic-primary-icon:			$secondary-text-color;
-$reaction-button-topic-secondary-icon:			theme(#A8B9C6, #ABB8C5);
-$reaction-button-topic-selected-icon:			theme(#ffffff, #CCCCCC);
+	"icon-primary": $secondary-text-color,
+	"icon-secondary": theme(#A7B8C6, #A7B8C6),
+	"icon-selected": theme(#FFFFFF, #FFFFFF)
+);
 
-$reaction-pills-text:					$default-text-color;
-$reaction-pills-bg:						$content-bg;
-$reaction-pills-border:					theme(#E1E9F3, $separator-color);
-$reaction-pills-hover-bg:				$default-hover-bg;
-$reaction-pills-active-bg:				$default-clicked-bg;
-$reaction-pills-selected-bg:			theme(#E1E9F3, #555759);
-$reaction-pills-selected-text:			$default-text-color;
+$reactions-theme-comment: (
+	"text": $default-text-color,
+	"bg": theme(#EBEFF4, #494B4D),
+	"border": transparent,
+	"hover-bg": theme(#DAE1E9, #56595C),
+	"active-bg": theme(#C9D3DF, #595D60),
+	"selected-bg": theme(#B8C5D4, #5F6367),
+	"selected-text": #FFFFFF
+);
+
+$reactions-theme-comment-focused: (
+	"text": $default-text-color,
+	"bg": theme(#D1DFEC, #405162),
+	"border": transparent,
+	"hover-bg": theme(#C0D1E1, #455769),
+	"active-bg": theme(#AFC3D6, #4B5D70),
+	"selected-bg": theme(#9EB6CC, #506377),
+	"selected-text": #FFFFFF
+);
+
+$reactions-theme-comment-hidden: (
+	"text": $default-text-color,
+	"bg": theme(#D8D3D3, #564746),
+	"border": transparent,
+	"hover-bg": theme(#CDC4C4, #5D4C4C),
+	"active-bg": theme(#C3B4B4, #635252),
+	"selected-bg": theme(#B9A5A5, #6A5858),
+	"selected-text": #FFFFFF
+);
+
+$reactions-theme-pills: (
+	"text": $default-text-color,
+	"bg": $content-bg,
+	"border": theme(#E1E9F3, $separator-color),
+	"hover-bg": $default-hover-bg,
+	"active-bg": $default-clicked-bg,
+	"selected-bg": theme(#E1E9F3, #555759),
+	"selected-text": $default-text-color
+);
 
 $reactions-selector-border:						theme(#CDDAE7, #2D2E30);
 
 $reactions-selector-item-hover-bg:				theme(#ECF5FD, #424446);
 $reactions-selector-item-active-bg:				theme(#B8CDE3, #555759);
 $reactions-selector-item-selected-bg:			theme(#DDEBF7, #4B4D4E);
+
+@mixin reactions-use-theme($theme) {
+	--reaction-text: #{map.get($theme, "text")};
+	--reaction-bg: #{map.get($theme, "bg")};
+	--reaction-border: #{map.get($theme, "border")};
+	--reaction-hover-bg: #{map.get($theme, "hover-bg")};
+	--reaction-active-bg: #{map.get($theme, "active-bg")};
+	--reaction-selected-bg: #{map.get($theme, "selected-bg")};
+	--reaction-selected-text: #{map.get($theme, "selected-text")};
+
+	@if map.has-key($theme, "icon-primary") {
+		--reaction-button-primary-icon-color: #{map.get($theme, "icon-primary")};
+	}
+	@if map.has-key($theme, "icon-secondary") {
+		--reaction-button-secondary-icon-color: #{map.get($theme, "icon-secondary")};
+	}
+	@if map.has-key($theme, "icon-selected") {
+		--reaction-button-selected-icon-color: #{map.get($theme, "icon-selected")};
+	}
+}
