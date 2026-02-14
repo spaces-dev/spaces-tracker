@@ -760,11 +760,13 @@ var FileUploader = new (Class({
 		if (state_params.filenameAutocomplete) {
 			let ext_len = (file.ext.length ? file.ext.length + 1 : 0);
 			let name = file.name.substr(0, file.name.length - ext_len);
-			let input = widget.find('[name=fn]');
+			let input = widget.find(`[name=fn${file.postfix}]`);
 			input.val(name);
 		}
 		
-		widget.find('.js-text_input_fn .js-input_suffix').text("." + (file.ext || 'ext')).attr("title", "." + (file.ext || 'ext'));
+		widget.find(`.js-text_input_fn${file.postfix} .js-input_suffix`)
+			.text("." + (file.ext || 'ext'))
+			.attr("title", "." + (file.ext || 'ext'));
 		
 		var file_evt = {
 			file: file,
