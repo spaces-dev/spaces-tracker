@@ -137,7 +137,7 @@ const tpl = {
 				${reactionsCountText}
 				<span class="ico ico_arr_up_black"></span>
 			</a>
-			<div class="reactions-list reactions-list--style-pills">
+			<div class="reactions-list reactions-list--variant-pills">
 				${reactions.map((reaction) => tpl.reactionPill(reaction, reaction.emotion == emotionId)).join("")}
 			</div>
 			<div>
