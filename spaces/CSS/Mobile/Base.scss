@@ -1519,7 +1519,7 @@ body input.search__btn {
 }
 
 .form-group {
-	&__items > div {
+	&__items--gap > div {
 		margin-top: if($LITE, 10px, 3px);
 		&::first-child {
 			margin-top: 0;

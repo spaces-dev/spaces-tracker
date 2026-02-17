@@ -8,6 +8,20 @@ import Spaces from './spacesLib';
 import fixPageHeight from './min_height';
 import { base_domain, L, extend, tick, updateUrl } from './utils';
 
+export const EVENT_TYPE = {
+	MAIL:			0,
+	NOTIFICATION:	1,
+	JOURNAL:		2,
+	LENTA:			3,
+	CHAT:			4,
+};
+
+export const TOP_COUNTER_TYPE = {
+	JOURNAL:		1,
+	LENTA:			2,
+	MAIL:			3,
+};
+
 var BEACON_INTERVAL = 1000 * 60 * 4; // Интервал маячка
 
 var interactive = Spaces.params.nid,
@@ -106,12 +120,10 @@ var Notifications = Class({
 		});
 		
 		if (interactive) {
-			if (Spaces.params.play_sound) {
-				import("./sound").then(({SpacesSound}) => {
-					notif_sound = new SpacesSound();
-					notif_sound.load(ICONS_BASEURL + 'sounds/newMessage.mp3');
-				});
-			}
+			import("./sound").then(({SpacesSound}) => {
+				notif_sound = new SpacesSound();
+				notif_sound.load(ICONS_BASEURL + 'sounds/newMessage.mp3');
+			});
 			pushstream.on("message", "notifications", self.onLongPolling.bind(self));
 			self.beacon_interval = setInterval(function() {
 				Spaces.api("common.beacon", beacon_extra);
@@ -130,28 +142,23 @@ var Notifications = Class({
 		});
 	},
 	Static: {
-		COUNTER: {
-			JOURNAL: 1,
-			LENTA: 2,
-			MAIL: 3
-		},
 		counters: {
-			1: {
+			[TOP_COUNTER_TYPE.JOURNAL]: {
 				title: L("Журнал"),
 				id: "jour_notif_cnt",
 				key: "journal"
 			},
-			2: {
+			[TOP_COUNTER_TYPE.LENTA]: {
 				title: L("Лента"),
 				id: "lent_notif_cnt",
 				key: "lenta",
 				limit_to_99: true
 			},
-			3: {
+			[TOP_COUNTER_TYPE.MAIL]: {
 				title: L("Почта"),
 				id: "mail_notif_cnt",
 				key: "mail"
-			}
+			},
 		},
 		_instance: null,
 		instance: function () {
@@ -173,7 +180,7 @@ var Notifications = Class({
 			if ($.inArray(Spaces.params.sid, data.sessions_ctimes) >= 0) {
 				data.lp = true;
 				if (self.pushNotification(data))
-					self.showNewEvent(L('Новое событие'));
+					self.showNewEvent(L('Новое событие'), { type: EVENT_TYPE.NOTIFICATION });
 			}
 		} else if (data.act == pushstream.TYPES.TOP_COUNTER_UPDATE) {
 			self.updateCounter(data.type, data.cnt, {important: !!data.important});
@@ -350,7 +357,7 @@ var Notifications = Class({
 				el.css("opacity", 1);
 			}
 			
-			self.showNewEvent(title_text);
+			self.showNewEvent(title_text, { type: getCounterEventType(type) });
 		} else {
 			el.css("opacity", 0);
 			
@@ -369,9 +376,13 @@ var Notifications = Class({
 		
 		opts = $.extend({
 			oneTab: false,
-			notif: true
+			notif: true,
+			type: EVENT_TYPE.NOTIFICATION,
 		}, opts);
 		
+		if ((Spaces.params.play_sound & (1 << opts.type)) != 0)
+			return;
+
 		cookie.set('pageLoadTime', self.page_load_time, {expires: 7 * 24 * 3600});
 		
 		if (spacesactive == 'true') {
@@ -408,7 +419,7 @@ var Notifications = Class({
 			severity: severities[severity]
 		});
 		if (!opts.silent)
-			this.showNewEvent(L('Новое событие'));
+			this.showNewEvent(L('Новое событие'), { type: EVENT_TYPE.NOTIFICATION });
 		return this;
 	},
 	
@@ -655,7 +666,7 @@ var Notifications = Class({
 	
 	playSoundInBg: function (force_sound) {
 		var winner = parseInt(cookie.get('pageLoadTime') || 0);
-		if ((this.page_load_time == winner || force_sound) && Spaces.params.play_sound)
+		if ((this.page_load_time == winner || force_sound))
 			this.playSound();
 		return this;
 	},
@@ -694,6 +705,15 @@ var Notifications = Class({
 		return self.window_active;
 	}
 });
+
+function getCounterEventType(counterType) {
+	const typesMap = {
+		[TOP_COUNTER_TYPE.JOURNAL]: EVENT_TYPE.JOURNAL,
+		[TOP_COUNTER_TYPE.MAIL]: EVENT_TYPE.MAIL,
+		[TOP_COUNTER_TYPE.LENTA]: EVENT_TYPE.LENTA,
+	};
+	return typesMap[counterType];
+}
 
 function counterBlinker(el, states, next_timeout) {
 	if (states.length) {

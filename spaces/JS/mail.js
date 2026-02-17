@@ -6,7 +6,7 @@ import * as pushstream from './core/lp';
 import {Spaces, Url, Codes} from './spacesLib';
 import page_loader from './ajaxify';
 import {HistoryManager} from './ajaxify';
-import notifications from './notifications';
+import notifications, { TOP_COUNTER_TYPE } from './notifications';
 import {Notifications} from './notifications';
 import GALLERY from './gallery';
 import AttachSelector from './widgets/attach_selector';
@@ -1257,7 +1257,7 @@ var mailCore = {
     
 	// Сброс счётчика новых писем верхней панели
 	resetMailEventsCnt: function () {
-		notifications.updateCounter(Notifications.COUNTER.MAIL, 0);
+		notifications.updateCounter(TOP_COUNTER_TYPE.MAIL, 0);
 		Spaces.api("mail.resetMailEventsCnt", {}, function() {});
 	},
 	showMsg: function (text) {
@@ -1429,7 +1429,7 @@ var mailServices = {
 		
 		$('#main')
 			.on('counterchange', function (e) {
-				if (e.counterType == Notifications.COUNTER.MAIL) {
+				if (e.counterType == TOP_COUNTER_TYPE.MAIL) {
 					var List = mail_params.list,
 						P = mailServices.getQueryVariable("P") || 1;
 					if (notifications.isWindowActive()) {
@@ -1449,7 +1449,7 @@ var mailServices = {
 					});
 					markReadOnFocus = [];
 				}
-				if (notifications.getCounter(Notifications.COUNTER.MAIL) > 0)
+				if (notifications.getCounter(TOP_COUNTER_TYPE.MAIL) > 0)
 					mailCore.resetMailEventsCnt();
 			})
 			.on('click', '.js-delete_reply', function (e) {

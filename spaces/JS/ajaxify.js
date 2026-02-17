@@ -10,7 +10,7 @@ import { switchTheme, getCurrentTheme } from './core/theme';
 import {trackHit} from './metrics/track';
 import {extend, ge, html_unwrap, find_var, tick} from './utils';
 import * as sidebar from './widgets/swiper';
-import {default as notifications, Notifications} from './notifications';
+import {TOP_COUNTER_TYPE, default as notifications, Notifications} from './notifications';
 
 var RE_SKIP_AJAX = /^\/(p\/|m\/|f\/|v\/|advertise|neoapi|beta|sbox|api|capcha\/|captcha\/|i\/|js\/|css\/|\w{2}\/[a-f0-9]{32})/i,
 	RE_NO_AJAX = /(\s|^)(no_ajax)(\s|$)/,
@@ -859,9 +859,9 @@ var PageLoader = Class({
 				if (res.topCounters && !is_old_data) {
 					var cnt = res.topCounters;
 					notifications
-						.updateCounter(Notifications.COUNTER.MAIL, cnt.mail_new, {blink: false})
-						.updateCounter(Notifications.COUNTER.LENTA, cnt.lenta, {blink: false})
-						.updateCounter(Notifications.COUNTER.JOURNAL, cnt.journal_imp + cnt.journal,
+						.updateCounter(TOP_COUNTER_TYPE.MAIL, cnt.mail_new, {blink: false})
+						.updateCounter(TOP_COUNTER_TYPE.LENTA, cnt.lenta, {blink: false})
+						.updateCounter(TOP_COUNTER_TYPE.JOURNAL, cnt.journal_imp + cnt.journal,
 								{important: cnt.journal_imp > 0, blink: false});
 				}
 				
@@ -1236,7 +1236,7 @@ var PageLoader = Class({
 			} else if (k == Spaces.SettingsTypes.FORM_SUBMIT_KEY) {
 				Spaces.params.form_submit_key = !v ? 'CTRL_ENTER' : 'ENTER';
 			} else if (k == Spaces.SettingsTypes.SOUND_NOTIFY_BLOCK) {
-				Spaces.params.play_sound = !v;
+				Spaces.params.play_sound = v;
 			} else if (k == Spaces.SettingsTypes.THEME) {
 				if (!Device.android_app && Spaces.params.CK == v[1]) {
 					import('./core/theme').then(({switchTheme}) => {

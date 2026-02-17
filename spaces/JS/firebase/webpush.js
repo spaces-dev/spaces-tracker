@@ -56,11 +56,10 @@ const tpl = {
 init();
 
 module.on("componentpage", function () {
-	if (!$('#firebase_request_webpush').length)
+	if (!$('#webpush_unsupported_form').length)
 		return;
 	
 	if (!canWebPush()) {
-		$('#webpush_enable_form').addClass('hide');
 		$('#webpush_denied_form').addClass('hide');
 		$('#webpush_unsupported_form').removeClass('hide');
 		return;
@@ -69,62 +68,39 @@ module.on("componentpage", function () {
 	// Скрываем стикер
 	$('#sticker').remove();
 	
-	// Просим подписаться, если уведомления ещё не разрешены
-	if (Notification.permission == 'default') {
-		$('#webpush_enable_form').removeClass('hide');
-	}
-	// Если явно запрещены, выводим ошибку
-	else if (Notification.permission == 'denied') {
-		$('#webpush_enable_form').addClass('hide');
-		$('#webpush_denied_form').removeClass('hide');
-	}
-	
-	$('#main').on('click', '.js-webpush_accept', function (e) {
+	$('#main').on('switchToggle', `[data-action="gcm_add_token"]`, function (e) {
+		if (!e.detail.state)
+			return;
+
 		e.preventDefault();
-		
-		var el = $(this);
-		
+
 		Spaces.LocalStorage.remove("fcm_token");
-		
-		var toggle_spinner = function (flag) {
-			if (flag) {
-				el.attr("disabled", "disabled");
-			} else {
-				el.removeAttr("disabled");
-			}
-			el.find('.js-spinner').toggleClass('hide', !flag);
-		};
-		
-		toggle_spinner(true);
-		
+
 		Notification.requestPermission().then(function (permission) {
 			try {
 				if (Notification.permission !== permission)
 					Notification.permission = permission;
 			} catch (e) { }
-			
+
 			if (permission == 'granted') {
 				firebaseInit(function () {
 					fetchNewToken(function (success, error) {
-						toggle_spinner(false);
-						
 						if (success) {
 							page_loader.reload()
 						} else {
 							Spaces.showError("Ошибка подписки на уведомления. <br />" + error);
+							e.detail.setState(false);
 						}
 					}, true);
 				});
 			} else {
-				$('#webpush_enable_form').addClass('hide');
 				$('#webpush_denied_form').removeClass('hide');
-				
-				toggle_spinner(false);
+				e.detail.setState(false);
 			}
 		}).catch(function (err) {
-			toggle_spinner(false);
 			Spaces.showError("Ошибка подписки на уведомления. Попробуйте позже.");
 			console.error('[FCM] requestPermission: ' + err);
+			e.detail.setState(false);
 		});
 	});
 });

@@ -722,7 +722,10 @@ input[type="reset"].btn_ico,
 	&__items {
 		display: flex;
 		flex-direction: column;
-		gap: 15px;
+
+		&--gap {
+			gap: 15px;
+		}
 	}
 }
 

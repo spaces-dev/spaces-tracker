@@ -246,8 +246,6 @@ var SWITCHER_GENERIC_TYPES = {
 	}
 };
 $body.on('click', '.js-switcher', function (e) {
-	e.preventDefault(); e.stopPropagation();
-
 	var el = $(this),
 		switcher = el.find('.form-toggle__wrap'),
 		data = el.data(),
@@ -255,8 +253,11 @@ $body.on('click', '.js-switcher', function (e) {
 		state = 'state' in data ? !data.state : !el.hasClass(data.mode == 'light' ? 'on' : 'label-toggle_on'),
 		last_state = !state;
 
-	if (data.disabled || data.busy)
+	if (data.disabled || data.busy) {
+		e.preventDefault();
+		e.stopPropagation();
 		return;
+	}
 
 	var messages = {};
 	$.each(data, function (k, v) {
@@ -324,6 +325,9 @@ $body.on('click', '.js-switcher', function (e) {
 	};
 
 	if (meta) {
+		e.preventDefault();
+		e.stopPropagation();
+
 		var api_data = $.extend({}, meta.data);
 		api_data[meta.param] = meta.invert ? !state : !!state;
 
@@ -354,7 +358,7 @@ $body.on('click', '.js-switcher', function (e) {
 				spinner.addClass('hide');
 			}
 		});
-	} else {
+	} else if (data.action) {
 		const evt = new CustomEvent(`switchToggle`, {
 			detail: {
 				action: data.action,
@@ -365,9 +369,13 @@ $body.on('click', '.js-switcher', function (e) {
 			bubbles: true,
 		});
 		this.dispatchEvent(evt);
-		if (evt.defaultPrevented)
+
+		if (evt.defaultPrevented) {
+			e.preventDefault();
+			e.stopPropagation();
+			update_state(state);
 			return;
-		update_state(state);
+		}
 	}
 }).on('click', '.js-addremove', function (e) {
 	var el = $(this),

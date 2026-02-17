@@ -5,7 +5,7 @@ import Device from './device';
 import * as pushstream from './core/lp';
 import {Spaces, Codes} from './spacesLib';
 import page_loader from './ajaxify';
-import notifications from './notifications';
+import notifications, { EVENT_TYPE } from './notifications';
 import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
@@ -550,7 +550,7 @@ var Chat = {
 					
 					if (!notifications.isWindowActive()) {
 						new_messages_cnt += cnt;
-						notifications.showNewEvent(tpl.title(new_messages_cnt), {oneTab: true});
+						notifications.showNewEvent(tpl.title(new_messages_cnt), { oneTab: true, type: EVENT_TYPE.CHAT });
 					} else {
 						new_messages_cnt = 0;
 					}

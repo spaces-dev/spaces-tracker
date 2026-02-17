@@ -1122,6 +1122,13 @@ a.link-blue:active {
 	border-top: 1px solid $separator-color;
 }
 
+.separator {
+	border-top: 1px solid $separator-color;
+	&--short {
+		margin: 0 15px;
+	}
+}
+
 .link-return{
 	display: block;
 	text-align: center;
