@@ -368,6 +368,10 @@ function initReactionsWidget(reactionsWidget) {
 
 	reactionsWidget.on('click', '.js-reaction', async function (e) {
 		e.preventDefault();
+
+		if (reactionsWidget.data('disabled'))
+			return;
+
 		const reaction = $(this);
 
 		const toggleReaction = (flag) => {
