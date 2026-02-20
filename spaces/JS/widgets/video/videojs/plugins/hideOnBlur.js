@@ -7,7 +7,7 @@ videojs.registerPlugin('hideOnBlur', function VideoJsHideOnBlur() {
 	});
 	this.el().addEventListener('mouseleave', () => {
 		const hasMenuOpened = this.el().querySelectorAll('.vjs-menu.vjs-lock-showing').length > 0;
-		if (!hasMenuOpened && !this.paused() && Date.now() - firstPlayTime > 3000)
+		if (!hasMenuOpened && Date.now() - firstPlayTime > 2000)
 			setTimeout(() => this.userActive(false), 0);
 	});
 });

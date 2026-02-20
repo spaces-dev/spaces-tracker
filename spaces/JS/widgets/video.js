@@ -56,30 +56,30 @@ class VideoPlayer {
 			}
 		});
 		
-		if (page_loader.ok()) {
-			let disable_fullscreen = () => {
-				for (let id in global_direct_instances) {
-					let player = global_direct_instances[id];
-					if (player && player.driver && player.driver.isFullscreen())
-						player.driver.setFullscreen(false);
+		let disable_fullscreen = () => {
+			for (let id in global_direct_instances) {
+				let player = global_direct_instances[id];
+				if (player && player.driver && player.driver.isFullscreen())
+					player.driver.setFullscreen(false);
+			}
+		};
+
+		page_loader.on('requestend', "vplayer", disable_fullscreen, true);
+		page_loader.on('mailrequestend', "vplayer", disable_fullscreen, true);
+
+		page_loader.onJSC('vp', (hash) => {
+			let params = hash.split(":");
+			let player = VideoPlayer.instance(params[0]);
+			if (player) {
+				if (player.driver) {
+					player.driver.setFullscreen(true);
+				} else {
+					page_loader.setJSC(false);
 				}
-			};
-			
-			page_loader.on('requestend', "vplayer", disable_fullscreen, true);
-			page_loader.on('mailrequestend', "vplayer", disable_fullscreen, true);
-			
-			page_loader.onJSC('vp', (hash) => {
-				let params = hash.split(":");
-				let player = VideoPlayer.instance(params[0]);
-				if (player) {
-					if (player.driver) {
-						player.driver.setFullscreen(true);
-					} else {
-						page_loader.setJSC(false);
-					}
-				}
-			}, true);
-		}
+			}
+		}, true);
+
+		window.addEventListener('keydown', VideoPlayer.handleGlobalKey, { passive: true });
 	}
 	
 	static destroy() {
@@ -96,6 +96,8 @@ class VideoPlayer {
 			let player = global_direct_instances[id];
 			player && player.destroy();
 		}
+
+		window.removeEventListener('keydown', VideoPlayer.handleGlobalKey);
 	}
 	
 	static destroyDetached() {
@@ -117,6 +119,17 @@ class VideoPlayer {
 		}
 	}
 	
+	static handleGlobalKey(e) {
+		const activeElement = document.activeElement;
+		if (activeElement && activeElement.closest('.video-js'))
+			return;
+		const availablePlayers = Object.values(global_direct_instances)
+			.filter((player) => player && !player.isDetached() && player.driver)
+			.sort((a, b) => b.mtime - a.mtime);
+		if (availablePlayers.length > 0)
+			availablePlayers[0].handleGlobalKey(e);
+	}
+
 	constructor(container) {
 		this.container = container;
 		this.options = container.data();
@@ -238,6 +251,11 @@ class VideoPlayer {
 		return this;
 	}
 	
+	handleGlobalKey(e) {
+		if (this.driver.handleGlobalKey)
+			this.driver.handleGlobalKey(e);
+	}
+
 	createDriver(DriverClass) {
 		let options = this.options;
 		
@@ -268,6 +286,7 @@ class VideoPlayer {
 		
 		let last_jsc;
 		
+		this.mtime = Date.now();
 		this.driver
 			.on('play', () => {
 				let stop_all = (except) => {
@@ -283,6 +302,7 @@ class VideoPlayer {
 				IPCSingleton.instance('cp').start(() => {
 					stop_all();
 				}, 'video');
+				this.mtime = Date.now();
 				
 				this.container.trigger('video_play');
 				
@@ -291,12 +311,15 @@ class VideoPlayer {
 			})
 			.on('pause', () => {
 				IPCSingleton.instance('cp').stop('video');
+				this.mtime = Date.now();
 			})
 			.on('quality-changed', (resolution) => {
+				this.mtime = Date.now();
 				saveSelectedQuality(resolution);
 				reachGoal("player_quality_" + resolution);
 			})
 			.on('fullscreen', (is_fullscreen) => {
+				this.mtime = Date.now();
 				if (Device.android_app) {
 					// Включаем реальный фуллскрин
 					SpacesApp.exec("fullscreen", {enable: is_fullscreen});

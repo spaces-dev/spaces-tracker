@@ -263,6 +263,18 @@ class VideoJsDriver extends BaseDriver {
 		return !this.player.paused()
 	}
 
+	handleGlobalKey(e) {
+		const ev = new Event('keydown');
+		ev.key = e.key;
+		ev.code = e.code;
+		ev.keyCode = e.keyCode;
+		ev.which = e.which;
+		this.player.el().dispatchEvent(ev);
+
+		if (ev.defaultPrevented)
+			e.preventDefault();
+	}
+
 	destroy() {
 		// Не уверен в этом API, лучше завернуть в try
 		try {

@@ -51,9 +51,9 @@ $vjs-timeline-hover-area-height: 2em;
 		}
 	}
 
-	&.vjs-has-started.vjs-user-inactive.vjs-playing {
+	&.vjs-has-started.vjs-user-inactive.vjs-playing, &.vjs-has-started.vjs-user-inactive.vjs-paused {
 		.vjs-control-bar, .vjs-video-title {
-			transition: visibility 1s, opacity 1s;
+			transition: visibility 0.1s, opacity 0.1s cubic-bezier(0.4, 0, 1, 1);
 			opacity: 0;
 			visibility: hidden;
 		}
@@ -61,7 +61,7 @@ $vjs-timeline-hover-area-height: 2em;
 
 	&.vjs-has-started.vjs-user-active.vjs-playing {
 		.vjs-control-bar, .vjs-video-title {
-			transition: visibility 0.05s, opacity 0.05s;
+			transition: visibility 0.25s, opacity 0.25s cubic-bezier(0, 0, 0.2, 1);
 			opacity: 1;
 			visibility: visible;
 		}
