@@ -459,7 +459,8 @@ Gallery = {
 				}
 			}).on('click', '.disabled', function (e) {
 				e.preventDefault();
-			//	e.stopPropagation();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
 				
 				var link = $(this).find('a').attr("id") || $(this).attr("id"),
 					object = current.item.content == 'video' ? L('видео') : L('фото'),

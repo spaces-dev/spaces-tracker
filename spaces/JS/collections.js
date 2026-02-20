@@ -227,6 +227,8 @@ var FileCollections = Class({
 				});
 			});
 		} else {
+			link.addClass('js-popper_open');
+
 			const menu = $('#' + link.data('popperId'));
 			menu.on('popper:beforeOpen', function (e) {
 				self.msg.addClass('hide');

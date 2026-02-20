@@ -11,6 +11,7 @@ import { throttleRaf } from "../utils";
 import fixPageHeight from "../min_height";
 import pageLoader from '../ajaxify';
 
+const Z_INDEX = 1101;
 const ARROW_SIZE = 10;
 const NS = '.popper';
 
@@ -421,6 +422,15 @@ export class Popper {
 				ddSpoiler.classList.remove('js-dd_spoiler');
 				delete ddSpoiler.dataset.class;
 			}
+		}
+
+		// FIXME: Иногда popper может оказаться в совсем неожиданных местах.....
+		// Пример: когда нельзя написать модератору в списке модераторов ЗО
+		const zIndex = getComputedStyle(this.popperElement).getPropertyValue("z-index");
+		console.log("zIndex", zIndex);
+		if (zIndex && zIndex.match(/^\d+$/) && parseInt(zIndex) < Z_INDEX) {
+			console.error(`[popper] popper inside element with low z-index!!!!`, this.popperElement, this.popperElement.parentNode);
+			documnent.getElementById('main').appendChild(this.popperElement);
 		}
 	}
 
