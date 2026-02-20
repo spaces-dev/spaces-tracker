@@ -291,11 +291,11 @@ $body.on('click', '.js-switcher', function (e) {
 	var meta;
 	if (data.type) {
 		meta = SWITCHER_GENERIC_TYPES[data.type];
-	} else if (data.apiMethod) {
+	} else if (data.action === "api") {
 		meta = {
-			method: data.apiMethod,
-			data: data.apiData,
-			param: data.param
+			method: data.method,
+			data: data.params,
+			param: data.stateParam,
 		};
 	}
 	var update_state = function (flag) {
