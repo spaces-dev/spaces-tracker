@@ -1,16 +1,40 @@
 @use "Common/Theme" as *;
 @use "spacepack/build/variables" as *;
 
-.message{
+#chat_msg_form {
 	background: $content-bg;
-	padding: 15px 15px 0 15px
+	padding-top: 7px;
 }
 
-.message:last-child{
-	padding-bottom: 15px
+.chat-messages-list {
+	display: flex;
+	gap: 15px;
+	flex-direction: column;
+	padding: 15px;
+	background: $content-bg;
 }
 
-.message,
+.message {
+	position: relative;
+
+	&__more {
+		display: inline-block;
+		position: relative;
+		margin-right: -5px;
+		cursor: pointer;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: -15px;
+			right: -15px;
+			bottom: -15px;
+			top: -15px;
+			z-index: 1;
+		}
+	}
+}
+
 .message__wrapper{
 	position: relative
 }
@@ -22,116 +46,83 @@
 .message__avatar{
 	position: absolute;
 	top: 0;
+	left: 0;
 	width: 40px;
 	height: 40px;
 	overflow: hidden
 }
 
-.message-block_my .message__avatar{
-	right: 0
-}
-
-.message-block_my .message__description{
-	margin-right: 55px
-}
-
-.message-block_foreign .message__avatar{
-	left: 0
-}
-
-.message-block_foreign .message__description{
-	margin-left: 55px;
-	cursor: pointer
-}
-
-.operamini .message-block_foreign .message__description{
-	cursor: default
-}
-
-.message__description{
+.message__description {
 	background: $chat-message-in-bg;
-	padding: 13px 10px;
-	position: relative
+	padding: 10px 10px;
+	position: relative;
+	margin-left: 55px;
+	cursor: pointer;
+	@include reactions-use-theme($reactions-theme-message-in);
+
+	&::before {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 12px;
+		height: 0;
+		width: 0;
+		right: 100%;
+		border: 8px solid transparent;
+		border-right-color: $chat-message-in-bg;
+	}
 }
 
-.message__description:before{
-	content: '';
-	display: block;
-	position: absolute;
-	top: 12px;
-	height: 0;
-	width: 0;
-	border: 8px solid transparent
+.message-block_my .message__description {
+	background: $chat-message-out-bg;
+	cursor: default;
+	@include reactions-use-theme($reactions-theme-message-out);
+
+	&::before {
+		border-right-color: $chat-message-out-bg;
+	}
 }
 
-.message-block_my .message__description{
-	background: $chat-message-out-bg
-}
-
-.message-block_my .message__description:before{
-	left: auto;
-	right: -15px;
-	border-left-color: $chat-message-out-bg
-}
-
-.message-block_foreign .message__description:before{
-	right: 100%;
-	border-right-color: $chat-message-in-bg
-}
-
-.message-block_my.message-block_system .message__description,
-.message-block_system .message__description{
+.message-block_system .message__description {
 	background: $chat-message-system-bg;
-	cursor: default
+	cursor: default;
+
+	&::before {
+		border-right-color: $chat-message-system-bg;
+	}
 }
 
-.message-block_my.message-block_system .message__description:before{
-	border-left-color: $chat-message-system-bg
+.message-block_private .message__description {
+	background: $chat-message-private-bg;
+
+	&::before {
+		border-right-color: $chat-message-private-bg;
+	}
 }
 
-.message-block_foreign.message-block_system .message__description:before{
-	border-right-color: $chat-message-system-bg
-}
+.message-block_personal .message__description {
+	background: $chat-message-answer-bg;
 
-.message-block_private .message__description{
-	background: $chat-message-private-bg
-}
-
-.message-block_my.message-block_private .message__description:before{
-	border-left-color: $chat-message-private-bg
-}
-
-.message-block_foreign.message-block_private .message__description:before{
-	border-right-color: $chat-message-private-bg
-}
-
-.message-block_personal .message__description{
-	background: $chat-message-answer-bg
-}
-
-.message-block_my.message-block_personal .message__description:before{
-	border-left-color: $chat-message-answer-bg
-}
-
-.message-block_foreign.message-block_personal .message__description:before{
-	border-right-color: $chat-message-answer-bg
+	&::before {
+		border-right-color: $chat-message-answer-bg;
+	}
 }
 
 .message-block_znayko .message__description{
 	background: $chat-message-quest-bg;
-	cursor: default
-}
+	cursor: default;
 
-.message-block_foreign.message-block_znayko .message__description:before{
-	border-right-color: $chat-message-quest-bg
+	&::before {
+		border-right-color: $chat-message-quest-bg;
+	}
 }
 
 .message__description.selected {
 	background: $chat-message-selected-bg;
-}
 
-.message__description.selected:before {
-	border-right-color: $chat-message-selected-bg !important
+	&::before {
+		border-right-color: $chat-message-selected-bg !important;
+	}
 }
 
 .message__user,
@@ -172,33 +163,18 @@
 }
 
 .message-block_foreign .message__date{
-	margin-right: 13px
-}
-
-.message-block_my .message__date,
-.message-block_foreign .message__user{
-	float: left
-}
-
-.message-block_foreign .message__date,
-.message-block_my .message__user{
-	float: right
-}
-
-.message-block_my .message__flag{
 	margin-right: 5px
 }
 
-.message-block_foreign .message__flag{
+.message__right-buttons {
+	float: right
+}
+
+.message__flag {
 	margin-left: 5px
 }
 
-.message-block_my .online-status{
-	margin-left: 5px;
-	margin-right: 0
-}
-
-.message-block_foreign .online-status{
+.message .online-status {
 	margin-right: 3px
 }
 

@@ -2,9 +2,10 @@ import module from "module";
 import * as pushstream from '../core/lp';
 import { Spaces, Codes } from "../spacesLib";
 import { throttleRaf } from "../utils";
-import { scrollIntoViewIfNotVisible, isVisibleOnScreen } from '../utils/dom';
+import { isVisibleOnScreen } from '../utils/dom';
 import pageLoader from '../ajaxify';
 import { getVisibleUnreadReactionsCount } from '../widgets/reactions';
+import { scrollIntoViewIfNotVisible } from "../utils/scroll";
 
 let onCleanup = [];
 
@@ -56,7 +57,11 @@ module.on("componentpage", () => {
 		if (response.code != 0)
 			return;
 
-		const messageElement = document.getElementById(`m${response.object.id}`) ?? document.getElementById(`c${response.object.id}`);
+		const messageElement = (
+			document.getElementById(`msg${response.object.id}`) ??
+			document.getElementById(`m${response.object.id}`) ??
+			document.getElementById(`c${response.object.id}`)
+		);
 		if (messageElement) {
 			const newReactionsCnt = +reactionsButton.dataset.count;
 			if (newReactionsCnt > 0)

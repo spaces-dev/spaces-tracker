@@ -7,6 +7,11 @@
 	border: 1px solid $input-border;
 	margin-bottom: 1px;
 
+	// FIXME: Костыль, пока не дойдут руки переписать меню смайлов
+	.js-toolbar[data-placement="bottom"] & {
+		margin-top: 10px;
+	}
+
 	&.defer {
 		display: block
 	}

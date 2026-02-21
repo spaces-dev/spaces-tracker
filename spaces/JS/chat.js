@@ -9,7 +9,9 @@ import notifications, { EVENT_TYPE } from './notifications';
 import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
-import { closeAllPoppers, getNearestPopper, getPopperById } from './widgets/popper';
+import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
+import { preventScrollShifting } from './utils/scroll';
+import { isFullyVisibleOnScreen, isVisibleOnScreen } from './utils/dom';
 
 var CHAT_REFRESH_INTERVAL = 30 * 1000;
 var tpl = {
@@ -79,11 +81,10 @@ var tpl = {
 	}
 };
 
-var chat_params, last_message_id, messages_queue,
+var chat_params, messages_queue,
 	messages_list,
 	last_refresh, // Метадата последнего обновления сообщений через API
 	new_messages_cnt, unread_messages_cnt,
-	fallback_mode = false, // Режим без HTML5 History API
 	classes = {
 		inputWrapPersonal: 'text-input__wrap_personal-message',
 		inputWrapPrivate: 'text-input__wrap_private-message',
@@ -98,10 +99,8 @@ var Chat = {
 			self.destroy();
 		});
 		
-		fallback_mode = !page_loader.ok();
 		new_messages_cnt = 0;
 		unread_messages_cnt = 0;
-		last_message_id = 0;
 		chat_params = $('#ChatPage').data();
 		messages_list = $('#messages_place');
 		
@@ -112,9 +111,8 @@ var Chat = {
 			notifications.setNotifFilter(new RegExp('Rid=' + chat_params.roomid));
 		
 		$('body').on('click.onRequest', '.js-personal_answer, .js-private_answer', function (e) {
-			if (e.ajaxify)
+			if (e.ajaxify || e.isDefaultPrevented())
 				return;
-			
 			e.preventDefault();
 			var el = $(this),
 				is_private = el.hasClass('js-private_answer') || el.data('private');
@@ -279,95 +277,143 @@ var Chat = {
 			$(this).parents('.js-selected_user').remove();
 		});
 		
-		if (notifications) {
-			$('#main').on('focuswindow', function () {
-				new_messages_cnt = 0;
-			});
-		}
+		$('#main').on('focuswindow', function () {
+			new_messages_cnt = 0;
+		});
 		
+		// Показ селектора реакций
+		$('#main').on('popper:beforeOpen', '.js-chat_message_menu', function (e) {
+			const message = $(this).parents('.js-message');
+			const reactionsList = message.find('.js-reactions_list');
+			if (!reactionsList.length || reactionsList.data('disabled'))
+				return;
+
+			const objectType = message.data('type');
+			const objectId = message.data('id');
+
+			const popperOpener = e.target.closest('.js-message');
+			const popper = getPopperById(`reactions_selector_${objectType}_${objectId}`);
+			popper.open({
+				placement: "bottom-end",
+				offsetTop: -39,
+				offsetLeft: 6,
+				group: `chat_message_menu_${objectId}`
+			}, popperOpener);
+		});
+
+		// Обновление кол-ва поставленных реакций
+		$('#main').on('reactions:updateCounter', '.js-message', function (e) {
+			const message = $(this);
+			const link = message.find('.js-chat_reactions_users_link');
+			link.find('.js-text').html(numeral(e.detail.count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]));
+			link.toggleClass('hide', e.detail.count == 0);
+		});
+
+		// Открытие меню комментария при закрытии селектора реакций
+		$('#main').on('reactions:selectorCollapse', '.js-message', function () {
+			const message = $(this);
+			const popper = getPopperById(`chat_message_menu_${message.data('id')}`);
+			popper.open();
+		});
+
+		// Список поставивших реакцию
+		$('#main').action("reactions_list", function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+
+			const button = $(this);
+
+			const objectType = button.data('type');
+			const objectId = button.data('nid');
+
+			const messageMenu = getPopperById(`chat_message_menu_${objectId}`);
+			const usersListMenu = getPopperById(`reaction_users_${objectType}_${objectId}`);
+			usersListMenu.open({}, messageMenu.opener());
+		});
+
+		if (!messages_list.length)
+			return;
+
 		// LP
-		if (messages_list.length > 0) {
-			$('#main').on('submit', '#add_form', function (e) {
-				e.preventDefault();
-				var form = this;
-				var data = {
-					msg: form.msg.value,
-					Rid: chat_params.roomid
-				};
-				if (form.To_user_id)
-					data.To_user_id = form.To_user_id.value;
-				if (form.Private)
-					data.Private = form.Private.value;
-				if (form.to)
-					data.to = form.to.value;
-				if (form.A_msg_id)
-					data.A_msg_id = form.A_msg_id.value;
-				data.atT = AttachSelector.getAttaches(form, true);
-				self.sendMessage(data, function () {
-					AttachSelector.resetAttaches(form);
-					form.msg.value = "";
-					form.msg.placeholder = L("Напишите сообщение");
-					Chat.removeRecipient();
-				});
+		$('#main').on('submit', '#chat_msg_form', function (e) {
+			e.preventDefault();
+			var form = this;
+			var data = {
+				msg: form.msg.value,
+				Rid: chat_params.roomid
+			};
+			if (form.To_user_id)
+				data.To_user_id = form.To_user_id.value;
+			if (form.Private)
+				data.Private = form.Private.value;
+			if (form.to)
+				data.to = form.to.value;
+			if (form.A_msg_id)
+				data.A_msg_id = form.A_msg_id.value;
+			data.atT = AttachSelector.getAttaches(form, true);
+			self.sendMessage(data, function () {
+				AttachSelector.resetAttaches(form);
+				form.msg.value = "";
+				form.msg.placeholder = L("Напишите сообщение");
+				Chat.removeRecipient();
 			});
-			
-			self.setManualRefresh(!pushstream || !pushstream.avail());
-			if (pushstream) {
-				pushstream.on("message", "chat", function (data) {
-					if (data.room_id != chat_params.roomid)
-						return;
-					
-					if (data.act == pushstream.TYPES.CHAT_SEND_MESSAGE) {
-						var mid = data.id || data.msg_id,
-							duplicate = ge('#msg' + mid);
-						
-						if (!duplicate)
-							++chat_params.allcnt;
-						
-						var pag = chat_params.allcnt < chat_params.maxcnt && chat_params.allcnt > 1 && chat_params.allcnt % chat_params.onpage == 1;
-						
-						var pgn = Spaces.view.pageNav.get();
-						if (pgn.length && pgn.data('page') > 1 && !duplicate) {
-							if (data.user_id != Spaces.params.nid) {
-								++unread_messages_cnt;
-								self.showUnreadNotify();
-								if (pag)
-									Chat.getMessages($.extend(self.getApiExtra(), {Op: 1}));
-							}
-						} else {
-							self.getMessageDelayed({
-								id: mid,
-								pag: pag
-							});
-						}
+		});
+
+		self.setManualRefresh(!pushstream.avail());
+
+		pushstream.on("message", "chat", function (data) {
+			if (data.room_id != chat_params.roomid)
+				return;
+
+			if (data.act == pushstream.TYPES.CHAT_SEND_MESSAGE) {
+				var mid = data.id || data.msg_id,
+					duplicate = ge('#msg' + mid);
+
+				if (!duplicate)
+					++chat_params.allcnt;
+
+				var pag = chat_params.allcnt < chat_params.maxcnt && chat_params.allcnt > 1 && chat_params.allcnt % chat_params.onpage == 1;
+
+				var pgn = Spaces.view.pageNav.get();
+				if (pgn.length && pgn.data('page') > 1 && !duplicate) {
+					if (data.user_id != Spaces.params.nid) {
+						++unread_messages_cnt;
+						self.showUnreadNotify();
+						if (pag)
+							Chat.getMessages($.extend(self.getApiExtra(), {Op: 1}));
 					}
-					if (data.act == pushstream.TYPES.CHAT_DELETE_MESSAGE) {
-						--chat_params.allcnt;
-						
-						var msg = $('#msg' + data.id);
-						if (msg.length > 0) {
-							var pgn = Spaces.view.pageNav.get();
-							if (pgn.length && pgn.data('page') > 1) {
-								Chat.getMessages($.extend(self.getApiExtra(), {Op: 0}));
-							} else {
-								msg.remove();
-							}
-						}
-						
-						self.cutMessages();
-					}
-				}).on('connect', 'chat', function (e) {
-					if (!e.first)
-						self.refreshMessages(true);
-					self.setManualRefresh(false);
-				}).on('disconnect', 'chat', function () {
-					if (!pushstream.disabled()) {
-						self.setManualRefresh(true);
-						self.resetMsgQueue(true);
-					}
-				});
+				} else {
+					self.getMessageDelayed({
+						id: mid,
+						pag: pag
+					});
+				}
 			}
-		}
+			if (data.act == pushstream.TYPES.CHAT_DELETE_MESSAGE) {
+				--chat_params.allcnt;
+
+				var msg = $('#msg' + data.id);
+				if (msg.length > 0) {
+					var pgn = Spaces.view.pageNav.get();
+					if (pgn.length && pgn.data('page') > 1) {
+						Chat.getMessages($.extend(self.getApiExtra(), {Op: 0}));
+					} else {
+						msg.remove();
+					}
+				}
+
+				self.cutMessages();
+			}
+		}).on('connect', 'chat', function (e) {
+			if (!e.first)
+				self.refreshMessages(true);
+			self.setManualRefresh(false);
+		}).on('disconnect', 'chat', function () {
+			if (!pushstream.disabled()) {
+				self.setManualRefresh(true);
+				self.resetMsgQueue(true);
+			}
+		});
 	},
 	getApiExtra: function (url) {
 		return {
@@ -403,8 +449,8 @@ var Chat = {
 				if (res.widgets) {
 					var html = res.widgets.join('');
 					messages_list.empty();
-					
 					messages_list.html(html);
+					messages_list.removeClass('hide');
 					self.cutMessages();
 					
 					require.loaded(import.meta.id("./widgets/video"), ({VideoPlayer}) => {
@@ -455,6 +501,8 @@ var Chat = {
 			return;
 		}
 		
+		Spaces.view.setInputError(textarea, false);
+
 		var captcha_code = $('input[name="captcha_code"]');
 		if (captcha_code.length)
 			data.captcha_code = captcha_code.val();
@@ -480,32 +528,55 @@ var Chat = {
 					error: res.code == Codes.COMMON.ERR_WRONG_CAPTCHA_CODE ? Spaces.apiError(res) : ''
 				}));
 			} else if (res.code == Codes.COMMON.ERR_OFTEN_OPERATION) {
-				Spaces.showError(L("Слишком часто отправляете сообщения. Подождите минутку. "));
+				Spaces.view.setInputError(textarea, L("Слишком часто отправляете сообщения. Подождите минутку."));
 				return;
 			} else {
-				Spaces.showApiError(res);
+				Spaces.view.setInputError(textarea, Spaces.apiError(res));
 				return;
 			}
 			self.refreshMessages(true);
 			callback && callback(res);
 		}, {
 			disableCaptcha: true,
-			onError: function () {
+			onError: function (err) {
+				Spaces.view.setInputError(textarea, err);
 				toggle_form_lock(false);
 			}
 		});
 	},
 	showMessage: function (mid, message) {
-		var self = this;
-		
-		var old = $('#msg' + mid);
+		const old = $('#msg' + mid);
 		if (old.length) {
 			old.after(message);
 			old.remove();
 		} else {
+			const chatMessages = messages_list.children();
+			const isFormVisible = isFullyVisibleOnScreen(document.querySelector('#chat_msg_form'));
+			const isLastMessageVisible = (chatMessages.length > 0 && isFullyVisibleOnScreen(chatMessages[chatMessages.length - 1]));
+
+			// Пытаемся сделать интерфейс чатов из 90-х (или 70-х???) чуточку лучше (или нет...)
+			// Суть автоскролла - компенсировать шифт вызванный добавлением нового сообщения в список
+			// Логика:
+			// - Если форма отправки видима на экране - сразу видим все новые сообщения перед собой, скролл НЕ ТРОГАЕМ
+			// - Если проскроллили чутка вниз и форму больше не видим - врубаем автоскролл, чтобы можно было успеть прочитать сообщение собеседника
+			// - Если открыли меню сообщения 0 врубаем автоскролл, чтобы сообщение на котором открыта менюшка не убежало за экран
+			const useAutoScroll = (
+				(!isFormVisible && !isLastMessageVisible) ||
+				hasOpenPoppers(messages_list[0])
+			);
+
+			const prevScroll = window.scrollY;
+			const prevMessagesHeight = messages_list[0].getBoundingClientRect().height;
+			messages_list.removeClass('hide');
 			messages_list.prepend(message);
+
+			if (useAutoScroll) {
+				const newMessagesHeight = messages_list[0].getBoundingClientRect().height;
+				const insertedMessageHeight = Math.round(newMessagesHeight - prevMessagesHeight);
+				window.scrollTo({ top: prevScroll + insertedMessageHeight });
+			}
 		}
-		
+
 		$('#no_messages_notify').remove();
 		
 		require.loaded(import.meta.id("./widgets/video"), ({VideoPlayer}) => {
@@ -614,13 +685,16 @@ var Chat = {
 			messages = messages_list.children();
 			if (!messages.length || messages.length <= chat_params.onpage)
 				break;
+			// Не удаляем сообщение, если на нём открыто меню (костыль)
+			if (hasOpenPoppers(messages[messages.length - 1]))
+				break;
 			$(messages[messages.length - 1]).remove();
 		}
 		$('#no_messages_notify').toggle(!messages.length);
 	},
 	addRecipient: function (name, user_id, is_private, znayko, msg_id) {
 		Chat.removeRecipient();
-		var form = $('#add_form');
+		var form = $('#chat_msg_form');
 		if (!znayko) {
 			Spaces.tools.formHidden(form, 'to', name);
 			Spaces.tools.formHidden(form, 'A_msg_id', msg_id);
@@ -630,7 +704,7 @@ var Chat = {
 		$('#recipient').append(tpl.recipient({name: name}));
 	},
 	removeRecipient: function () {
-		var form = $('#add_form');
+		var form = $('#chat_msg_form');
 		form.find('.js-lock_open, .js-lock_close').hide();
 		form.find('.js-textarea_wrapper')
 			.removeClass(classes.inputWrapPersonal)
@@ -644,7 +718,7 @@ var Chat = {
 	switchAccess: function (is_private) {
 		is_private = !!is_private;
 		
-		var form = $('#add_form'),
+		var form = $('#chat_msg_form'),
 			private_switch = form.find('#js-private_toggle');
 		if (private_switch.length) {
 			private_switch.find('option').each(function () {

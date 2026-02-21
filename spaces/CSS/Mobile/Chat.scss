@@ -10,18 +10,10 @@
 	position: absolute;
 	top: 0; left: 0
 }
-.chat_msg-avatar.rtl {
-	left: auto;
-	right: 0
-}
 
 .chat_msg-body {
 	margin-left: 50px;
 	position: relative
-}
-.chat_msg-body.rtl {
-	margin-left: 0;
-	margin-right: 50px;
 }
 
 .chat_msg-body .chat_msg {
@@ -86,11 +78,9 @@
 
 .chat_msg-my {
 	background: $chat-message-out-bg
-}
+}s
 .chat_msg-body .chat_msg-my::after {
-    border-right-color: transparent;
-    border-left-color: $chat-message-out-bg;
-    right: 0; left: 100%
+    border-right-color: $chat-message-out-bg;
 }
 
 .chat_msg-answer {

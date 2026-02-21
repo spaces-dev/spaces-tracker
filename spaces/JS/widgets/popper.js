@@ -6,10 +6,11 @@ import popperPreventOverflow from '@popperjs/core/lib/modifiers/preventOverflow'
 import popperComputeStyles from '@popperjs/core/lib/modifiers/computeStyles';
 import popperOffset from '@popperjs/core/lib/modifiers/offset';
 import popperEventListeners from '@popperjs/core/lib/modifiers/eventListeners';
-import { parseDataset, scrollIntoViewIfNotVisible, waitTransitionEnd } from "../utils/dom";
+import { parseDataset, waitTransitionEnd } from "../utils/dom";
 import { throttleRaf } from "../utils";
 import fixPageHeight from "../min_height";
 import pageLoader from '../ajaxify';
+import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
 const Z_INDEX = 1101;
 const ARROW_SIZE = 10;
@@ -518,6 +519,14 @@ export function getNearestPopper(element) {
 export function closeAllPoppers() {
 	for (const popperInstance of popperOpenInstances)
 		popperInstance.close();
+}
+
+export function hasOpenPoppers(container) {
+	for (const popperInstance of popperOpenInstances) {
+		if (container.contains(popperInstance.element()))
+			return true;
+	}
+	return false;
 }
 
 function handleBodyClick(e) {

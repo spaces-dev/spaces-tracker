@@ -3,7 +3,8 @@ import {Spaces, Url} from '../spacesLib';
 import $ from '../jquery';
 import {debounce, L, numeral, tick} from '../utils';
 import '../select_item';
-import { createDataSelector, scrollIntoViewIfNotVisible } from '../utils/dom';
+import { createDataSelector } from '../utils/dom';
+import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
 const tpl = {
 	editLinkLabel({ selectedCatsCount, offersCount }) {

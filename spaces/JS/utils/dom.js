@@ -16,19 +16,16 @@ export function findParent(el, selector) {
 	return null;
 }
 
-export function scrollIntoViewIfNotVisible(target, options = {}) {
-	options = {
-		start: "start",
-		end: "end",
-		behavior: "smooth",
-		...options
-	};
+export function isFullyVisibleOnScreen(target) {
 	const rect = target.getBoundingClientRect();
-	if (rect.bottom > window.innerHeight) {
-		target.scrollIntoView({ block: options.end, inline: "nearest", behavior: options.behavior });
-	} else if (rect.top < 0) {
-		target.scrollIntoView({ block: options.start, inline: "nearest", behavior: options.behavior });
-	}
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	return (
+		rect.top >= 0 &&
+		rect.left >= 0 &&
+		rect.bottom <= vh &&
+		rect.right <= vw
+	);
 }
 
 export function isVisibleOnScreen(target) {

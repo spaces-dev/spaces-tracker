@@ -4,7 +4,7 @@ import * as pushstream from '../../core/lp';
 import { MsgFlowControl } from '../../msg_fc';
 import Spaces, { Codes, Url } from '../../spacesLib';
 import { debounce, L } from '../../utils';
-import { scrollIntoViewIfNotVisible } from '../../utils/dom';
+import { scrollIntoViewIfNotVisible } from '../../utils/scroll';
 
 const FALLBACK_UPDATE_INTERVAL = 30000;
 
