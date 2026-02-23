@@ -18,6 +18,9 @@ const tpl = {
 function initModule(parent) {
 	const postfix = parent.data('postfix') ?? "";
 
+	let fileId = parent.data('fileId');
+	let fileType = parent.data('fileType');
+
 	parent.itemsSelector({
 		selector:		'.categories-selector-grid__item:not(.hide):not([data-stub])',
 		activeSelector:	'.categories-selector-grid__item--is-active',
@@ -34,6 +37,8 @@ function initModule(parent) {
 		uploadFile.on('fileUploaded', (e, data) => {
 			parent.data('fileId', data.nid);
 			parent.data('fileType', data.type);
+			fileId = data.nid;
+			fileType = data.type;
 		});
 		uploadFile.on('uploadError', (e) => {
 			if (e.detail.name == 'CaT' || e.detail.name == 'Forient') {
@@ -174,14 +179,15 @@ function initModule(parent) {
 
 	parent.action('moder_tag_offer', async function (e) {
 		e.preventDefault();
+
 		const link = $(this);
 		const toggleLoading = (flag) => link.find('.js-ico').toggleClass('ico_spinner', flag);
 
 		toggleLoading(true);
 		const response = await Spaces.asyncApi('xxx.moderation.tagOffer', {
 			CK: null,
-			File_id: link.data('fileId'),
-			Ftype: link.data('fileType'),
+			File_id: fileId,
+			Ftype: fileType,
 			Category: link.data('category'),
 			Accept: link.data('accept'),
 		});
@@ -220,22 +226,22 @@ function initModule(parent) {
 	}
 
 	function updateEditLink() {
-		const fileId = parent.data('fileId');
-		const fileType = parent.data('fileType');
-		const offeredCategories = parent.find('.js-cats_offers');
+		let totalOffersCount = 0;
+		for (const offersBlock of parent.find('.js-cats_offers_block')) {
+			const offersCount = offersBlock.querySelectorAll('.s-property').length;
+			offersBlock.classList.toggle('hide', offersCount == 0);
+			totalOffersCount += offersCount;
+		}
+
 		const selectedCatsCount = parent.find('.js-checkbox.form-checkbox_checked').length;
-		const offersCount = offeredCategories.find('.s-property').length;
 		$(`#xxx_cats_edit_link_${fileType}_${fileId}`).html(tpl.editLinkLabel({
-			offersCount,
+			offersCount: totalOffersCount,
 			selectedCatsCount
 		}));
-		offeredCategories.toggleClass('hide', offersCount == 0);
+		parent.find('.js-cats_offers').toggleClass('hide', totalOffersCount == 0);
 	}
 
 	async function saveCategories() {
-		const fileId = parent.data('fileId');
-		const fileType = parent.data('fileType');
-
 		if (!fileId)
 			return;
 

@@ -1,6 +1,7 @@
 import module from 'module';
 import {Spaces, Url} from '../spacesLib';
 import {L} from '../utils';
+import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
 module.on('component', () => {
 	$('#main').on('submit', '.js-ajax_form', function (e) {
@@ -29,6 +30,18 @@ module.on('component', () => {
 			btn.find('.js-ico').toggleClass('ico_spinner', flag);
 		};
 		
+		const showError = (error) => {
+			const formError = el.find('.js-ajax_form_error');
+			if (formError.length) {
+				formError.html(error);
+				formError.toggleClass('hide', !error);
+				scrollIntoViewIfNotVisible(formError[0], { start: "nearest", end: "nearest" });
+			} else {
+				Spaces.showError(error);
+			}
+		};
+
+		showError(undefined);
 		toggle_loading(true);
 		
 		Spaces.api(el.data('apiMethod'), data, (res) => {
@@ -39,7 +52,7 @@ module.on('component', () => {
 					formData: data,
 					error: Spaces.apiError(res)
 				});
-				Spaces.showApiError(res);
+				showError(Spaces.apiError(res));
 				return;
 			}
 			
@@ -52,7 +65,7 @@ module.on('component', () => {
 		}, {
 			onError(err) {
 				toggle_loading(false);
-				Spaces.showError(err);
+				showError(err);
 				
 				el.trigger('ajax-form-error', {
 					formData: data,
