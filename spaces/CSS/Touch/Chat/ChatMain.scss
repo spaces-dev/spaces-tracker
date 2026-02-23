@@ -6,20 +6,6 @@
 	padding-top: 7px;
 }
 
-.chat-room {
-	&__reactions-counter {
-		float: right;
-		display: flex;
-		gap: 3px;
-		color: $blue-text-color;
-		align-items: center;
-
-		svg {
-			color: $icon-blue-color;
-		}
-	}
-}
-
 .chat-messages-list {
 	display: flex;
 	gap: 15px;
