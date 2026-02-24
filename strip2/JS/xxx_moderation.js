@@ -188,7 +188,7 @@ function initItem( item ) {
 		this.disabled = true;
 		
 		Spaces.api(
-			"xxx.moderation_set_decision",
+			"xxx.moderation.setDecision",
 			{
 				Type: item.dataset.fileType,
 				Id: item.dataset.fileId,
@@ -238,7 +238,7 @@ function initItem( item ) {
 		
 		if ( declineReasons.length ) {
 			Spaces.api(
-				"xxx.moderation_set_decision",
+				"xxx.moderation.setDecision",
 				{
 					Type: item.dataset.fileType,
 					Id: item.dataset.fileId,
@@ -281,7 +281,7 @@ function initItem( item ) {
 		
 		if ( banReason ) {
 			Spaces.api(
-				"xxx.moderation_set_decision",
+				"xxx.moderation.setDecision",
 				{
 					Type: item.dataset.fileType,
 					Id: item.dataset.fileId,
