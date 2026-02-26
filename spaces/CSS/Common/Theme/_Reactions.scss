@@ -21,6 +21,39 @@ $reactions-theme-message-in: (
 	"selected-text": #FFFFFF
 );
 
+$reactions-theme-chat-out: $reactions-theme-message-out;
+$reactions-theme-chat-in: $reactions-theme-message-in;
+
+$reactions-theme-chat-private: (
+	"text": $default-text-color,
+	"bg": theme(#E9DDAF, #403755),
+	"border": transparent,
+	"hover-bg": theme(#DBCE9D, #463D5C),
+	"active-bg": theme(#CEC08A, #4C4363),
+	"selected-bg": theme(#C1B278, #52496A),
+	"selected-text": #FFFFFF
+);
+
+$reactions-theme-chat-answer: (
+	"text": $default-text-color,
+	"bg": theme(#BEDBE9, #31394C),
+	"border": transparent,
+	"hover-bg": theme(#A9CEDF, #363F53),
+	"active-bg": theme(#97C0D4, #3C4559),
+	"selected-bg": theme(#85B3C9, #414B60),
+	"selected-text": #FFFFFF
+);
+
+$reactions-theme-chat-focused: (
+	"text": $default-text-color,
+	"bg": theme(#ECD3E8, #632C3D),
+	"border": transparent,
+	"hover-bg": theme(#E0C3DB, #6A3143),
+	"active-bg": theme(#D3B4CF, #713749),
+	"selected-bg": theme(#C7A5C2, #783D4F),
+	"selected-text": #FFFFFF
+);
+
 $reactions-theme-topic: (
 	"text": $default-text-color,
 	"bg": theme(#EBEFF4, #494B4D),

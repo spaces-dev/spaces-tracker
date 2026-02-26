@@ -125,8 +125,6 @@ module.on("componentpagedone", () => {
 });
 
 function useFloatingButton(reactionsButton, { topAnchor, bottomAnchor, stickyClass, stickyMargin }) {
-	console.log(topAnchor, bottomAnchor);
-
 	const handleScroll = throttleRaf(() => {
 		const buttonRect = reactionsButton.getBoundingClientRect();
 		const topAnchorRect = topAnchor.getBoundingClientRect();

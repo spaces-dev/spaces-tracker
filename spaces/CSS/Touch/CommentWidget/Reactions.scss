@@ -415,7 +415,7 @@
 	visibility: visible;
 
 	transform: translate(-50%, var(--unread-reactions-button-y));
-	z-index: 3000;
+	z-index: 1000;
 
 	background: $content-bg;
 	color: $accent-blue-color;
