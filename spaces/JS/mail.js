@@ -88,8 +88,10 @@ var tpl = {
 		var html = '' + 
 			'<div class="widgets-group links-group links-group_grey dropdown-menu">' + 
 				'<div class="content-bl content-bl__sep oh">' + 
-					'Вы уверены, что хотите удалить сообщение у всех (это действие нельзя отменить)?' +
-                    '<div class="grey">* Если у вашего адресата включена пересылка сообщений на Email, то они уже не могут быть удалены. Сообщения пересылаются через 10 минут.</div>' +
+					L('Вы уверены, что хотите удалить сообщение у всех (это действие нельзя отменить)?') +
+                    '<div class="grey">* ' +
+						L('Если у вашего адресата включена пересылка сообщений на Email, то они уже не могут быть удалены. Сообщения пересылаются через 10 минут.') +
+					'</div>' +
 				'</div>' + 
 				'<div class="dropdown-menu">' + 
 					'<table class="table__wrap">' + 
@@ -97,12 +99,12 @@ var tpl = {
 							'<td class="table__cell links-group links-group_grey table__cell_border" width="50%">' + 
 								'<a href="#" class="list-link list-link-red js-action_link" data-action="mail_message_erase" data-for-all="1">' + 
 									'<span class="ico ico_remove_red"></span> ' + 
-									'<span class="t">Удалить</span>' + 
+									'<span class="t">' + L('Удалить') +'</span>' + 
 								'</a>' + 
 							'</td>' + 
 							'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
 								'<a href="#" class="list-link js-popper_close">' +
-									'<span class="t">Отмена</span>' + 
+									'<span class="t">' + L('Отмена') + '</span>' + 
 								'</a>' + 
 							'</td>' + 
 						'</tr>' + 

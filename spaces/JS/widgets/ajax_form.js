@@ -36,7 +36,7 @@ module.on('component', () => {
 				formError.html(error);
 				formError.toggleClass('hide', !error);
 				scrollIntoViewIfNotVisible(formError[0], { start: "nearest", end: "nearest" });
-			} else {
+			} else if (error) {
 				Spaces.showError(error);
 			}
 		};
