@@ -86,7 +86,7 @@ var tpl = {
 						<a href="#" class="js-upload_no_pb_ui js-upload_remove" data-id="${data.id}" title="${L('Убрать из загрузки')}">
 							<span class="ico ico_remove right"></span>
 						</a>
-						<span class="grey">Файл <span class="js-upload_file_number">0</span>:</span> ${html_wrap(data.name)}
+						<span class="grey">${L("Файл")} <span class="js-upload_file_number">0</span>:</span> ${html_wrap(data.name)}
 					</div>
 					${Device.type == 'touch' ? `<div class="grey pad_t_a">${fileSize}</div>` : ``}
 					<div class="normal-stnd">

@@ -113,7 +113,7 @@ module.on('componentpage', () => {
 
 		const selectedDate = getSelectedDate();
 		if (selectedDate)
-			datepicker.setDate(selectedDate);
+			datepicker.setDate(selectedDate.toDate());
 
 		datepickerElement.addEventListener('changeDate', () => {
 			setSelectedDate(dayjs(datepicker.getDate()));
