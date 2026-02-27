@@ -1,0 +1,154 @@
+@use "spacepack/build/variables" as *;
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+@import '~vanillajs-datepicker/sass/_mixins';
+
+$dp-font-size-normal: 1em;
+$dp-font-size-small: 1em;
+
+$dp-background-color: $content-bg;
+$dp-border-color: $default-border-color;
+
+$dp-cell-hover-background-color: if($PC, $default-hover-bg, transparent);
+$dp-cell-focus-background-color: transparent;
+$dp-cell-selected-background-color: $default-clicked-bg;
+$dp-cell-selected-color: $default-text-color;
+
+$dp-cell-disabled-color: $disabled-text-color;
+$dp-cell-prevnext-color: $disabled-text-color;
+$dp-cell-prevnext-selected-color: $default-text-color;
+
+$dp-cell-today-background-color: transparent;
+$dp-cell-today-focus-background-color: transparent;
+$dp-cell-today-color: $blue-text-color;
+
+$dp-cell-gap: 2px;
+$dp-cell-size-base: 40px;
+$dp-view-width: calc($dp-cell-size-base * 7 + 6 * $dp-cell-gap);
+$dp-border-radius: 6px;
+
+@mixin dp-button {
+	.button {
+		.datepicker-header & {
+			@include dp-header-button-common;
+			align-items: center;
+			justify-content: center;
+			display: flex;
+			padding: 0;
+
+			&.next-button, &.prev-button {
+				color: $blue-text-color;
+				flex: unset;
+				svg {
+					height: 35px;
+					width: 35px;
+				}
+			}
+
+			&[disabled] {
+				opacity: 0.5;
+				pointer-events: none;
+			}
+
+			@if ($PC) {
+				&:hover {
+					background-color: $default-hover-bg;
+				}
+			}
+
+			&:active {
+				background-color: $default-clicked-bg;
+			}
+		}
+
+		.datepicker-footer & {
+			@include dp-footer-button-common;
+		}
+	}
+}
+
+@import '~vanillajs-datepicker/sass/datepicker';
+
+.datepicker {
+	.dow {
+		height: $dp-cell-size-base;
+	}
+
+	.days-of-week {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: $dp-cell-gap;
+	}
+}
+
+.datepicker-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: $dp-cell-gap;
+
+	&.months {
+		grid-template-columns: repeat(4, 1fr);
+	}
+
+	&.years {
+		grid-template-columns: repeat(4, 1fr);
+	}
+
+	&.decades {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+.datepicker-cell {
+	flex-basis: auto;
+
+	&.disabled {
+		opacity: 0.5;
+	}
+
+	@if ($PC) {
+		&.today:not(.selected):hover {
+			background-color: $default-hover-bg;
+		}
+
+		&.focused:not(.disabled):not(.selected):hover {
+			background-color: $default-hover-bg;
+		}
+	}
+
+	&.today:not(.selected):not(.disabled) {
+		font-weight: bold;
+	}
+
+	&.year.next:not(.disabled), &.year.prev:not(.disabled) {
+		color: $default-text-color;
+	}
+
+	&.decade.next:not(.disabled), &.decade.prev:not(.disabled) {
+		color: $default-text-color;
+	}
+
+	.datepicker-keyboard-focus & {
+		&.focused {
+			box-shadow: inset 0px 0px 0px 2px $blue-text-color;
+		}
+
+		&.focused:not(.selected) {
+			background-color: $default-hover-bg;
+		}
+	}
+}
+
+.datepicker-buttons {
+	display: flex;
+	border-top: 1px solid $separator-color;
+
+	.btn-main {
+		border-right: 1px solid $separator-color;
+	}
+
+	.btn-main:last-child {
+		border-right: none;
+	}
+}

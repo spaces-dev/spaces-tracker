@@ -196,23 +196,25 @@ $icon-to-align-fix: (
 }
 
 @mixin icon-hover-state($sprite, $color1, $color2) {
-	.inl-link:hover &,
-	.drop-down-label:hover &,
-	.link-grey:hover &,
-	.link-return:hover &,
-	.link-stnd:hover &,
-	.link-light:hover &,
-	.use-icon-state:hover & {
-		@if ($DARK_MODE) {
-			/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color2)};
-		} @else {
-			/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color1)};
+	@if ($PC) {
+		.inl-link:hover &,
+		.drop-down-label:hover &,
+		.link-grey:hover &,
+		.link-return:hover &,
+		.link-stnd:hover &,
+		.link-light:hover &,
+		.use-icon-state:hover & {
+			@if ($DARK_MODE) {
+				/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color2)};
+			} @else {
+				/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color1)};
+			}
 		}
-	}
 
-	.link-blue:hover &,
-	.link-imp:hover & {
-		/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color2)};
+		.link-blue:hover &,
+		.link-imp:hover & {
+			/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color2)};
+		}
 	}
 }
 

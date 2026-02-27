@@ -10,12 +10,6 @@
 	cursor: pointer
 }
 
-.select_custom_noactive{
-	-moz-opacity: 0.5;
-	opacity: 0.5;
-	color: $select-input-disabled-color;
-}
-
 .select_custom_near,
 .select_custom_near_wrap .select_custom {
 	margin-right: -2px;
@@ -27,8 +21,6 @@
 }
 
 .select_custom > .select{
-	filter: alpha(opacity=0);
-	-moz-opacity: 0;
 	opacity: 0;
 	left: 0;
 	right: 0;
@@ -48,22 +40,14 @@
 	margin-right: 3px
 }
 
-/* Opera Mini */
-.operamini .select__result {
-	display: none !important;
-}
+.select_custom.select_custom_noactive {
+	color: $select-input-disabled-color;
+	opacity: 0.5;
 
-.operamini .select_custom > .select {
-	filter: alpha(opacity=100);
-	-moz-opacity: 1;
-	opacity: 1;
-	width: auto;
-	max-width: 100%;
-	position: static;
-	border: 1px solid $input-border;
-	background: $input-bg;
-	padding: 8px;
-	color: $input-text-color
+	.drop-down-label:not(.js-clicked) {
+		@include replace-icon("ico", "arr_down_darkblue", "arr_down");
+		color: $select-input-disabled-color;
+	}
 }
 
 /* Calendar */
@@ -135,8 +119,4 @@ td.list-link {
 	.calendar th > div > div.fix {
 		height: 100%
 	}
-}
-
-.select_custom_noactive.select_custom {
-	@include replace-icon("ico", "arr_down_darkblue", "arr_down");
 }
