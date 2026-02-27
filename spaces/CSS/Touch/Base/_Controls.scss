@@ -1074,9 +1074,6 @@ button.btn-transp:hover,
 	color: $error-message-color;
 	padding: 11px 0 0 0;
 	position: relative;
-	@if ($TOUCH) {
-		text-align: center;
-	}
 }
 
 .error__msg_important{

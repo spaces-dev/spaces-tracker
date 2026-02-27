@@ -164,7 +164,7 @@ var tpl = {
 				'<div id="gallery_img_1_wrap" class="gallery-anim_hide gallery__image-wrapper accel-3d">' + 
 					'<img src="' + TRANSPARENT_STUB + '" alt="" id="gallery_img_1" class="gallery__image" />' + 
 					'<div class="gallery__error gallery__image"></div>' + 
-					'<center id="galleryVideo"></center>' + 
+					'<div id="galleryVideo"></div>' +
 					tpl.playBtn() +
 				'</div>' + 
 				'<div id="gallery_img_2_wrap" class="gallery-anim_hide gallery__image-wrapper accel-3d gallery-sibling">' + 
@@ -1719,13 +1719,13 @@ Gallery = {
 		
 		// Временная заглушка для плеера, пока не получим его по API
 		if (!current.item.loaded) {
-			$('#galleryVideo').show().fastHtml(tpl.playerStub(current.item.preview));
+			$('#galleryVideo').addClass('gallery__video').fastHtml(tpl.playerStub(current.item.image || current.item.preview));
 			self.onResize();
 			import('./widgets/video').then(() => self.onResize());
 			return;
 		}
 		
-		$('#galleryVideo').show().fastHtml(current.item.player);
+		$('#galleryVideo').addClass('gallery__video').fastHtml(current.item.player);
 		
 		let video = $('#galleryVideo').find('.js-vp');
 		video.removeClass('hide').addClass('js-vp_new');
@@ -1739,7 +1739,7 @@ Gallery = {
 		self.onResize();
 		
 		let last_current = current;
-		require.fast(import.meta.id('./widgets/video'), ({vplayer}) => {
+		require.fast(import.meta.id('./widgets/video'), ({ vplayer }) => {
 			if (last_current != current)
 				return;
 			
@@ -2150,26 +2150,7 @@ Gallery = {
 			err.css("top", (gallery_rect.rh - err.height()) / 2);
 		}
 		
-		if (current.item.content == 'video') {
-			let gallery_video = $('#galleryVideo').find('.js-vp');
-			let aspect = 16 / 9; // на текущий момент плеер всегда 16:9
-			
-			// У плеера может быть небольшой тулбар снизу, пробуем его вычислить
-			let extra_height = get_player_extra_height(gallery_video.width(), gallery_video.height(), aspect);
-			
-			let max_height = gallery_rect.h - extra_height;
-			let player_width = gallery_rect.w;
-			let player_height = Math.floor(player_width / aspect);
-			
-			if (player_height > max_height) {
-				player_height = max_height;
-				player_width =  Math.floor(player_height * aspect);
-			}
-			
-			gallery_video
-				.css("margin-top", (max_height - player_height) / 2 + "px")
-				.css("max-width", player_width + "px");
-		} else {
+		if (current.item.content != 'video') {
 			if (!manual)
 				self.recalcFrames();
 		}
@@ -2437,10 +2418,6 @@ Gallery = {
 };
 
 extend(Gallery, TSimpleEvents);
-
-function get_player_extra_height(player_width, player_height, aspect) {
-	return player_height - Math.floor(player_width / aspect);
-}
 
 function gallery_get_meta(pic) {
 	var cache = pic.gallery_cache_id && items_cache[pic.gallery_cache_id];

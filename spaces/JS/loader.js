@@ -162,7 +162,7 @@ __require_config		|	Конфиг загрузчика
 	}
 	
 	function requireFast(name, callback) {
-		if (modules_cache[name]) {
+		if (modules_cache[name] && modules_cache[name].loaded) {
 			callback && callback(modules_cache[name].exports);
 		} else {
 			require([name], callback);

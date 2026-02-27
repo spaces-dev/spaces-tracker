@@ -539,13 +539,15 @@
 	display: none;
 }
 
-#galleryVideo{
-	display: none;
-}
-
-.gallery_video #galleryVideo{
-	display: block;
+.gallery__video {
+	display: flex;
+	align-items: center;
 	z-index: 10;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 }
 
 .pc .gallery:hover .gallery__side-arrow {
@@ -709,8 +711,30 @@
 	color: $green-text-color;
 }
 
-#Gallery .video-player_container {
-	max-width: 100%
+/* FIXME: У плеера должен быть режим FLUID? */
+#Gallery {
+	.video-player_container {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.video-player_wrap {
+		width: 100%;
+		height: 100%;
+
+		&::before {
+			display: none;
+		}
+	}
+
+	.video-player {
+		width: 100%;
+		height: 100%;
+		position: static;
+	}
 }
 
 /* Иконка play для gif */

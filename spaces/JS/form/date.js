@@ -60,12 +60,11 @@ module.on('componentpage', () => {
 		const getSelectedDate = () => {
 			if (!+yearInput.value && !+monthInput.value && !+dayInput.value)
 				return undefined;
-			const resultDate = dayjs()
+			return dayjs()
 				.year(+yearInput.value)
 				.month(+monthInput.value - 1)
 				.date(+dayInput.value)
 				.startOf('day');
-			return clampToDateRange(resultDate, minDate, maxDate);
 		};
 
 		const setSelectedDate = (date) => {
@@ -73,6 +72,7 @@ module.on('componentpage', () => {
 			monthInput.value = date ? date.month() + 1 : '';
 			dayInput.value = date ? date.date() : '';
 			dateLabel.textContent = date ? `${date.date()} ${MONTHS_LABELS[date.month()]} ${date.year()}` : L("Укажите дату");
+			Spaces.view.setInputError($(yearInput), false);
 		};
 
 		widget.querySelector('.select_custom').classList.remove('select_custom_noactive');
@@ -110,7 +110,10 @@ module.on('componentpage', () => {
 			minDate,
 			maxDate,
 		});
-		datepicker.setDate(getSelectedDate()?.toDate());
+
+		const selectedDate = getSelectedDate();
+		if (selectedDate)
+			datepicker.setDate(selectedDate);
 
 		datepickerElement.addEventListener('changeDate', () => {
 			setSelectedDate(dayjs(datepicker.getDate()));
@@ -145,12 +148,3 @@ module.on('componentpage', () => {
 		onCleanup = undefined;
 	});
 });
-
-function clampToDateRange(date, minDate, maxDate) {
-	let result = date;
-	if (minDate && result.isBefore(minDate))
-		result = minDate;
-	if (maxDate && result.isAfter(maxDate))
-		result = maxDate;
-	return result;
-}

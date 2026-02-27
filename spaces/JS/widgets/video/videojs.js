@@ -10,7 +10,7 @@ import { setupStatistic, setupViewTracker } from './videojs/statistic';
 class VideoJsDriver extends BaseDriver {
 	init(callback) {
 		let video = document.createElement('video');
-		video.className = `video-js vjs-16-9 vjs-big-play-centered ${videojs.browser.TOUCH_ENABLED ? 'vjs-theme-touch' : 'vjs-theme-desktop'}`;
+		video.className = `video-js vjs-fill vjs-big-play-centered ${videojs.browser.TOUCH_ENABLED ? 'vjs-theme-touch' : 'vjs-theme-desktop'}`;
 
 		// На говнобраузерах постер растягивается....
 		// Нужно сделать превьюшки на 16:9 сначала

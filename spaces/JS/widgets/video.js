@@ -211,7 +211,7 @@ class VideoPlayer {
 				import('Files/VideoJs.css');
 			}
 		}
-		
+
 		require.fast(module_id, (driver) => this.createDriver(driver.default));
 		
 		this.is_inited = true;
