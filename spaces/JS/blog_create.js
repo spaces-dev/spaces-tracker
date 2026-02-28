@@ -12,6 +12,8 @@ var tpl = {
 
 var has_adult_files, has_adult_channel;
 
+console.log("shit");
+
 UniversalSearch.register("blog_channels", {
 	apiMethod: 'blogs.findChannel',
 	apiData: {CK: null},
@@ -101,6 +103,8 @@ module.on("componentpage", function () {
 	}).on('onAdultAttach', function (e, data) {
 		has_adult_files = data.hasAdult;
 		toggleAdult();
+	}).action("cancel", () => {
+		$('textarea').val("").trigger("change");
 	});
 });
 
