@@ -286,10 +286,10 @@ var tpl = {
 			'</div>';
 		return html;
 	},
-	playerStub(preview) {
+	playerStub(preview, isExternalVideo) {
 		return `
-			<div class="js-vp video-player-container">
-				<div class="js-vp_player_wrap video-player video-player--fluid">
+			<div class="js-vp video-player-container ${isExternalVideo ? '' : 'video-player-container--fluid'}">
+				<div class="js-vp_player_wrap video-player">
 					<div class="video-player__frame js-vp_player">
 						<img src="${preview}" class="preview" alt="" />
 					</div>
@@ -1717,9 +1717,11 @@ Gallery = {
 		if (current.playerInited)
 			return;
 		
+		const isExternalVideo = current.item.type == Spaces.TYPES.EXTERNAL_VIDEO;
+
 		// Временная заглушка для плеера, пока не получим его по API
 		if (!current.item.loaded) {
-			$('#galleryVideo').addClass('gallery__video').fastHtml(tpl.playerStub(current.item.image || current.item.preview));
+			$('#galleryVideo').addClass('gallery__video').fastHtml(tpl.playerStub(current.item.image || current.item.preview, isExternalVideo));
 			self.onResize();
 			import('./widgets/video').then(() => self.onResize());
 			return;
@@ -1729,7 +1731,9 @@ Gallery = {
 		
 		let video = $('#galleryVideo').find('.js-vp');
 		video.removeClass('hide').addClass('js-vp_new');
-		video.find('.js-vp_player_wrap').addClass('video-player--fluid');
+
+		if (!isExternalVideo)
+			video.addClass('video-player-container--fluid');
 		
 		if (Device.type == 'desktop') {
 			if (!current.item.adult || !enable_check_adult)
