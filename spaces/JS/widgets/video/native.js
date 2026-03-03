@@ -51,7 +51,7 @@ class NativeDriver extends BaseDriver {
 		
 		// Инициализируем <video>
 		let player = document.createElement('video');
-		player.className = 'js-vp_player video-player video-player_native';
+		player.className = 'video-player__video';
 		player.id = this.id + '-native';
 		player.setAttribute('preload', 'none');
 		player.setAttribute('controls', '');
@@ -64,7 +64,7 @@ class NativeDriver extends BaseDriver {
 		player.addEventListener('pause', () => this.triggerPause(), false);
 		player.addEventListener('ended', () => this.triggerPause(), false);
 		
-		this.container.find('.js-vp_player').replaceWith(player);
+		this.container.find('.js-vp_player').empty().append(player);
 		
 		this.selectSource(this.getDefaultSource(), false);
 		

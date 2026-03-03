@@ -288,10 +288,10 @@ var tpl = {
 	},
 	playerStub(preview) {
 		return `
-			<div class="js-vp video-player_container">
-				<div class="js-vp_player_wrap video-player_wrap">
-					<div class="video-player js-vp_player">
-						<img src="${preview}" alt="" />
+			<div class="js-vp video-player-container">
+				<div class="js-vp_player_wrap video-player video-player--fluid">
+					<div class="video-player__frame js-vp_player">
+						<img src="${preview}" class="preview" alt="" />
 					</div>
 				</div>
 			</div>
@@ -1729,6 +1729,7 @@ Gallery = {
 		
 		let video = $('#galleryVideo').find('.js-vp');
 		video.removeClass('hide').addClass('js-vp_new');
+		video.find('.js-vp_player_wrap').addClass('video-player--fluid');
 		
 		if (Device.type == 'desktop') {
 			if (!current.item.adult || !enable_check_adult)

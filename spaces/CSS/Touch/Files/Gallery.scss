@@ -711,32 +711,6 @@
 	color: $green-text-color;
 }
 
-/* FIXME: У плеера должен быть режим FLUID? */
-#Gallery {
-	.video-player_container {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-	}
-
-	.video-player_wrap {
-		width: 100%;
-		height: 100%;
-
-		&::before {
-			display: none;
-		}
-	}
-
-	.video-player {
-		width: 100%;
-		height: 100%;
-		position: static;
-	}
-}
-
 /* Иконка play для gif */
 .gallery__play_btn {
 	display: none;

@@ -21,7 +21,7 @@ class YoutubeDriver extends BaseDriver {
 		
 		let iframe = document.createElement('iframe');
 		iframe.id = this.id + '-iframe';
-		iframe.className = 'js-vp_player video-player video-player_native';
+		iframe.className = 'video-player__video';
 		iframe.setAttribute("width", '100%');
 		iframe.setAttribute("height", '100%');
 		iframe.setAttribute("allow", 'autoplay; encrypted-media');
@@ -29,7 +29,7 @@ class YoutubeDriver extends BaseDriver {
 		iframe.src = '//www.youtube.com/embed/' + video_id + '?enablejsapi=1&' + 
 			'autoplay=' + (this.options.autoplay ? 1 : 0) + '&' + 
 			'origin=' + location.protocol + "//" + location.hostname;
-		this.container.find('.js-vp_player').replaceWith(iframe);
+		this.container.find('.js-vp_player').empty().append(iframe);
 		
 		this.iframe = iframe;
 		
