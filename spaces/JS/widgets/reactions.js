@@ -119,10 +119,10 @@ const tpl = {
 					<div class="block-item__descr">
 						<div>
 							<span class="block-item__title break-word">
-								<span class="mysite-nick skeleton-text">RickAstley</span>
+								<span class="mysite-nick skeleton skeleton--text">RickAstley</span>
 							</span>
 						</div>
-						<div class="block-item__light oh skeleton-text">at 13:37</div>
+						<div class="block-item__light oh skeleton skeleton--text">at 13:37</div>
 					</div>
 				</a>
 			</div>

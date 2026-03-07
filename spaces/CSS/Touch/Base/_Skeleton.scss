@@ -1,7 +1,7 @@
 @use "Common/Theme" as *;
 
 body {
-	.skeleton, .skeleton-text {
+	.skeleton {
 		background-color: $skeleton-base;
 		background-image: $skeleton-gradient;
 		background-size: 100px 100%;
@@ -9,17 +9,43 @@ body {
 		animation: skeleton-animation 1.5s ease-in-out infinite;
 		border-color: transparent;
 		color: transparent;
+
+		&--circle {
+			border-radius: 50%;
+		}
+
+		&--text {
+			display: inline-block;
+			border-radius: 1em;
+			height: 0.9em;
+			vertical-align: middle;
+		}
 	}
 
-	.skeleton--circle {
-		border-radius: 50%;
-	}
+	.skeleton-shimmer {
+		position: relative;
+		overflow: hidden;
 
-	.skeleton-text {
-		display: inline-block;
-		border-radius: 1em;
-		height: 0.9em;
-		vertical-align: middle;
+		&::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				110deg,
+				transparent 35%,
+				$skeleton-shimmer 50%,
+				transparent 65%
+			);
+			transform: translateX(-150%);
+			animation: skeleton-shimmer 2.6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+			pointer-events: none;
+		}
+	}
+}
+
+@keyframes skeleton-shimmer {
+	100% {
+		transform: translateX(150%);
 	}
 }
 

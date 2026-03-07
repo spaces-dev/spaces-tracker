@@ -61,5 +61,6 @@ $default-block-shadow:			theme(0px 3px 3px rgba(#5d6d9d, 0.3),	0px 3px 3px rgba(
 $skeleton-base:					theme(#e2eaf5,	#4e4f50);
 $skeleton-highlight:			theme(#eef2f8,	#5a5b5c);
 $skeleton-gradient:				theme(linear-gradient(90deg, #e2eaf5, #eef2f8, #e2eaf5), linear-gradient(90deg, #4e4f50, #5a5b5c, #4e4f50));
+$skeleton-shimmer:				theme(rgba(255, 255, 255, 0.45), rgba(220 ,235, 255, 0.38));
 
 @import "./Base/Project";

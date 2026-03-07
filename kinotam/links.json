@@ -645,6 +645,7 @@
   "/js/touch/pages/ai/chat.js",
   "/js/touch/pages/ai/common.js",
   "/js/touch/pages/ai/gifts.js",
+  "/js/touch/pages/ai/photo-motion.js",
   "/js/touch/pages/ai/photo-style.js",
   "/js/touch/pages/ai/stickers.js",
   "/js/touch/pages/ai/wallet.js",

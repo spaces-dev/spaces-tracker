@@ -59,7 +59,9 @@ module.on("componentpagedone", () => {
 });
 
 function initVideoSlides(item) {
-	let wrap = item.parentNode;
+	const wrap = item.parentNode;
+	if (item.dataset.blurred)
+		return;
 	wrap.addEventListener("mouseenter", () => startSlides(item), { passive: true });
 	wrap.addEventListener("mouseleave", () => stopSlides(), { passive: true });
 	wrap.addEventListener("touchstart", () => startSlides(item), { passive: true });
@@ -72,7 +74,7 @@ function startSlides(preview) {
 	if (currentPreview)
 		stopSlides();
 
-	import("./video-teaser").then(({ stopTeaser }) => stopTeaser());
+	import("./video-teaser").then(({ stopAllTeasers }) => stopAllTeasers());
 
 	if (preview.dataset.s)
 		loadLazyItem(preview);

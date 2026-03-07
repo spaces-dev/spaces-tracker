@@ -5,6 +5,7 @@ import { MsgFlowControl } from '../../msg_fc';
 import Spaces, { Codes, Url } from '../../spacesLib';
 import { debounce, L } from '../../utils';
 import { scrollIntoViewIfNotVisible } from '../../utils/scroll';
+import { closeAllPoppers } from '../../widgets/popper';
 
 const FALLBACK_UPDATE_INTERVAL = 30000;
 
@@ -132,6 +133,7 @@ function init() {
 	}).action('ai_chat_function', async (e) => {
 		e.preventDefault();
 		openChatFunction(e.currentTarget.dataset.function);
+		closeAllPoppers();
 	}).action('ai_chat_function_close', async (e) => {
 		e.preventDefault();
 		openChatFunction("text");

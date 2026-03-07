@@ -7,8 +7,7 @@
 }
 
 .s-property {
-	display: block;
-	float: left;
+	display: inline-block;
 	color: $secondary-text-color;
 	overflow: hidden;
 	position: relative;
@@ -20,4 +19,5 @@
 	text-overflow: ellipsis;
 	box-sizing: border-box;
 	padding: 6px 32px 6px 10px;
+	align-self: flex-start;
 }

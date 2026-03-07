@@ -1,6 +1,6 @@
 import module from 'module';
 
-let currentTeaser;
+const currentTeasers = new Map();
 let observer;
 
 const tpl = {
@@ -26,14 +26,22 @@ module.on("component", () => {
 module.on("componentpage", () => {
 	observer = new IntersectionObserver((items) => {
 		for (const item of items) {
-			if (!item.isIntersecting && currentTeaser?.preview === item.target)
-				stopTeaser();
+			if (item.target.dataset.vtAutoplay === "true") {
+				if (item.isIntersecting) {
+					startTeaser(item.target);
+				} else {
+					stopTeaser(item.target);
+				}
+			} else {
+				if (!item.isIntersecting && currentTeasers.has(item.target))
+					stopTeaser(item.target);
+			}
 		}
 	});
 });
 
 module.on("componentpagedone", () => {
-	stopTeaser();
+	stopAllTeasers();
 
 	if (observer) {
 		observer.disconnect();
@@ -41,47 +49,61 @@ module.on("componentpagedone", () => {
 	}
 });
 
-function initVideoTeaser(item) {
+function initVideoTeaser(preview) {
 	if (!window.IntersectionObserver)
 		return;
+	if (preview.dataset.blurred)
+		return;
 
-	const wrap = item.parentNode;
-	wrap.addEventListener("mouseenter", () => startTeaser(item), { passive: true });
-	wrap.addEventListener("mouseleave", () => stopTeaser(), { passive: true });
-	wrap.addEventListener("touchstart", () => startTeaser(item), { passive: true });
+	if (preview.dataset.vtAutoplay === "true") {
+		observer.observe(preview);
+	} else {
+		const wrap = preview.parentNode;
+		wrap.addEventListener("mouseenter", () => startTeaser(preview), { passive: true });
+		wrap.addEventListener("mouseleave", () => stopTeaser(preview), { passive: true });
+		wrap.addEventListener("touchstart", () => startTeaser(preview), { passive: true });
+	}
 }
 
 function startTeaser(preview) {
-	if (currentTeaser && currentTeaser.preview === preview)
+	if (currentTeasers.has(preview))
 		return;
 
-	stopTeaser();
-
-	import("./video-slides").then(({ stopSlides }) => stopSlides());
+	if (preview.dataset.vtAutoplay !== "true") {
+		stopAllTeasers();
+		import("./video-slides").then(({ stopSlides }) => stopSlides());
+	}
 
 	const sources = JSON.parse(preview.dataset.vt);
 	const source = getBestVideoSource(preview, sources);
 	const video = renderVideoTeaser(preview, source);
-	observer.observe(preview);
-	currentTeaser = { preview, video };
+	currentTeasers.set(preview, { video });
 }
 
-export function stopTeaser() {
-	if (!currentTeaser)
+function stopTeaser(preview) {
+	if (!currentTeasers.has(preview))
 		return;
 
-	currentTeaser.video.pause();
-	currentTeaser.video.src = "";
-	currentTeaser.video.load();
-	currentTeaser.video.remove();
+	const { video } = currentTeasers.get(preview);
+	video.pause();
+	video.src = "";
+	video.load();
+	video.remove();
 
-	currentTeaser.preview.parentNode.querySelector('.js-vapt-spinner')?.remove();
+	preview.parentNode.querySelector('.js-vapt-spinner')?.remove();
 
-	toggleSpinner(currentTeaser.preview, false);
-	toggleAnimation(currentTeaser.preview, false);
+	toggleSpinner(preview, false);
+	toggleAnimation(preview, false);
 
-	observer.unobserve(currentTeaser.preview);
-	currentTeaser = undefined;
+	if (preview.dataset.vtAutoplay !== "true")
+		observer.unobserve(preview);
+
+	currentTeasers.delete(preview);
+}
+
+export function stopAllTeasers() {
+	for (const preview of currentTeasers.keys())
+		stopTeaser(preview);
 }
 
 function toggleSpinner(preview, flag) {
@@ -109,7 +131,9 @@ function renderVideoTeaser(preview, source) {
 	video.setAttribute('webkit-playsinline', '');
 	video.addEventListener("click", () => preview.click(), false);
 
-	if (isAspect16x9(source.width, source.height)) {
+	const previewRect = preview.getBoundingClientRect();
+	const isSquareTile = Math.round(previewRect.width) == Math.round(previewRect.height);
+	if (isSquareTile || isAspect16x9(source.width, source.height)) {
 		video.classList.add('video-teaser--cover');
 	} else {
 		video.classList.add('video-teaser--contain');
