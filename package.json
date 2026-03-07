@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "start": "node tracker/main.ts",
+    "validate-models": "node tracker/validate-models.ts",
     "lint": "eslint tracker --cache",
     "lint:fix": "eslint tracker --fix --cache",
     "type-check": "tsc"
