@@ -862,38 +862,36 @@ body .stnd-link_active:hover,
 	}
 
 	/* Red */
-	&.red {
+	&.red,
+	&-red {
 		color: $bordered-red-color;
 		border: 1px solid $bordered-red-color;
 	}
 
 	/* Green */
 	&.on,
-	&.green {
+	&.green,
+	&-green {
 		color: $bordered-green-color;
 		border: 1px solid $bordered-green-color;
-	}
 
-	@if ($PC) {
-		a:hover &.green {
-			@include switch-sprite-color("ico", "green");
+		@if ($PC) {
+			a:hover & {
+				@include switch-sprite-color("ico", "green");
+			}
 		}
 	}
 
 	/* Blue */
-	&.blue {
+	&.blue,
+	&-blue {
 		color: $bordered-blue-color;
 		border: 1px solid $bordered-blue-color;
-	}
 
-
-	@if ($PC) {
-		a.link-blue:hover & {
-			@include switch-sprite-color("ico", "black");
-		}
-
-		a:hover &.blue {
-			@include switch-sprite-color("ico", "blue");
+		@if ($PC) {
+			a:hover & {
+				@include switch-sprite-color("ico", "blue");
+			}
 		}
 	}
 
@@ -901,11 +899,11 @@ body .stnd-link_active:hover,
 	&-darkblue {
 		color: $bordered-darkblue-color;
 		border: 1px solid $bordered-darkblue-color;
-	}
 
-	@if ($PC) {
-		a:hover &-darkblue {
-			@include switch-sprite-color("ico", "darkblue");
+		@if ($PC) {
+			a:hover & {
+				@include switch-sprite-color("ico", "darkblue");
+			}
 		}
 	}
 }
