@@ -662,8 +662,8 @@ extend(Spaces, {
 			}
 
 			// console.log("result " + method + ":\n", JSON.stringify(data));
-			delete Spaces.api_requests[opts.requestId];
 			if (Spaces.defaultAjaxCallback(data, api_params)) {
+				delete Spaces.api_requests[opts.requestId];
 				callback && callback(data, api_params);
 			}
 		}
