@@ -1,0 +1,79 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+.toast {
+	--toast-transform-show: translate(-50%, 0);
+	--toast-transform-hide: translate(-50%, 24px);
+
+	position: fixed;
+	left: 50%;
+	bottom: 15px;
+	z-index: 1000000;
+
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+
+	box-sizing: border-box;
+	width: calc(100% - 30px);
+	border-radius: 5px;
+	padding: 0 5px;
+
+	box-shadow: $default-block-shadow;
+
+	opacity: 0;
+	transform: var(--toast-transform-hide);
+	transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+
+	@media (min-width: 600px) {
+		max-width: 500px;
+	}
+
+	&--visible {
+		opacity: 1;
+		transform: var(--toast-transform-show);
+		transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+	}
+
+	&--severity-info {
+		background: $system-message-info-bg;
+		color: $system-message-info-text;
+		border: 1px solid $system-message-info-border;
+	}
+
+	&--severity-warning {
+		background: $system-message-warning-bg;
+		color: $system-message-warning-text;
+		border: 1px solid $system-message-warning-border;
+	}
+
+	&--severity-error {
+		background: $system-message-error-bg;
+		color: $system-message-error-text;
+		border: 1px solid $system-message-error-border;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: row;
+		flex: 1;
+		gap: 5px;
+		padding: 10px;
+		padding-right: 0;
+	}
+
+	&__title {
+		font-weight: bold;
+	}
+
+	&__close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		padding: 10px;
+		margin: 0;
+		border: 0;
+		cursor: pointer;
+	}
+}

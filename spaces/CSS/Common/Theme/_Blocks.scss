@@ -34,6 +34,7 @@ $bubble-secondary-bg:			theme(#f4f4f4,	#4b4d4e);
 /* Системные сообщения */
 $system-message-info-bg:		theme(#ddebf7,	#214045);
 $system-message-info-text:		$default-text-color;
+$system-message-info-border:	$default-border-color;
 
 $system-message-warning-bg:		theme(#f9edbf,	#414858);
 $system-message-warning-text:	$default-text-color;
@@ -41,6 +42,7 @@ $system-message-warning-border: theme(#d9cebf,	#485060);
 
 $system-message-error-bg:		theme(#f9e1d9,	#643a3a);
 $system-message-error-text:		theme(#ff6837,	#ffffff);
+$system-message-error-border:	theme(#ff9a95,	#8f5656);
 
 $system-message-shadow:			theme(0px 3px 3px rgba(#395387, 0.3),	0px 3px 3px rgba(#111113, 0.3));
 

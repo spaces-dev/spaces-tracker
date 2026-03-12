@@ -1,0 +1,82 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+$bonus-coin-jump-duration: 1.5s;
+$bonus-coin-face-shadow: 0px 0px 15px rgba(0, 0, 0, 0.13);
+
+.bonus-coin {
+	position: absolute;
+	top: -9999px;
+	left: -9999px;
+	cursor: pointer;
+	z-index: 10000;
+	user-select: none;
+
+	width: 32px;
+	height: 32px;
+
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.25s ease-out, visibility 0s linear 0s;
+
+	&::before {
+		position: absolute;
+		content: '';
+		top: -10px;
+		bottom: -10px;
+		left: -10px;
+		right: -10px;
+	}
+
+	&--hidden {
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.25s ease-in, visibility 0s linear 0.25s;
+	}
+
+	&__face {
+		position: absolute;
+		top: 0;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		width: 32px;
+		height: 32px;
+
+		border-radius: 50%;
+
+		will-change: top;
+		animation: bonus-coin-jump $bonus-coin-jump-duration infinite ease;
+		box-shadow: $bonus-coin-face-shadow;
+	}
+
+	&__shadow {
+		position: absolute;
+		bottom: -11px;
+
+		width: 100%;
+		height: 4px;
+
+		background: $bonus-coin-shadow-start-color;
+		border-radius: 50%;
+
+		z-index: -1;
+
+		will-change: transform;
+		animation: bonus-coin-shadow $bonus-coin-jump-duration infinite ease;
+	}
+}
+
+@keyframes bonus-coin-jump {
+	0% { transform: translateY(0); }
+	50% { transform: translateY(-8px); }
+	100% { transform: translateY(0); }
+}
+
+@keyframes bonus-coin-shadow {
+	0% { background: $bonus-coin-shadow-end-color; transform: scale(1); }
+	50% { background: $bonus-coin-shadow-start-color; transform: scale(0.8); }
+	100% { background: $bonus-coin-shadow-end-color; transform: scale(1); }
+}
