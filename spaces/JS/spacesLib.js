@@ -5,7 +5,6 @@ import cookie from './cookie';
 import Device from './device';
 import {Class} from './class';
 import * as pushstream from './core/lp';
-import config from './project/config';
 import SpacesApp from './android/api';
 import {L, tick, extend, ge, html_wrap, updateUrlScheme} from './utils';
 
@@ -837,10 +836,8 @@ extend(Spaces, {
 			case Codes.AUTH.ERR_AUTH_ERROR:
 				return Spaces.AUTH_ERRORS[data.auth_errror] || L("Ошибка авторизации #{0}", data.auth_errror);
 			case Codes.AUTH.ERR_ACTIVATION_REQUIRED:
-				return L("Извините, вы не можете {0}, пока не {2}подтвердите свой аккаунт{3}. " +
-					"Если у вас возникли проблемы с подтверждением аккаунта, обратитесь в {1}.", data.action || "это сделать",
-					'<a href="' + config.support.addr + '">' + config.support.name + '</a>',
-					'<a href="' + Spaces.getActivationLink() + '">', '</a>');
+				return L('Извините, вы не можете {0}, пока не {1}подтвердите свой аккаунт{2}.',
+					data.action || L("это сделать"), '<a href="' + Spaces.getActivationLink() + '">', '</a>');
 			case Codes.MAIL.ERR_MESSAGE_ERROR:
 				return data.message;
 			case Codes.MAIL.ERR_MESSAGE_SEND_DENIED:
@@ -874,36 +871,19 @@ extend(Spaces, {
 				return L('Неверный ответ API. ');
 
 			case 500: case 525:
-				return L(
-					'Внимание! При выполнении вашего запроса, произошла внутренняя ошибка сервера!<br />' +
-					'Попробуйте сейчас обновить страницу, и, если ошибка повторяется, немедленно сообщите об этом в {0} {1}<br />' +
-					'Опишите подробно, где произошла данная ошибка, в какой момент, и что нужно сделать для того, чтобы повторить данную ошибку. <br />' +
-					'Спасибо вам за помощь в нахождении ошибок на сайте!<br />',
-					config.support.what,
-					'<a href="' + config.support.addr + '">' + config.support.name + '</a>'
-				);
+				return L('При выполнении вашего запроса, произошла внутренняя ошибка сервера! Подождите немного и попробуйте снова.');
 
 			case -500:
-				return L(
-					'Внимание! При выполнении вашего запроса, сервер ответил неожиданным ответом!<br />' +
-					'Попробуйте сейчас обновить страницу, и, если ошибка повторяется, немедленно сообщите об этом в сообществе {0} {1}<br />' +
-					'Опишите подробно, где произошла данная ошибка, в какой момент, и что нужно сделать для того, чтобы повторить данную ошибку. <br />' +
-					'Спасибо вам за помощь в нахождении ошибок на сайте!<br />',
-					config.support.what,
-					'<a href="' + config.support.addr + '">' + config.support.name + '</a>'
-				);
-
-			case 413:
-				return L('Вы ввели слишком много текста. ');
+				return L('При выполнении вашего запроса, сервер ответил неожиданным ответом! Подождите немного и попробуйте снова.');
 
 			case 404:
-				return L('Запрашиваемый URL не найден. ');
+				return L('Запрашиваемый URL не найден.');
 
 			case 0:
 				return L("Ошибка подключения. Проверьте ваше подключение к интернету. ");
 
 			default:
-				return L('При выполнении вашего запроса произошла ошибка HTTP: {code}', {code: code});
+				return L('При выполнении вашего запроса произошла ошибка HTTP {code}. Подождите немного и попробуйте снова.', {code: code});
 		}
 	},
 	clearError: function (id) {
@@ -963,6 +943,14 @@ extend(Spaces, {
 	},
 	showApiError: function (res, id, params) {
 		return Spaces.showError(Spaces.apiError(res), id, params);
+	},
+	getSupportMessage() {
+		if (Spaces.params.support?.comm_url) {
+			return L('Сообщите в {0}Службу поддержки пользователей{1}.', `<a href="${Spaces.params.support.comm_url}">`, `</a>`);
+		} else if (Spaces.params.support?.email) {
+			return L('Сообщите в Службу поддержки пользователей ({0})', `<a href="mailto:${Spaces.params.support.email}">${Spaces.params.support.email}</a>`);
+		}
+		return "";
 	},
 	getHumanSize: function (size) {
 		if (size >= 1024 * 1024 * 1024)

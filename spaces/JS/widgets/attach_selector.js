@@ -1067,7 +1067,7 @@ MAttachSelector = Class({
 					}
 				}
 				// Если не найден механизм fallback'а
-				self.showQSelError(L("Загрузка файла не реализована. Сообщите в <a href='/soo/support'>Support</a>"));
+				self.showQSelError(L("Загрузка файла не реализована."));
 			}
 		}).on('click', '.js-attach_source', function (e) {
 			e.preventDefault(); e.stopPropagation();

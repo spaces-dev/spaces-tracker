@@ -501,12 +501,6 @@ var FileUploader = new (Class({
 						self.setFileError(file.id, message);
 					else
 						self.error(message);
-				} else if (!res.data && !res.redirect_link) {
-					var message = L('Странная ошибка! Напишите в <a href="/soo/support">Support</a>.');
-					if (params.multiple)
-						self.setFileError(file.id, message);
-					else
-						self.error(message);
 				} else {
 					$('#upload_success_' + file.id).show();
 					

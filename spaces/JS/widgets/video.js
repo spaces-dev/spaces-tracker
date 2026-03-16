@@ -39,7 +39,7 @@ class VideoPlayer {
 					if (data.resolution) {
 						player.updateConverterStatus(data.resolution, data.size, data.duration, !data.not_avail);
 					} else if (!this.hasConverted()) {
-						player.converterError(L('Ошибка конвертирования файла. Обратитесь в <a href="/soo/support">Support</a>.'));
+						player.converterError(L('Ошибка конвертирования видео. {0}', Spaces.getSupportMessage()));
 					}
 					
 					if (data.message)
