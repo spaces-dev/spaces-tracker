@@ -56,30 +56,30 @@ class VideoJsQualitySelector extends MenuButton {
 			first_played = true;
 		});
 
+		const setSource = (source, forcePlay = false) => {
+			const isPaused = !forcePlay && player.paused();
+			const currentTime = player.currentTime();
+			const currentRate = player.playbackRate();
+			const duration = player.duration();
+
+			if (currentTime >= duration)
+				currentTime = 0;
+
+			player.trigger('quality-changed', source.resolution);
+
+			player.src([source]);
+			player.playbackRate(currentRate);
+
+			this.deferSeek(currentTime, isPaused);
+			this.updateItems();
+		};
+
 		player.on('user-select-quality', (event, resolution) => {
-			let player = this.player();
-
-			const is_paused = player.paused();
-			let old_source = player.currentSource();
+			const oldSource = player.currentSource();
 			this.selectSource(resolution);
-			let new_source = findSelectedSource(this.sources());
-
-			if (old_source.src != new_source.src) {
-				let current_time = player.currentTime();
-				let current_rate = player.playbackRate();
-				let duration = player.duration();
-
-				if (current_time >= duration)
-					current_time = 0;
-
-				player.trigger('quality-changed', resolution);
-
-				player.src([new_source]);
-				player.playbackRate(current_rate);
-
-				this.deferSeek(current_time, is_paused);
-				this.updateItems();
-			}
+			const newSource = findSelectedSource(this.sources());
+			if (oldSource.src != newSource.src)
+				setSource(newSource);
 		});
 
 		player.on('quality-enable', (event, [resolution, enabled]) => {
@@ -97,6 +97,36 @@ class VideoJsQualitySelector extends MenuButton {
 					this.updateItems();
 				}
 			});
+		});
+
+		const updateSourcesProxyDomain = (nextProxyDomain) => {
+			this.player().options_.altSources.forEach((source) => {
+				const sourceUrl = (new URL(source.src));
+				sourceUrl.hostname = nextProxyDomain;
+				source.src = sourceUrl.toString();
+			});
+		};
+
+		const usedProxyDomains = [];
+		player.on('error', () => {
+			const altProxyDomains = this.player().options_.altProxyDomains;
+			const serverDomain = (new URL(player.currentSource().src)).hostname;
+			if (!altProxyDomains.includes(serverDomain))
+				return;
+
+			console.error(`[fp] Proxy domain failed: ${serverDomain}`);
+			usedProxyDomains.push(serverDomain);
+
+			const nextProxyDomain = altProxyDomains.find((proxyDomain) => !usedProxyDomains.includes(proxyDomain));
+			if (nextProxyDomain) {
+				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
+				updateSourcesProxyDomain(nextProxyDomain);
+				setSource(findSelectedSource(this.sources()), true);
+				// cookie.set("vpd", nextProxyDomain, { expires: 3600 });
+				player.trigger({ name: 'change-source-on-error' });
+			} else {
+				console.log(`[fp] No more proxy domains!`);
+			}
 		});
 
 		this.controlText(L('Качество видео'));
@@ -139,7 +169,7 @@ class VideoJsQualitySelector extends MenuButton {
 	}
 
 	sources() {
-		return this.player().options().altSources;
+		return this.player().options_.altSources;
 	}
 
 	selectSource(resolution) {

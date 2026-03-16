@@ -49,6 +49,7 @@ class VideoJsDriver extends BaseDriver {
 			controls:				true,
 			poster:					this.options.preview,
 			preload:				'none',
+			altProxyDomains:		this.options.altProxyDomains,
 			altSources:				this.options.sources,
 			autoplay:				this.options.autoplay,
 			language:				Spaces.params.lang,

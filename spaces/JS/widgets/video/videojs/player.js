@@ -26,8 +26,21 @@ videojsPatchSeekBar(videojs);
 
 // Хук для выбора источника по-умолчанию
 videojs.hook('beforesetup', (video, options) => {
-	if (options.altSources)
+	if (options.altSources) {
+		const lastProxyDomain = cookie.get("vpd");
+		if (lastProxyDomain && options.altProxyDomains.includes(lastProxyDomain)) {
+			console.log("[fp] last proxy domain:", lastProxyDomain);
+			options.altSources = options.altSources.map((source) => {
+				const sourceUrl = new URL(source.src);
+				if (options.altProxyDomains.includes(sourceUrl.hostname)) {
+					sourceUrl.hostname = lastProxyDomain;
+					source.src = sourceUrl.toString();
+				}
+				return source;
+			});
+		}
 		options.sources = [findSelectedSource(options.altSources)];
+	}
 	return options;
 });
 
