@@ -146,7 +146,7 @@ class VideoJsQualitySelector extends MenuButton {
 				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
 				updateSourcesProxyDomain(nextProxyDomain);
 				this.setSource(findSelectedSource(this.sources()), true);
-				// cookie.set("vpd", nextProxyDomain, { expires: 3600 });
+				cookie.set("vpd", nextProxyDomain, { expires: 3600 });
 				player.trigger({ type: 'change-source-on-error' });
 			} else {
 				console.log(`[fp] No more proxy domains!`);
