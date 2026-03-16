@@ -56,24 +56,6 @@ class VideoJsQualitySelector extends MenuButton {
 			first_played = true;
 		});
 
-		const setSource = (source, forcePlay = false) => {
-			const isPaused = !forcePlay && player.paused();
-			const currentTime = player.currentTime();
-			const currentRate = player.playbackRate();
-			const duration = player.duration();
-
-			if (currentTime >= duration)
-				currentTime = 0;
-
-			player.trigger('quality-changed', source.resolution);
-
-			player.src([source]);
-			player.playbackRate(currentRate);
-
-			this.deferSeek(currentTime, isPaused);
-			this.updateItems();
-		};
-
 		player.on('user-select-quality', (event, resolution) => {
 			const oldSource = player.currentSource();
 			this.selectSource(resolution);
@@ -99,6 +81,23 @@ class VideoJsQualitySelector extends MenuButton {
 			});
 		});
 
+		this.controlText(L('Качество видео'));
+
+		this.initHealthCheck();
+	}
+
+	initHealthCheck() {
+		const player = this.player();
+		const altProxyDomains = this.player().options_.altProxyDomains;
+		const usedProxyDomains = [];
+		let healthCheckTimer;
+		let videoIsPlayable = false;
+
+		const isProxyDomain = () => {
+			const serverDomain = (new URL(player.currentSource().src)).hostname;
+			return altProxyDomains.includes(serverDomain);
+		};
+
 		const updateSourcesProxyDomain = (nextProxyDomain) => {
 			this.player().options_.altSources.forEach((source) => {
 				const sourceUrl = (new URL(source.src));
@@ -107,29 +106,71 @@ class VideoJsQualitySelector extends MenuButton {
 			});
 		};
 
-		const usedProxyDomains = [];
-		player.on('error', () => {
-			const altProxyDomains = this.player().options_.altProxyDomains;
-			const serverDomain = (new URL(player.currentSource().src)).hostname;
-			if (!altProxyDomains.includes(serverDomain))
-				return;
+		const startHealthMonitor = () => {
+			stopHealthMonitor();
+			healthCheckTimer = setTimeout(() => {
+				console.log("[fp] Video timeout");
+				healthCheckTimer = undefined;
+				player.error(L("Ошибка загрузки видео (timeout)"));
+			}, 15000);
+		};
 
-			console.error(`[fp] Proxy domain failed: ${serverDomain}`);
-			usedProxyDomains.push(serverDomain);
+		const stopHealthMonitor = () => {
+			if (healthCheckTimer) {
+				clearTimeout(healthCheckTimer);
+				healthCheckTimer = undefined;
+			}
+		};
+
+		if (!isProxyDomain())
+			return;
+
+		player.on("play", () => {
+			if (!videoIsPlayable)
+				startHealthMonitor();
+		});
+		player.on("canplay", () => {
+			videoIsPlayable = true;
+			stopHealthMonitor();
+		});
+		player.on("dispose", () => {
+			stopHealthMonitor();
+		});
+		player.on('error', () => {
+			const currentProxyDomain = (new URL(player.currentSource().src)).hostname;
+			usedProxyDomains.push(currentProxyDomain);
+			console.error(`[fp] Proxy domain failed: ${currentProxyDomain}`);
 
 			const nextProxyDomain = altProxyDomains.find((proxyDomain) => !usedProxyDomains.includes(proxyDomain));
 			if (nextProxyDomain) {
 				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
 				updateSourcesProxyDomain(nextProxyDomain);
-				setSource(findSelectedSource(this.sources()), true);
+				this.setSource(findSelectedSource(this.sources()), true);
 				// cookie.set("vpd", nextProxyDomain, { expires: 3600 });
-				player.trigger({ name: 'change-source-on-error' });
+				player.trigger({ type: 'change-source-on-error' });
 			} else {
 				console.log(`[fp] No more proxy domains!`);
 			}
 		});
+	}
 
-		this.controlText(L('Качество видео'));
+	setSource(source, forcePlay = false) {
+		const player = this.player();
+		const isPaused = !forcePlay && player.paused();
+		const currentTime = player.currentTime();
+		const currentRate = player.playbackRate();
+		const duration = player.duration();
+
+		if (currentTime >= duration)
+			currentTime = 0;
+
+		player.trigger('quality-changed', source.resolution);
+
+		player.src([source]);
+		player.playbackRate(currentRate);
+
+		this.deferSeek(currentTime, isPaused);
+		this.updateItems();
 	}
 
 	pressButton() {

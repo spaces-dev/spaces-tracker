@@ -96,9 +96,7 @@ export function setupStatistic(player) {
 		cleanup();
 	};
 
-	player.on("change-source-on-error", () => {
-		reachGoal("play_switch_to_fallback");
-	});
+	player.on("change-source-on-error", () => reachGoal("player_switch_to_fallback"));
 
 	player.one("firstplay", onFirstPlay);
 	player.one("error", onError);
