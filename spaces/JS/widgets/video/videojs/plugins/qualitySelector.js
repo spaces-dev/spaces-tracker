@@ -112,7 +112,7 @@ class VideoJsQualitySelector extends MenuButton {
 				console.log("[fp] Video timeout");
 				healthCheckTimer = undefined;
 				player.error(L("Ошибка загрузки видео (timeout)"));
-			}, 15000);
+			}, 10000);
 		};
 
 		const stopHealthMonitor = () => {
@@ -126,7 +126,7 @@ class VideoJsQualitySelector extends MenuButton {
 			return;
 
 		player.on("play", () => {
-			if (!videoIsPlayable)
+			if (!videoIsPlayable && usedProxyDomains.length < altProxyDomains.length)
 				startHealthMonitor();
 		});
 		player.on("canplay", () => {
