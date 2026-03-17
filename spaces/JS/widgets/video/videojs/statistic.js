@@ -82,8 +82,8 @@ export function setupStatistic(player) {
 		player.off("firstplay", onFirstPlay);
 		player.off("error", onError);
 		player.off("canplay", onCanPlay);
+		player.off("change-source-on-error", onChangeSourceOnError);
 	};
-
 	const onFirstPlay = () => {
 		reachGoal("play");
 	};
@@ -95,10 +95,12 @@ export function setupStatistic(player) {
 		reachGoal("play_success");
 		cleanup();
 	};
-
-	player.on("change-source-on-error", () => reachGoal("player_switch_to_fallback"));
+	const onChangeSourceOnError = () => {
+		reachGoal("player_switch_to_fallback");
+	};
 
 	player.one("firstplay", onFirstPlay);
-	player.one("error", onError);
 	player.one("canplay", onCanPlay);
+	player.on("error", onError);
+	player.on("change-source-on-error", onChangeSourceOnError);
 }

@@ -134,10 +134,9 @@ function trackHit(url, title, referer, firstInit) {
 }
 
 export function reachGoal(goalId) {
-	if (YANDEX_METRIC_ID) {
-		console.log("[yandex] reachGoal", goalId);
+	console.log("[goal]", goalId);
+	if (YANDEX_METRIC_ID)
 		ym(YANDEX_METRIC_ID, 'reachGoal', goalId);
-	}
 }
 
 function getOldYMAB() {

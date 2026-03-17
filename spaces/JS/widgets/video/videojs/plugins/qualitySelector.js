@@ -60,8 +60,10 @@ class VideoJsQualitySelector extends MenuButton {
 			const oldSource = player.currentSource();
 			this.selectSource(resolution);
 			const newSource = findSelectedSource(this.sources());
-			if (oldSource.src != newSource.src)
-				setSource(newSource);
+			if (oldSource.src != newSource.src) {
+				this.setSource(newSource);
+				player.trigger('quality-changed', newSource.resolution);
+			}
 		});
 
 		player.on('quality-enable', (event, [resolution, enabled]) => {
@@ -136,27 +138,32 @@ class VideoJsQualitySelector extends MenuButton {
 		player.on("dispose", () => {
 			stopHealthMonitor();
 		});
-		player.on('error', () => {
+		player.on('error', (e) => {
+			stopHealthMonitor();
+
 			const currentProxyDomain = (new URL(player.currentSource().src)).hostname;
 			usedProxyDomains.push(currentProxyDomain);
 			console.error(`[fp] Proxy domain failed: ${currentProxyDomain}`);
 
 			const nextProxyDomain = altProxyDomains.find((proxyDomain) => !usedProxyDomains.includes(proxyDomain));
 			if (nextProxyDomain) {
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+
 				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
 				updateSourcesProxyDomain(nextProxyDomain);
-				this.setSource(findSelectedSource(this.sources()), true);
 				cookie.set("vpd", nextProxyDomain, { expires: 3600 });
 				player.trigger({ type: 'change-source-on-error' });
+				this.setSource(findSelectedSource(this.sources()));
+				silentPromise("proxy domain change", player.play());
 			} else {
 				console.log(`[fp] No more proxy domains!`);
 			}
 		});
 	}
 
-	setSource(source, forcePlay = false) {
+	setSource(source) {
 		const player = this.player();
-		const isPaused = !forcePlay && player.paused();
 		const currentTime = player.currentTime();
 		const currentRate = player.playbackRate();
 		const duration = player.duration();
@@ -164,12 +171,10 @@ class VideoJsQualitySelector extends MenuButton {
 		if (currentTime >= duration)
 			currentTime = 0;
 
-		player.trigger('quality-changed', source.resolution);
-
 		player.src([source]);
 		player.playbackRate(currentRate);
 
-		this.deferSeek(currentTime, isPaused);
+		this.deferSeek(currentTime);
 		this.updateItems();
 	}
 
@@ -246,10 +251,10 @@ class VideoJsQualitySelector extends MenuButton {
 			this.items[i].updateState();
 	}
 
-	deferSeek(current_time, is_paused) {
+	deferSeek(current_time) {
+		const player = this.player();
+		const is_paused = player.paused();
 		if (!this.defer_seek) {
-			let player = this.player();
-
 			if (current_time > 1) {
 				this.defer_seek = {
 					time:		current_time,
