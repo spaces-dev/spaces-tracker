@@ -6,6 +6,7 @@ function initRangeInput(widget) {
 	const input = widget.querySelector('.js-form-range-input');
 	const progress = widget.querySelector('.js-form-range-progress');
 	const valueLabel = widget.querySelector('.js-form-range-value');
+	const percents = widget.querySelector('.js-form-range-percents');
 	const unlockSidebar = debounce(() => sidebar.lock(false), 300);
 	const onInput = () => {
 		const min = +input.min || 0;
@@ -14,7 +15,7 @@ function initRangeInput(widget) {
 		const percent = ((val - min) / (max - min)) * 100;
 		progress.style.width = `${percent}%`;
 		if (valueLabel)
-			valueLabel.textContent = `${Math.round(percent)}%`;
+			valueLabel.textContent = percents ? `${Math.round(percent)}%` : val;
 		sidebar.lock(true);
 		unlockSidebar();
 	};
