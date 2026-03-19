@@ -58,7 +58,7 @@ function initPendingTask(pendingTask) {
 			setStatus("error");
 			unlockNewRequest();
 		} else if (message.status == 'CONVERTING') {
-			setStatus("new", L("Видео конвертируется..."));
+			setStatus("new", L("Видео конвертируется.."));
 			unlockNewRequest();
 		} else {
 			setStatus("new", message.progress);
