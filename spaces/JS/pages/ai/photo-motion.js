@@ -34,9 +34,9 @@ function initPendingTask(pendingTask) {
 
 	const onGeneratedVideo = (res) => {
 		$(pendingTask).find(".js-photo_style_picture").html(res.file);
-		const pictureURL = pendingTask.querySelector('.js-photo_style_pic_url');
-		if (pictureURL)
-			pictureURL.href = res.fileURL;
+		const dirLink = pendingTask.querySelector('.js-photo_style_dir_link');
+		if (dirLink)
+			dirLink.innerHTML = res.dirLink;
 		setStatus("done");
 	};
 
