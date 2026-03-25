@@ -1,4 +1,5 @@
 import 'Files/VideoJs.css';
+import cookie from '../../../cookie';
 import videojs from 'video.js';
 import videojs_ru from 'video.js/dist/lang/ru.json';
 
@@ -27,13 +28,25 @@ videojsPatchSeekBar(videojs);
 // Хук для выбора источника по-умолчанию
 videojs.hook('beforesetup', (video, options) => {
 	if (options.altSources) {
-		const lastProxyDomain = cookie.get("vpd");
-		if (lastProxyDomain && options.altProxyDomains.includes(lastProxyDomain)) {
-			console.log("[fp] last proxy domain:", lastProxyDomain);
+		const getLastVideoServer = () => {
+			for (const server of options.altProxyDomains) {
+				if (cookie.get(server.id))
+					return server.domain;
+			}
+			return undefined;
+		};
+
+		const isValidProxyServer = (domain) => {
+			return !!options.altProxyDomains.find((server) => server.domain === domain);
+		};
+
+		const lastVideoServer = getLastVideoServer();
+		if (lastVideoServer) {
+			console.log("[fp] last proxy domain:", lastVideoServer);
 			options.altSources = options.altSources.map((source) => {
 				const sourceUrl = new URL(source.src);
-				if (options.altProxyDomains.includes(sourceUrl.hostname)) {
-					sourceUrl.hostname = lastProxyDomain;
+				if (isValidProxyServer(sourceUrl.hostname)) {
+					sourceUrl.hostname = lastVideoServer;
 					source.src = sourceUrl.toString();
 				}
 				return source;

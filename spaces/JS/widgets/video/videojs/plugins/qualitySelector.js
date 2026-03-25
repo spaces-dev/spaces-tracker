@@ -1,6 +1,7 @@
 import videojs from 'video.js';
 import { L } from '../../../../utils';
 import { findSelectedSource, silentPromise } from './utils';
+import cookie from '../../../../cookie';
 
 const MenuItem = videojs.getComponent('MenuItem');
 const MenuButton = videojs.getComponent('MenuButton');
@@ -84,34 +85,39 @@ class VideoJsQualitySelector extends MenuButton {
 		});
 
 		this.controlText(L('Качество видео'));
-
-		this.initHealthCheck();
+		this.initHealthCheck(this.player().options_.altProxyDomains);
 	}
 
-	initHealthCheck() {
+	initHealthCheck(availableServers) {
 		const player = this.player();
-		const altProxyDomains = this.player().options_.altProxyDomains;
-		const usedProxyDomains = [];
+		const usedProxyServers = [];
 		let healthCheckTimer;
 		let videoIsPlayable = false;
 
-		const isProxyDomain = () => {
-			const serverDomain = (new URL(player.currentSource().src)).hostname;
-			return altProxyDomains.includes(serverDomain);
+		const getVideoServer = () => {
+			return (new URL(player.currentSource().src)).hostname;
 		};
 
-		const updateSourcesProxyDomain = (nextProxyDomain) => {
+		const setVideoServer = (domain) => {
 			this.player().options_.altSources.forEach((source) => {
 				const sourceUrl = (new URL(source.src));
-				sourceUrl.hostname = nextProxyDomain;
+				sourceUrl.hostname = domain;
 				source.src = sourceUrl.toString();
 			});
+		};
+
+		const getServerId = (domain) => {
+			return availableServers.find((proxy) => proxy.domain === domain)?.id;
+		};
+
+		const isValidServer = (domain) => {
+			return !!availableServers.find((proxy) => proxy.domain === domain);
 		};
 
 		const startHealthMonitor = () => {
 			stopHealthMonitor();
 			healthCheckTimer = setTimeout(() => {
-				console.log("[fp] Video timeout");
+				console.log("[fp] video timeout");
 				healthCheckTimer = undefined;
 				player.error(L("Ошибка загрузки видео (timeout)"));
 			}, 10000);
@@ -124,11 +130,11 @@ class VideoJsQualitySelector extends MenuButton {
 			}
 		};
 
-		if (!isProxyDomain())
+		if (!isValidServer(getVideoServer()))
 			return;
 
 		player.on("play", () => {
-			if (!videoIsPlayable && usedProxyDomains.length < altProxyDomains.length)
+			if (!videoIsPlayable && usedProxyServers.length < availableServers.length)
 				startHealthMonitor();
 		});
 		player.on("canplay", () => {
@@ -136,8 +142,10 @@ class VideoJsQualitySelector extends MenuButton {
 			stopHealthMonitor();
 
 			// Сохряем только при успехе
-			const currentProxyDomain = (new URL(player.currentSource().src)).hostname;
-			cookie.set("vpd", currentProxyDomain, { expires: 3600 });
+			const currentServerId = getServerId(getVideoServer());
+			for (const server of availableServers)
+				cookie.remove(server.id);
+			cookie.set(currentServerId, 1, { expires: 3600 });
 		});
 		player.on("dispose", () => {
 			stopHealthMonitor();
@@ -145,22 +153,22 @@ class VideoJsQualitySelector extends MenuButton {
 		player.on('error', (e) => {
 			stopHealthMonitor();
 
-			const currentProxyDomain = (new URL(player.currentSource().src)).hostname;
-			usedProxyDomains.push(currentProxyDomain);
-			console.error(`[fp] Proxy domain failed: ${currentProxyDomain}`);
+			const currentServer = getVideoServer();
+			usedProxyServers.push(currentServer);
+			console.error(`[fp] server failed: ${currentServer}`);
 
-			const nextProxyDomain = altProxyDomains.find((proxyDomain) => !usedProxyDomains.includes(proxyDomain));
-			if (nextProxyDomain) {
+			const nextServer = availableServers.find((proxy) => !usedProxyServers.includes(proxy.domain))?.domain;
+			if (nextServer) {
 				e.stopPropagation();
 				e.stopImmediatePropagation();
 
-				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
-				updateSourcesProxyDomain(nextProxyDomain);
+				console.log(`[fp] trying next server: ${nextServer}`);
+				setVideoServer(nextServer);
 				player.trigger({ type: 'change-source-on-error' });
 				this.setSource(findSelectedSource(this.sources()));
-				silentPromise("proxy domain change", player.play());
+				silentPromise("[fp] server change", player.play());
 			} else {
-				console.log(`[fp] No more proxy domains!`);
+				console.log(`[fp] no more servers!`);
 			}
 		});
 	}
