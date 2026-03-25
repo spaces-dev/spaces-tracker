@@ -134,6 +134,10 @@ class VideoJsQualitySelector extends MenuButton {
 		player.on("canplay", () => {
 			videoIsPlayable = true;
 			stopHealthMonitor();
+
+			// Сохряем только при успехе
+			const currentProxyDomain = (new URL(player.currentSource().src)).hostname;
+			cookie.set("vpd", currentProxyDomain, { expires: 3600 });
 		});
 		player.on("dispose", () => {
 			stopHealthMonitor();
@@ -152,7 +156,6 @@ class VideoJsQualitySelector extends MenuButton {
 
 				console.log(`[fp] Trying next proxy domain: ${nextProxyDomain}`);
 				updateSourcesProxyDomain(nextProxyDomain);
-				cookie.set("vpd", nextProxyDomain, { expires: 3600 });
 				player.trigger({ type: 'change-source-on-error' });
 				this.setSource(findSelectedSource(this.sources()));
 				silentPromise("proxy domain change", player.play());
