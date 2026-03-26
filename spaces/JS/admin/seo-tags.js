@@ -11,12 +11,14 @@ const tpl = {
 	selectCats({ tagId, cats }) {
 		return cats
 			.map((cat) => `
-				<label>
-					<input name="InT_cats_${tagId}" type="checkbox" value="${cat.cid}" />
-					${cat.title}
-				</label>
+				<div class="bordered inl_bl">
+					<label>
+						<input name="InT_cats_${tagId}" type="checkbox" value="${cat.cid}" class="js-seo_tag_cat" />
+						${cat.title}
+					</label>
+				</div>
 			`.trim())
-			.join(", ");
+			.join(" ");
 	},
 };
 
@@ -40,7 +42,16 @@ module.on('componentpage', () => {
 			cats: allCats.filter((cat) => !selectedCats.includes(cat.id))
 		}));
 		$(this).hide();
+		seoTag.find('.js-seo_tag_hide_all_cats').show();
 		console.timeEnd("init seo cats");
+	})
+	.on('click', '.js-seo_tag_hide_all_cats', function (e) {
+		e.preventDefault();
+		const seoTag = $(this).parents('.js-seo_tag');
+
+		$(`#cats_other_${seoTag.data('id')}`).hide().html(``);
+		$(this).hide();
+		seoTag.find('.js-seo_tag_show_all_cats').show();
 	})
 	.on('change', '.js-seo_tag_cat', function () {
 		const seoTag = $(this).parents('.js-seo_tag');

@@ -84,13 +84,14 @@ __require_config		|	Конфиг загрузчика
 	function requireComponentAsync(name) {
 		delete components_required[name];
 		
-		let module = modules_cache[name];
+		const module = modules_cache[name];
 		if (module.oncomponentpage && !page_components[name]) {
 			page_components[name] = true;
 			module.oncomponentpage();
 			
-			if (module.oncomponent)
+			if (module.oncomponent) {
 				runOnNextTick(() => module.oncomponent());
+			}
 		} else if (module.oncomponent) {
 			page_components[name] = true;
 			module.oncomponent();
@@ -99,7 +100,7 @@ __require_config		|	Конфиг загрузчика
 	
 	function requireComponent(name) {
 		if (!components_required[name]) {
-			if (modules_cache[name]) {
+			if (modules_cache[name] && modules_cache[name].loaded) {
 				components_queue.push(name);
 				
 				if (!components_require_scheduled) { // TODO: throttle
@@ -234,7 +235,7 @@ __require_config		|	Конфиг загрузчика
 	}
 	
 	function requireFromCache(name, callback) {
-		if (modules_cache[name]) {
+		if (modules_cache[name] && modules_cache[name].loaded) {
 			callback && callback(modules_cache[name].exports);
 			return modules_cache[name].exports;
 		}
