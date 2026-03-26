@@ -110,16 +110,24 @@ var Chat = {
 		if (notifications && chat_params)
 			notifications.setNotifFilter(new RegExp('Rid=' + chat_params.roomid));
 		
-		$('body').on('click.onRequest', '.js-personal_answer, .js-private_answer', function (e) {
+		const handlePrivateAnswer = (el) => {
+			const is_private = el.hasClass('js-private_answer') || el.data('private');
+			Chat.addRecipient(el.data('name'), el.data('userid'), is_private, el.data('znayko'), el.data('id'));
+			closeAllPoppers();
+			$('#text').focus();
+		};
+
+		$('body').on('click.onRequest', '.js-personal_answer', function (e) {
 			if (e.ajaxify || e.isDefaultPrevented())
 				return;
 			e.preventDefault();
-			var el = $(this),
-				is_private = el.hasClass('js-private_answer') || el.data('private');
-			Chat.addRecipient(el.data('name'), el.data('userid'), is_private, el.data('znayko'), el.data('id'));
-			$('#text').focus();
+			handlePrivateAnswer($(this));
 		});
-		
+		$('body').on('click.onRequest', '.js-private_answer', function (e) {
+			e.preventDefault();
+			handlePrivateAnswer($(this));
+		});
+
 		$('#main').on('click', '#chat_unread_notify_link', function (e) {
 			e.preventDefault();
 			
