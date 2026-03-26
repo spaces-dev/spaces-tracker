@@ -365,7 +365,8 @@ function initReactionsWidget(reactionsWidget) {
 	if (reactionsWidget.data('unread'))
 		observer.observe(reactionsWidget[0]);
 
-	getAvailableReactions(reactionsWidget.data('objectType')); // preload
+	if (Spaces.params.nid)
+		getAvailableReactions(reactionsWidget.data('objectType')); // preload
 
 	reactionsWidget.on('click', '.js-reaction', async function (e) {
 		e.preventDefault();
