@@ -32,7 +32,7 @@ videojs.registerPlugin('betterAutoplay', function VideoJsBetterAutoplay(options 
 	});
 
 	// Выводим спиннер до начала автовоспроизведения
-	if (this.options().autoplay) {
+	if (this.autoplay()) {
 		this.addClass('vjs-waiting');
 		this.addClass('vjs-has-started');
 

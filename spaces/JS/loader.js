@@ -25,7 +25,7 @@ __require_config		|	Конфиг загрузчика
 	let modules_loading = {};
 		
 	let require_queue = [];
-	let require_queue_task;
+	let require_scheduled = false;
 		
 	let require_defer = {};
 	let require_defer_id = 0;
@@ -35,8 +35,12 @@ __require_config		|	Конфиг загрузчика
 	
 	let components_required = {};
 	let components_queue = [];
-	let components_queue_task;
+	let components_require_scheduled = false;
 	
+	let preload_queue = [];
+	let preload_required = {};
+	let preload_require_scheduled = false;
+
 	let module_to_chunk = {};
 	let module_to_preload = {};
 	let module_to_revision = {};
@@ -69,9 +73,9 @@ __require_config		|	Конфиг загрузчика
 	function requireComponentsTask() {
 		let name = components_queue.shift();
 		if (components_queue.length) {
-			tick(requireComponentsTask);
+			runOnNextTick(requireComponentsTask);
 		} else {
-			components_queue_task = false;
+			components_require_scheduled = false;
 		}
 		
 		requireComponentAsync(name);
@@ -86,7 +90,7 @@ __require_config		|	Конфиг загрузчика
 			module.oncomponentpage();
 			
 			if (module.oncomponent)
-				tick(() => module.oncomponent());
+				runOnNextTick(() => module.oncomponent());
 		} else if (module.oncomponent) {
 			page_components[name] = true;
 			module.oncomponent();
@@ -98,8 +102,10 @@ __require_config		|	Конфиг загрузчика
 			if (modules_cache[name]) {
 				components_queue.push(name);
 				
-				if (!components_queue_task)
-					components_queue_task = tick(requireComponentsTask);
+				if (!components_require_scheduled) { // TODO: throttle
+					runOnNextTick(requireComponentsTask);
+					components_require_scheduled = true;
+				}
 			} else {
 				require([name], () => requireComponentAsync(name));
 			}
@@ -112,10 +118,10 @@ __require_config		|	Конфиг загрузчика
 		let finalizer = (module) => {
 			counter++;
 			
-			tick(() => {
+			runOnNextTick(() => {
 				counter--;
 				if (!counter) {
-					tick(() => {
+					runOnNextTick(() => {
 						page_components = {};
 						callback();
 					});
@@ -131,13 +137,65 @@ __require_config		|	Конфиг загрузчика
 		}
 		
 		if (!counter) {
-			tick(() => {
+			runOnNextTick(() => {
 				page_components = {};
 				callback();
 			});
 		}
 	}
-	
+
+	/*
+		Preload modules
+	*/
+	function isLinkExists(rel, as, href) {
+		for (const link of document.head.querySelectorAll('link')) {
+			if (link.rel === rel && link.as === as && link.href === href)
+				return true;
+		}
+		return false;
+	}
+
+	function preloadScriptTask() {
+		preload_required = {};
+		preload_require_scheduled = false;
+		while (preload_queue.length > 0) {
+			const src = preload_queue.pop();
+			preloadScriptAsync(src);
+		}
+	}
+
+	function preloadScriptAsync(src) {
+		if (!/^(https?:|\/\/)/i.test(src)) {
+			if (!modules_cache[src]) {
+				console.log("preload", src);
+				require([src]);
+			}
+			return;
+		}
+
+		if (!isLinkExists("prefetch", "script", src)) {
+			console.log("preload", src);
+			const link = document.createElement("link");
+			link.rel = "prefetch";
+			link.as = "script";
+			link.href = src;
+			document.head.appendChild(link);
+		}
+	}
+
+	function preloadScript(src) {
+		if (modules_cache[src] || preload_required[src])
+			return;
+
+		preload_required[src] = true;
+		preload_queue.push(src);
+
+		if (!preload_require_scheduled) { // TODO: throttle
+			runOnNextTick(preloadScriptTask);
+			preload_require_scheduled = true;
+		}
+	}
+
 	/*
 		Require modules
 	*/
@@ -146,19 +204,25 @@ __require_config		|	Конфиг загрузчика
 			names = [names];
 		
 		require_queue.push([names, callback, errback, context]);
-		if (!require_queue_task)
-			require_queue_task = tick(requrieTask);
+		if (!require_scheduled) { // TODO: throttle
+			require_scheduled = true;
+			runOnNextTick(requrieTask);
+		}
 	}
 	
 	function requrieTask() {
-		let argv = require_queue.shift();
-		if (require_queue.length) {
-			tick(requrieTask);
-		} else {
-			require_queue_task = false;
+		const start = Date.now();
+		while (require_queue.length > 0) {
+			const argv = require_queue.shift();
+			requireAsync.apply(null, argv);
+			if (Date.now() - start >= 30)
+				break;
 		}
-		
-		requireAsync.apply(null, argv);
+		if (require_queue.length > 0) {
+			runOnNextTick(requrieTask);
+		} else {
+			require_scheduled = false;
+		}
 	}
 	
 	function requireFast(name, callback) {
@@ -271,7 +335,7 @@ __require_config		|	Конфиг загрузчика
 			if (dep_names && dep_names.length) {
 				require(dep_names, initializer, false, {parent: name});
 			} else {
-				tick(initializer);
+				runOnNextTick(initializer);
 			}
 		} else {
 			define_defer[name] = [name, dep_names, callback];
@@ -369,7 +433,6 @@ __require_config		|	Конфиг загрузчика
 	function loadScript(src, callback, errback, old_script) {
 		let script = document.createElement('script');
 		script.src = src;
-		script.type = "text/javascript";
 		script.async = true;
 		
 		if (callback) {
@@ -486,7 +549,7 @@ __require_config		|	Конфиг загрузчика
 			}
 		}
 	}
-	
+
 	function resolveDefer(symbol, callback, new_object, is_array) {
 		let queue = window[symbol];
 		if (queue && queue.push) {
@@ -510,15 +573,15 @@ __require_config		|	Конфиг загрузчика
 	
 	function domReady(callback) {
 		if (isDomReady()) {
-			tick(callback);
+			runOnNextTick(callback);
 		} else {
-			document.addEventListener('DOMContentLoaded', () => tick(callback), false);
+			document.addEventListener('DOMContentLoaded', () => runOnNextTick(callback), false);
 		}
 	}
 
 	function windowReady(callback) {
 		if (document.readyState === "complete") {
-			setTimeout(callback, 0);
+			runOnNextTick(callback);
 		} else {
 			window.addEventListener('load', callback, false);
 		}
@@ -527,7 +590,11 @@ __require_config		|	Конфиг загрузчика
 	function dataAttr(el, name) {
 		return el.dataset ? el.dataset[name] : el.getAttribute('data-' + name);
 	}
-	
+
+	function runOnNextTick(callback) {
+		Promise.resolve().then(callback);
+	}
+
 	function tick(callback) {
 		return setTimeout(callback, 0);
 	}
@@ -612,6 +679,7 @@ __require_config		|	Конфиг загрузчика
 			}, true);
 			resolveDefer('__require', require, require, true);
 			resolveDefer('__components', requireComponent, {push: requireComponent}, false);
+			resolveDefer('__preload', preloadScript, {push: preloadScript}, false);
 		});
 	}
 	

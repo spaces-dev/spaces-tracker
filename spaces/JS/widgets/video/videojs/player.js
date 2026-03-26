@@ -27,6 +27,8 @@ videojsPatchSeekBar(videojs);
 
 // Хук для выбора источника по-умолчанию
 videojs.hook('beforesetup', (video, options) => {
+	console.log("[videojs] ready!", Date.now() - SPACES_LOAD_START);
+
 	if (options.altSources) {
 		const getLastVideoServer = () => {
 			for (const server of options.altProxyDomains) {

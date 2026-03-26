@@ -48,10 +48,11 @@ class VideoJsDriver extends BaseDriver {
 		let player_options = {
 			controls:				true,
 			poster:					this.options.preview,
-			preload:				'none',
 			altProxyDomains:		this.options.altProxyDomains,
 			altSources:				this.options.sources,
 			autoplay:				this.options.autoplay,
+			normalizeAutoplay:		true,
+			preload:				this.options.autoplay ? 'auto' : 'none',
 			language:				Spaces.params.lang,
 			playsinline:			true,
 			nativeControlsForTouch:	false,
