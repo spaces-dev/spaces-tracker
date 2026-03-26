@@ -84,7 +84,16 @@ function initForm() {
 		});
 	}, 250);
 
+	const enableSharedZone = (flag) => {
+		const checkbox = form.find('input[type="checkbox"][name="Sz"]').parents('.js-checkbox_wrap');
+		checkbox.toggleClass('hide', !flag);
+	};
+
 	form.on('change input', 'input, textarea, select', () => updateCost());
+
+	form.on('change', 'input[type="radio"][name="Dir"]', function () {
+		enableSharedZone(this.value < 0);
+	});
 }
 
 function destroy() {

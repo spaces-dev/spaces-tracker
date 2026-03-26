@@ -224,42 +224,63 @@
 }
 
 /* Нотификация */
-#gallery_notif {
-	position: absolute;
-	bottom: 50px;
-	left: 0; right: 0;
-	text-align: center;
-}
-.gallery__notif_inner {
-	padding: 10px 36px 10px 10px;
+.gallery-toast {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
 	background: $gallery-notify-bg;
 	color: $gallery-text-color;
-	width: 100%;
-	position: relative;
-	box-sizing: border-box;
-	display: inline-block;
-	text-align: left;
-}
-.gallery__notif_inner a {
-	color: $gallery-link-color;
-	text-decoration: underline
-}
-.pc .gallery__notif_inner {
-	margin-bottom: 5px;
-	width: 360px;
-}
-.gallery__fs_btn,
-.gallery__notif_inner{
-	-webkit-border-radius: 2px;
-	   -moz-border-radius: 2px;
-		    border-radius: 2px;
+	border-radius: 4px;
+
+	position: absolute;
+	bottom: 60px;
+	left: 10px;
+	right: 10px;
+	margin: 0 auto;
+	width: fit-content;
+	overflow: hidden;
+
+	&--shimmer::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			110deg,
+			transparent 35%,
+			$gallery-notify-bg-shimmer 50%,
+			transparent 65%
+		);
+		transform: translateX(-150%);
+		animation: gallery-toast-shimmer 2.6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+		pointer-events: none;
+	}
+
+	&__body {
+		padding: 12px 15px;
+		padding-right: 0;
+		word-break: break-word;
+	}
+
+	&__close, &__close:hover, &__close:active {
+		cursor: pointer;
+		padding: 12px 15px;
+		background: none;
+		border: none;
+		color: inherit;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
 }
 
-.gallery__notif_inner .gallery__notif_close{
-	position: absolute;
-	top: 50%;
-	margin-top: -8px;
-	right: 10px;
+@keyframes gallery-toast-shimmer {
+	100% {
+		transform: translateX(150%);
+	}
+}
+
+.gallery__fs_btn {
+	border-radius: 2px;
 }
 
 /* Описание */

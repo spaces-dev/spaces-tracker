@@ -1,7 +1,6 @@
 import require from 'require';
 import module from 'module';
 import $ from './jquery';
-import cookie from './cookie';
 import Device from './device';
 import {Class, TSimpleEvents} from './class';
 import {Spaces, Url, Codes} from './spacesLib';
@@ -48,11 +47,9 @@ var LIKE_ICONS = [
 
 var has_shadows = Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
 	gallery_transp = Device.type == 'desktop' && has_shadows,
-	has_animations = $.support.nativeAnim,
 	features = {
-		zoom: has_animations
+		zoom: true
 	},
-	device_touch = Device.type == 'touch',
 	
 	failed_images = {},
 	loading_images = {}, // Картинки, которые загружаются
@@ -91,9 +88,9 @@ var has_shadows = Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
 	old_body_css,
 	touching = false,
 	hide_notif_timeout,
-	notif_showed;
+	notif_showed,
+	mutedNotifications = {};
 
-// has_animations = false;
 // gallery_gestures = false;
 
 var tpl = {
@@ -266,17 +263,24 @@ var tpl = {
 			'</div>';
 		return html;
 	},
-	notif: function (data) {
-		var html = 
-			'<div id="gallery_notif">' + 
-				'<div class="gallery__notif_inner word_break">' + 
-					data.text + 
-					'<a href="#gnc" class="gallery__notif_close">' + 
-						'<span class="ico_gallery ico_gallery_exit js-gallery_notif_close"></span>' + 
-					'</a>' + 
-				'</div>' + 
-			'</div>';
-		return html;
+	notif(data) {
+		const tag = data.url ? 'a' : 'div';
+		return `
+			<${tag}
+				${data.url ? `href="${data.url}" target="_blank" rel="noopener"` : ``}
+				${data.action ? `data-action="${data.action}"` : ``}
+				${data.id ? `data-id="${data.id}"` : ``}
+				class="gallery-toast ${data.shimmer ? 'gallery-toast--shimmer' : ''} ${data.action ? `js-action_link` : ``}"
+				id="gallery_notif"
+			>
+				<div class="gallery-toast__body">
+					${data.text}
+				</div>
+				<button class="gallery-toast__close js-gallery_notif_close">
+					<span class="ico_gallery ico_gallery_exit"></span>
+				</button>
+			</${tag}>
+		`;
 	},
 	collectionsMotivator: function () {
 		var html = 
@@ -329,6 +333,7 @@ Gallery = {
 		failed_images = {};
 		loading_images = {};
 		loaded_images = {};
+		mutedNotifications = {};
 		
 		// для этих пропускаем инициализацию галлереи
 		let divs = $.querySelectorAll('div.js-gallery_skip .gview_link:first-child');
@@ -336,7 +341,7 @@ Gallery = {
 			groups_skip[gallery_get_meta(divs[i]).gid] = 1;
 	},
 	
-	open: function (gid, id, form_history, lite_open) {
+	open: function (gid, id, form_history, lite_open, referer) {
 		var self = this;
 		id = +id;
 		
@@ -372,8 +377,8 @@ Gallery = {
 			}
 			
 			first_init = true;
-			
-			if (page_loader.ok() && !form_history)
+
+			if (!form_history)
 				page_loader.setJSC(false);
 			
 			if (!items_list[gid] || !items_list[gid][id]) {
@@ -403,14 +408,14 @@ Gallery = {
 			gallery_container = $('#gallery-container');
 			
 			// Считаем, что не может попастся видео вперемешку с картинками. 
-			gallery_gestures = !is_video && (has_animations || Device.type == 'touch');
+			gallery_gestures = !is_video;
 			
 			if (!is_video)
 				self.initGestures();
 			if (gallery_gestures) {
 				if (!is_video)
 					self.initMouseScale();
-				gallery.toggleClass('gallery-anim', has_animations);
+				gallery.addClass('gallery-anim');
 				$('#gallery-siblings').removeClass('hide');
 			}
 			
@@ -476,15 +481,40 @@ Gallery = {
 				Spaces.showMsg(error, {gallery: true, type: 'alert'});
 			}).on('click', '.js-gallery_notif_close', function (e) {
 				e.preventDefault();
+				e.stopPropagation();
 				
-				var notif = $('#gallery_notif');
+				const notif = $('#gallery_notif');
 				if (notif.find('.js-gallery_collection').length)
 					Spaces.LocalStorage.set("hide-collections-motivator", true);
 				
+				const notifId = notif.data('id');
+				if (notifId)
+					mutedNotifications[notifId] = true;
+
 				self.hideNotif();
 			}).on('click', '.js-descr_wrap', function (e) {
 				e.preventDefault();
 				$('#g_advancepage')[0].click();
+			}).action('show_photo_motion', function (e) {
+				e.preventDefault();
+
+				const motionGroupId = `photo_motion_${current.item.type}_${current.item.nid}`;
+				if (!items_list[motionGroupId]) {
+					$(self.getHiddenItemsStorage()).append(current.item.photoMotionPreview);
+					Gallery.addPhoto();
+				}
+
+				setTimeout(() => {
+					if (!items_list[motionGroupId]) {
+						self.showNotif(L("Видео не найдено!"));
+						return;
+					}
+
+					const gid = current.gid;
+					const id = current.id;
+					self.exit(true, true);
+					self.open(motionGroupId, 0, true, true, { gid, id });
+				}, 0);
 			});
 			gallery.on('click', '#g_collections', function (e) {
 				var el = $(this);
@@ -607,17 +637,22 @@ Gallery = {
 				gallery.addClass('one_image');
 			
 			page_loader.on('requestend', "removegallery", function (only_hash) {
-				if (!only_hash || (last_jsc && location.hash != last_jsc))
+				if (!only_hash || (last_jsc && location.hash != last_jsc)) {
+					if (!only_hash)
+						current.referer = undefined;
 					self.exit(true);
+				}
 			}, true);
 			page_loader.on('mailrequestend', "removegallery", function() {
+				current.referer = undefined;
 				self.exit(true);
 			}, true);
 			
 			import('./widgets/action_bar').then(({init}) => init($('#gallery_wrap')));
 		}
 		
-		self.selectItem(gid, id, first_init, false, 0, form_history);
+		self.selectItem(gid, id, first_init, false, 0, form_history, referer);
+
 		if (current.item.content == 'video') {
 			// Не нужны для видео
 			gallery.find('#gallery__zoom, .js-gallery_fullscreen').remove();
@@ -633,6 +668,11 @@ Gallery = {
 		if (!current)
 			return;
 		
+		if (current.referer && !from_cb)
+			lite_exit = true;
+
+		const referer = current.referer;
+
 		if (Device.android_app && !lite_exit) {
 			tick(function () {
 				self.pullToRefresh(true);
@@ -675,14 +715,15 @@ Gallery = {
 		
 		current = null;
 		
-		if (!from_cb && page_loader.ok())
+		if (from_cb) {
+			if (referer)
+				self.open(referer.gid, referer.id, true);
+		} else {
 			history.back();
-		
-		if (Device.android_app) {
-			// Костыль для перерисовки верхней панели, т.к. после закрытия фуллскрин просмотрщика она криво позиционируется. (Android 2.3)
-			$('#pmb8876').remove();
-			$('#navi').append('<div id="pmb8876">');
 		}
+
+		if (!lite_exit && !referer)
+			mutedNotifications = {};
 	},
 	
 	pullToRefresh: function (flag) {
@@ -697,9 +738,6 @@ Gallery = {
 			image_rect,
 			base_scale,
 			scale_timeout;
-		
-		if (!has_animations)
-			return;
 		
 		var fix_scale = function () {
 			scale_timeout = null;
@@ -881,22 +919,20 @@ Gallery = {
 									(gallery_transp ? ', .gallery__shadow' : ''));
 								
 								state = G_CLOSING;
-								if (has_animations) {
-									gallery_close_msg = {
-										wrap: $('#gallery_close_msg').show(),
-										closeMsg: $('#gallery_close_text').css("opacity", "1"),
-										closedMsg: $('#gallery_closed_text').css("opacity", "0"),
-										msg: null
-									};
-									gallery_close_msg.msg = gallery_close_msg.closeMsg;
-									
-									gallery_toolbars
-										.cssAnim('opacity', 'ease-out', OPT_CLOSING_DURATION)
-										.css("opacity", 0);
-									current.currImageWrap.css("overflow", "visible");
-									close_triggered = false;
-									self.switchShadow(true);
-								}
+								gallery_close_msg = {
+									wrap: $('#gallery_close_msg').show(),
+									closeMsg: $('#gallery_close_text').css("opacity", "1"),
+									closedMsg: $('#gallery_closed_text').css("opacity", "0"),
+									msg: null
+								};
+								gallery_close_msg.msg = gallery_close_msg.closeMsg;
+
+								gallery_toolbars
+									.cssAnim('opacity', 'ease-out', OPT_CLOSING_DURATION)
+									.css("opacity", 0);
+								current.currImageWrap.css("overflow", "visible");
+								close_triggered = false;
+								self.switchShadow(true);
 							} else {
 								// Листание
 								state = G_PAGING;
@@ -921,50 +957,46 @@ Gallery = {
 						
 						var denied = (!can_right && dx >= 0) || (!can_left && dx < 0);
 						x += denied ? dx / OPT_BOUNCE_PAGING : dx;
-						
-						if (has_animations) {
-							var metric = recalc_scale(gallery_rect, scale, x, y,
-								max_move_x, max_move_y, false);
-							self.moveImage(metric.x, metric.y, metric.scale);
-						}
+
+						var metric = recalc_scale(gallery_rect, scale, x, y,
+							max_move_x, max_move_y, false);
+						self.moveImage(metric.x, metric.y, metric.scale);
 					} else if (state == G_CLOSING) {
 						// Вывод текста с подсказкой закрытия галлереи
 						var text_y = y + dy / OPT_BOUNCE_CLOSE_TXT;
 						
 						y += dy / OPT_BOUNCE_CLOSING; // Замедляем
 						
-						if (has_animations) {
-							var abs_y = Math.abs(y);
-							
-							if (close_triggered != abs_y >= OPT_CLOSING_PATH) {
-								close_triggered = abs_y > OPT_CLOSING_PATH;
-								
-								// Костыли с opacity - из-за UCWeb, который лажил в любых других вариантах, кроме этого
-								gallery_close_msg.msg[0].style.opacity = 0;
-								gallery_close_msg.msg = close_triggered ? gallery_close_msg.closedMsg : gallery_close_msg.closeMsg;
-							}
-							
-							var text_style = gallery_close_msg.msg[0].style,
-								image_style = current.currImageWrap[0].style;
-							
-							// Больше натянули - больше затемнили
-							var pct = Math.max(0, Math.min(abs_y / (gallery_rect.h / 2), 1));
-							image_style.opacity = (1 - (0.4 * pct)).toFixed(2);
-							
-							var text_style = gallery_close_msg.msg[0].style,
-								text_opacity = Math.max(0, Math.min(abs_y / OPT_CLOSING_PATH, 1)).toFixed(2);
-							if (dy < 0) {
-								text_style.top = "-1em";
-								text_y += gallery_rect.rh;
-								text_style.opacity = text_opacity;
-							} else {
-								text_style.top = "0";
-								text_style.opacity = text_opacity;
-							}
-							
-							gallery_close_msg.wrap.transform({translate: [x, text_y]});
-							self.moveImage(x, y);
+						var abs_y = Math.abs(y);
+
+						if (close_triggered != abs_y >= OPT_CLOSING_PATH) {
+							close_triggered = abs_y > OPT_CLOSING_PATH;
+
+							// Костыли с opacity - из-за UCWeb, который лажил в любых других вариантах, кроме этого
+							gallery_close_msg.msg[0].style.opacity = 0;
+							gallery_close_msg.msg = close_triggered ? gallery_close_msg.closedMsg : gallery_close_msg.closeMsg;
 						}
+
+						var text_style = gallery_close_msg.msg[0].style,
+							image_style = current.currImageWrap[0].style;
+
+						// Больше натянули - больше затемнили
+						var pct = Math.max(0, Math.min(abs_y / (gallery_rect.h / 2), 1));
+						image_style.opacity = (1 - (0.4 * pct)).toFixed(2);
+
+						var text_style = gallery_close_msg.msg[0].style,
+							text_opacity = Math.max(0, Math.min(abs_y / OPT_CLOSING_PATH, 1)).toFixed(2);
+						if (dy < 0) {
+							text_style.top = "-1em";
+							text_y += gallery_rect.rh;
+							text_style.opacity = text_opacity;
+						} else {
+							text_style.top = "0";
+							text_style.opacity = text_opacity;
+						}
+
+						gallery_close_msg.wrap.transform({translate: [x, text_y]});
+						self.moveImage(x, y);
 						close_direction = dy >= 0;
 					}
 					inertia.add(x, y);
@@ -1028,27 +1060,25 @@ Gallery = {
 								fast_close = (Math.abs(position_delta) < OPT_FAST_CLOSE_LIMIT && Math.abs(speed) > OPT_MIN_SWIPE_SPEED
 									&& speed >= 0 == close_direction);
 							
-							if (has_animations) {
-								gallery_close_msg.wrap.hide();
-								if (close_triggered || fast_close) {
-									self.lockTouch(true);
-									self.setMoveAnim('transform, opacity', 'ease-out', OPT_CLOSING_DURATION, function () {
-										self.lockTouch(false);
-										self.exit();
-									});
-									self.moveImage(0, close_direction ? gallery_rect.h : -gallery_rect.h);
-									current.currImageWrap.css("opacity", 0);
-									return;
-								} else {
-									gallery_toolbars.cssAnim().css("opacity", "");
-									current.currImageWrap.css({"opacity": "", "overflow": ""});
-								}
-								self.setMoveAnim('transform, opacity', 'ease-out', OPT_COOLDOWN_DURATION, function () {
-									self.toggleSiblings(false);
+							gallery_close_msg.wrap.hide();
+							if (close_triggered || fast_close) {
+								self.lockTouch(true);
+								self.setMoveAnim('transform, opacity', 'ease-out', OPT_CLOSING_DURATION, function () {
+									self.lockTouch(false);
+									self.exit();
 								});
-								self.moveImage(x, y);
-								self.switchShadow(false);
+								self.moveImage(0, close_direction ? gallery_rect.h : -gallery_rect.h);
+								current.currImageWrap.css("opacity", 0);
+								return;
+							} else {
+								gallery_toolbars.cssAnim().css("opacity", "");
+								current.currImageWrap.css({"opacity": "", "overflow": ""});
 							}
+							self.setMoveAnim('transform, opacity', 'ease-out', OPT_COOLDOWN_DURATION, function () {
+								self.toggleSiblings(false);
+							});
+							self.moveImage(x, y);
+							self.switchShadow(false);
 						}
 					} else if (!click_lock) {
 						// Загрузка оригинала для гифок
@@ -1123,7 +1153,7 @@ Gallery = {
 		current.siblings = !!flag;
 	},
 	setMoveAnim: function (prop, func, time, callback) {
-		if (!has_animations || !gallery_gestures || !current.currImageWrap)
+		if (!gallery_gestures || !current.currImageWrap)
 			return;
 		
 		if (current.siblings) {
@@ -1147,7 +1177,7 @@ Gallery = {
 	moveImage: function (x, y, scale) {
 		var self = this;
 		
-		if (!has_animations || !gallery_gestures)
+		if (!gallery_gestures)
 			return;
 		
 		if (x === false) { // reset
@@ -1212,7 +1242,7 @@ Gallery = {
 	fixSiblings: function () {
 		var self = this;
 		self.syncErrors();
-		if (!has_animations || !gallery_gestures || !current) {
+		if (!gallery_gestures || !current) {
 			if (current.item.content != "video" && current)
 				current.currImage = replace_image(current.currImage, current.item.image, current.item.image_2x, true);
 			return;
@@ -1224,8 +1254,6 @@ Gallery = {
 			self.recalcFrames(undefined, group_items[neighbors.next], group_items[neighbors.prev]);
 	},
 	getFrame: function (dir) {
-		if (!has_animations)
-			return dir < 0 ? 0 : (dir > 1 ? 2 : 1);
 		dir = dir || 0;
 		return get_slide_index(position_delta + 1 + (dir < 0 ? 2 : (dir > 0 ? -2 : 0)), 3);
 	},
@@ -1233,7 +1261,7 @@ Gallery = {
 		var self = this,
 			group_items = items_list[current.gid],
 			neighbors = self.getNeighbors(current.gid, current.id, true),
-			idx = !has_animations ? [self.getFrame()] : [self.getFrame(-1), self.getFrame(0), self.getFrame(1)],
+			idx = [self.getFrame(-1), self.getFrame(0), self.getFrame(1)],
 			
 			prev = group_items[neighbors.prev],
 			curr = current.item,
@@ -1294,7 +1322,7 @@ Gallery = {
 		}
 	},
 	recalcFrames: function (dir, image_prev, image_next) {
-		if (!has_animations || !gallery_gestures || !current || !gallery_rect)
+		if (!gallery_gestures || !current || !gallery_rect)
 			return;
 		
 		if (current.item.content == 'video')
@@ -1379,12 +1407,15 @@ Gallery = {
 			self.syncErrors();
 		}
 	},
-	selectItem: function (gid, id, first_init, partial_init, dir, form_history) {
+	selectItem: function (gid, id, first_init, partial_init, dir, form_history, referer) {
 		var self = this;
 		if (current && gid == current.gid && id == current.id) {
 			self.update();
 			return;
 		}
+
+		if (!referer && current && current.referer)
+			referer = current.referer;
 		
 		self.freeItem();
 		self.toggleZoom(false, true);
@@ -1405,7 +1436,8 @@ Gallery = {
 			zoomed: false,
 			scale: 1,
 			siblings: true,
-			n: neighbors.n
+			n: neighbors.n,
+			referer
 		};
 		
 		self.update();
@@ -1416,7 +1448,7 @@ Gallery = {
 			image_prev_src = image_prev ? image_prev.image : TRANSPARENT_STUB,
 			image_next_src = image_next ? image_next.image : TRANSPARENT_STUB;
 		
-		if (is_video || !has_animations || !gallery_gestures) {
+		if (is_video || !gallery_gestures) {
 			current.currImage = $('#gallery_img_1');
 			current.currImageWrap = $('#gallery_img_1_wrap');
 			
@@ -1538,11 +1570,10 @@ Gallery = {
 		// Ссылка на скачивание
 		$('#g_dloadlink').prop("href", item.download).toggle(!!item.download);
 		
-		if (page_loader.ok()) {
-			var id = self.getItemPos();
-			page_loader.setJSC('gallery', current.gid + '/' + id, !first_init || form_history);
-			last_jsc = location.hash;
-		}
+		var id = self.getItemPos();
+		const replaceHistory = !current.referer && (!first_init || form_history);
+		page_loader.setJSC('gallery', current.gid + '/' + id, replaceHistory);
+		last_jsc = location.hash;
 		
 		self.toggleSiblings(false);
 		self.onResize(true);
@@ -1673,7 +1704,7 @@ Gallery = {
 		});
 	},
 	updateExtraInfo() {
-		let item = current.item;
+		const item = current.item;
 		
 		$('#Gallery').data('objectUrl', item.commentsLink);
 		
@@ -1701,9 +1732,21 @@ Gallery = {
 		// Жалобы
 		$('#g_complaint').prop("href", item.complainUrl).toggle(!!item.complainUrl);
 		
-		// Мотиватор коллекций
-		if (!item.haveCollections && !Spaces.LocalStorage.get("hide-collections-motivator") && item.saveLink)
-			tick(() => Gallery.showNotif(tpl.collectionsMotivator(), {timeout: false}));
+		if (item.toast) {
+			if (!mutedNotifications[item.toast.id]) {
+				tick(() => Gallery.showNotif(item.toast.text, {
+					id: item.toast.id,
+					timeout: item.toast.timeout ?? false,
+					url: item.toast.url,
+					shimmer: !!item.toast.shimmer,
+					action: item.toast.action,
+				}));
+			}
+		} else {
+			// Мотиватор коллекций
+			if (!item.haveCollections && !Spaces.LocalStorage.get("hide-collections-motivator") && item.saveLink)
+				tick(() => Gallery.showNotif(tpl.collectionsMotivator(), {timeout: false}));
+		}
 		
 		// Лайки
 		this.syncLikes();
@@ -2086,7 +2129,7 @@ Gallery = {
 		if (dir > 0 && !current.next)
 			return;
 		
-		if (gallery_gestures && has_animations) {
+		if (gallery_gestures) {
 			if (anim) {
 				var do_anim = function () {
 					self.toggleSiblings(true);
@@ -2332,7 +2375,11 @@ Gallery = {
 		var self = this;
 		
 		opts = $.extend({
-			timeout: 5000
+			id: undefined,
+			timeout: 5000,
+			url: undefined,
+			shimmer: false,
+			action: undefined,
 		}, opts);
 		
 		if (hide_notif_timeout)
@@ -2340,7 +2387,11 @@ Gallery = {
 		$('#gallery_notif').remove();
 		
 		gallery.append(tpl.notif({
-			text: text
+			text: text,
+			id: opts.id,
+			url: opts.url,
+			shimmer: opts.shimmer,
+			action: opts.action,
 		}));
 		
 		if (opts.timeout) {
@@ -2352,18 +2403,13 @@ Gallery = {
 		notif_showed = true;
 	},
 	hideNotif: function () {
-		var self = this,
-			gallery_notif = $('#gallery_notif');
+		const gallery_notif = $('#gallery_notif');
 		clearTimeout(hide_notif_timeout);
 		hide_notif_timeout = 0;
 		notif_showed = false;
-		if (has_animations) {
-			gallery_notif.cssAnim('opacity', 'ease-out', 300, function () {
-				gallery_notif.remove();
-			}).css("opacity", 0);
-		} else {
+		gallery_notif.cssAnim('opacity', 'ease-out', 300, function () {
 			gallery_notif.remove();
-		}
+		}).css("opacity", 0);
 	},
 	autoHideNotif: function () {
 		var self = this;
@@ -2415,6 +2461,16 @@ Gallery = {
 			if (current.hasError && current.zoomed)
 				self.toggleZoom(false);
 		}
+	},
+	getHiddenItemsStorage() {
+		let hiddenItemsWrapper = document.getElementById('gallery_hidden_items');
+		if (!hiddenItemsWrapper) {
+			hiddenItemsWrapper = document.createElement('div');
+			hiddenItemsWrapper.id = 'gallery_hidden_items';
+			hiddenItemsWrapper.className = 'hide';
+			document.body.querySelector('#main').appendChild(hiddenItemsWrapper);
+		}
+		return hiddenItemsWrapper;
 	},
 	getGalleryRect: get_gallery_rect,
 	lock: function (flag) {
@@ -2494,18 +2550,6 @@ function replace_image(orig, src, src_2x, no_load) {
 // Images loading
 function set_image(img, src, src_2x, parent) {
 	let srcset = src_2x ? src + ', ' + src_2x + ' 1.5x' : '';
-	
-	if (!has_animations) {
-		if (src === undefined) {
-			src = ICONS_BASEURL + "preloader_dark.gif";
-			srcset = "";
-		} else {
-			loaded_images[src] = true;
-		}
-		img.prop("srcset", srcset);
-		img.prop("src", src);
-		return;
-	}
 	
 	if (src === undefined) {
 		img.prop("src", TRANSPARENT_STUB).prop("srcset", "").removeData("o_src");

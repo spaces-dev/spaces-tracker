@@ -196,6 +196,7 @@ var HistoryManager = {
 		}
 	},
 	handler: function (e) {
+		// console.log("handler", e.state, document.title, location.href);
 		if (!e.state && history.state)
 			e.state = history.state;
 		
@@ -226,6 +227,7 @@ var HistoryManager = {
 		return false;
 	},
 	pushState: function (data, title, url) {
+		// console.log("pushState", data, title, url);
 		HistoryManager.state = data || {};
 		
 		HistoryManager._startup_url && (HistoryManager._startup_url = null);
@@ -240,6 +242,7 @@ var HistoryManager = {
 		}
 	},
 	replaceState: function (data, title, url) {
+		// console.log("replaceState", data, title, url);
 		if (data !== undefined)
 			HistoryManager.state = data;
 		
@@ -251,6 +254,7 @@ var HistoryManager = {
 			HistoryManager._startup_url = null;
 	},
 	updateState: function (callback) {
+		// console.log("updateState");
 		var curr_state;
 		try { curr_state = history.state; } catch (e) {
 			/* IE10 тут падает чёто, если нет state */
