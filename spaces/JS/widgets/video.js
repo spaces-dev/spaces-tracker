@@ -277,6 +277,7 @@ class VideoPlayer {
 			videoWidth:			options.videoWidth,
 			videoHeight:		options.videoHeight,
 			duration:			options.duration,
+			loop:				options.loop ?? false,
 			altProxyDomains:	options.altProxyDomains ?? [],
 			file:			$.extend({
 				id:			options.fileId,

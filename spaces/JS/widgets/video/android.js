@@ -152,7 +152,7 @@ class AndroidAppDriver extends BaseDriver {
 			SpacesApp.exec("nativeVideo", this.options.file);
 		} else {
 			let src = this.options.sources[this.source_id].src;
-			SpacesApp.exec("playVideo", {src: src});
+			SpacesApp.exec("playVideo", {src: src, loop: this.options.loop});
 		}
 	}
 	

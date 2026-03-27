@@ -58,6 +58,10 @@ class NativeDriver extends BaseDriver {
 		player.setAttribute('playsinline', '');
 		player.setAttribute('webkit-playsinline', '');
 		player.setAttribute('poster', this.options.preview);
+
+		if (this.options.loop)
+			player.setAttribute('loop', '');
+
 		this.player = player;
 		
 		player.addEventListener('play', () => this.triggerPlay(), false);

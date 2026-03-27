@@ -1778,10 +1778,8 @@ Gallery = {
 		if (!isExternalVideo)
 			video.addClass('video-player-container--fluid');
 		
-		if (Device.type == 'desktop') {
-			if (!current.item.adult || !enable_check_adult)
-				video.data('autoplay', true);
-		}
+		if (!current.item.adult || !enable_check_adult)
+			video.data('autoplay', true);
 		
 		require.component(import.meta.id('./widgets/video'));
 		self.onResize();
