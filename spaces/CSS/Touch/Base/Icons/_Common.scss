@@ -180,6 +180,8 @@
 @include define-icon("ico", "dating_black");
 @include define-icon("ico", "dating_darkblue");
 @include define-icon("ico", "checkbox_circle");
+@include define-icon("ico", "play");
+@include define-icon("ico", "play_white");
 
 body .delete-btn {
 	@include use-icon("ico", "remove");
