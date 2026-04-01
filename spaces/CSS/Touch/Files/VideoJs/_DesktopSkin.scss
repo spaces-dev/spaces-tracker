@@ -107,28 +107,34 @@ $vjs-timeline-hover-area-height: 2em;
 
 	// Большая кнопка PLAY
 	.vjs-big-play-button {
-		background: transparent;
+		background: rgba(0, 0, 0, 0.3);
+		border-radius: 50%;
 		border: none;
 
-		opacity: 0.85;
-		width: 3em;
-		height: 3em;
-		line-height: 3em;
-		margin-top: -1.5em;
-		margin-left: -1.5em;
-
-		&:hover {
-			opacity: 1;
-		}
+		opacity: 1;
+		width: 2em;
+		height: 2em;
+		line-height: 2em;
+		margin-left: 0;
+		margin-top: 0;
+		transform: translate(-50%, -50%);
+		transition: all 0.4s;
 
 		.vjs-icon-placeholder {
-			font-size: 3em;
+			font-size: 1.8em;
 		}
 	}
 
 	&:hover .vjs-big-play-button {
-		background: transparent;
+		background: rgba(0, 0, 0, 0.4);
 		border: none;
+		transition: all 0.25s;
+	}
+
+	&.vjs-has-started .vjs-big-play-button {
+		display: block;
+		opacity: 0;
+		transition: all 0.8s;
 	}
 
 	// В фуллскрине цветовая схема не нужна
