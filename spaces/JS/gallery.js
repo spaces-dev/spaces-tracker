@@ -716,8 +716,11 @@ Gallery = {
 		current = null;
 		
 		if (from_cb) {
-			if (referer)
-				self.open(referer.gid, referer.id, true);
+			if (referer) {
+				const id = sorted_list[referer.gid] ? sorted_list[referer.gid].indexOf(referer.id) : referer.id;
+				if (id > -1)
+					self.open(referer.gid, id, true);
+			}
 		} else {
 			history.back();
 		}

@@ -535,8 +535,9 @@ __require_config		|	Конфиг загрузчика
 	// Выполнение массива элементов <script>, асинхронно
 	function executeScripts(scripts) {
 		for (let i = 0, l = scripts.length; i < l; i++) {
-			let script = scripts[i];
-			if (!script.type || script.type == "text/javascript") {
+			const script = scripts[i];
+			const type = script.type.toLowerCase();
+			if (!type || type == "text/javascript" || type == "application/javascript") {
 				if (script.src) {
 					let onload = script.getAttribute && script.getAttribute("onload");
 					if (onload) {
