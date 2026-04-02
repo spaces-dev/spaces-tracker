@@ -184,6 +184,7 @@
 	box-shadow: $default-block-shadow;
 	box-sizing: border-box;
 	scroll-margin: 15px;
+	text-align: left;
 
 	&[data-popper-open="true"] {
 		display: block;
