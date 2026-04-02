@@ -234,6 +234,10 @@
 	@include icon-middle-align(16);
 }
 
+@include define-sprite("ico_mini_games") {
+	/*!__PURE__*/ display: inline-block;
+}
+
 .root--bg-ny {
 	@if ($DARK_MODE) {
 		background-image: url('/i/bg/newyear_dark.png?r=1');
@@ -320,6 +324,7 @@ only screen and (min-device-pixel-ratio: 1.5) {
 	@include define-sprite-2x("ico_player");
 	@include define-sprite-2x("ico_buttons");
 	@include define-sprite-2x("ico_sidebar");
+	@include define-sprite-2x("ico_mini_games");
 	
 	#{mangle(".ico")} {
 		@include use-sprite-2x("ico_buttons");
