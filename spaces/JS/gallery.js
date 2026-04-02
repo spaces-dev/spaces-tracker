@@ -293,8 +293,8 @@ var tpl = {
 	playerStub(preview, isExternalVideo) {
 		return `
 			<div class="js-vp video-player-container ${isExternalVideo ? '' : 'video-player-container--fluid'}">
-				<div class="js-vp_player_wrap video-player">
-					<div class="video-player__frame js-vp_player">
+				<div class="js-vp_player video-player">
+					<div class="video-player__frame js-vp_player_frame">
 						<img src="${preview}" class="preview" alt="" />
 					</div>
 				</div>

@@ -31,6 +31,10 @@ $video-converter-info-button-text-color:	#ffffff;
 $video-converter-info-button-error-color:	#ffa78a;
 $video-converter-info-button-border:		theme(#ffffff,	$default-border-color);
 
+$video-player-backdrop:						rgba(0, 0, 0, 0.4);
+$video-player-spinner-bg:					rgba(255, 255, 255, 0.15);
+$video-player-spinner-fg:					#ffffff;
+
 /* Music Player */
 $music-player-button-bg:					theme(#395387,	#479ce6);
 $music-player-button-inactive-bg:			theme(#9AB2CC,	#5d5c61);

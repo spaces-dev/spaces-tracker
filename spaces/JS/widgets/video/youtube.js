@@ -29,7 +29,7 @@ class YoutubeDriver extends BaseDriver {
 		iframe.src = '//www.youtube.com/embed/' + video_id + '?enablejsapi=1&' + 
 			'autoplay=' + (this.options.autoplay ? 1 : 0) + '&' + 
 			'origin=' + location.protocol + "//" + location.hostname;
-		this.container.find('.js-vp_player').empty().append(iframe);
+		this.container.find('.js-vp_player_frame').empty().append(iframe);
 		
 		this.iframe = iframe;
 		

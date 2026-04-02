@@ -21,7 +21,6 @@ const tpl = {
 					</select>
 				</label>
 			</div>
-			<div class="video-player_spinner"></div>
 		`;
 	},
 	
@@ -68,7 +67,7 @@ class NativeDriver extends BaseDriver {
 		player.addEventListener('pause', () => this.triggerPause(), false);
 		player.addEventListener('ended', () => this.triggerPause(), false);
 		
-		this.container.find('.js-vp_player').empty().append(player);
+		this.container.find('.js-vp_player_frame').empty().append(player);
 		
 		this.selectSource(this.getDefaultSource(), false);
 		
@@ -98,7 +97,6 @@ class NativeDriver extends BaseDriver {
 	triggerPlay() {
 		this.played = true;
 		if (!this.old_playing) {
-			this.container.addClass('video-player_playing');
 			this.trigger('play');
 			this.old_playing = true;
 		}
@@ -106,7 +104,6 @@ class NativeDriver extends BaseDriver {
 	
 	triggerPause() {
 		if (this.old_playing) {
-			this.container.removeClass('video-player_playing');
 			this.trigger('pause');
 			this.old_playing = false;
 		}
@@ -125,8 +122,6 @@ class NativeDriver extends BaseDriver {
 		let current_time = player.currentTime;
 		
 		if (current_time > 0) {
-			this.container.addClass('video-player_busy');
-			
 			this.defer_seek = {
 				time:		current_time,
 				callback:	() => this.resolveDeferSeek()
@@ -151,7 +146,6 @@ class NativeDriver extends BaseDriver {
 			player.currentTime = this.defer_seek.time;
 			player.removeEventListener("loadedmetadata", this.defer_seek.callback, false);
 			this.defer_seek = false;
-			this.container.removeClass('video-player_busy');
 		}
 	}
 	

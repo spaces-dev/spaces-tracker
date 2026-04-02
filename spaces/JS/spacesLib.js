@@ -563,6 +563,7 @@ extend(Spaces, {
 	},
 	api(method, params, callback, opts) {
 		params = params || {};
+
 		opts = extend({
 			cache: false,
 			cacheTime: false,
@@ -602,7 +603,7 @@ extend(Spaces, {
 
 		params._origin = location.protocol + "//" + location.host
 
-		if (('CK' in params))
+		if (!params.CK)
 			params.CK = Spaces.CK();
 
 		var raw_data = Url.buildQuery(params);

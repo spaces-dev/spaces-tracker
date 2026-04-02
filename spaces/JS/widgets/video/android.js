@@ -57,9 +57,9 @@ class AndroidAppDriver extends BaseDriver {
 			}
 		});
 		
-		this.container.find('.js-vp_player_wrap').addClass('video-player--backdrop');
+		this.container.find('.js-vp_player').addClass('video-player--backdrop');
 
-		let player = this.container.find('.js-vp_player');
+		let player = this.container.find('.js-vp_player_frame');
 		
 		// Кнопка play
 		player.append(tpl.play());
@@ -76,7 +76,7 @@ class AndroidAppDriver extends BaseDriver {
 	
 	initFallback() {
 		let {sources} = this.options;
-		let player = this.container.find('.js-vp_player');
+		let player = this.container.find('.js-vp_player_frame');
 		
 		// Выбор качества
 		if (sources.length > 1) {

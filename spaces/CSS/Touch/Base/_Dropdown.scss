@@ -99,6 +99,7 @@
 		flex: 1;
 		font-weight: bold;
 		padding: 0 10px;
+		text-transform: uppercase;
 
 		.dialog[data-dialog-collapsed="true"] & {
 			cursor: pointer;
@@ -141,6 +142,7 @@
 	&__content {
 		background: $content-bg;
 		flex: 1;
+		position: relative;
 	}
 
 	&__resize-border {
@@ -172,6 +174,84 @@
 			top: 0;
 			bottom: 0;
 			right: 0;
+		}
+	}
+
+	&__shadow {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: rgba(0, 0, 0, 0.3);
+	}
+}
+
+.dialog-inner-popup {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: $content-bg;
+	border-radius: 16px;
+
+
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 3px;
+	}
+
+	&__header-spacer {
+		flex: 1;
+	}
+
+	&__header-actions {
+		display: flex;
+		justify-content: start;
+		flex: 1;
+	}
+
+	&__header-title {
+		flex: 1;
+		text-transform: uppercase;
+		font-weight: bold;
+		text-align: center;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	&__button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 48px;
+		width: 48px;
+
+		position: relative;
+		cursor: pointer;
+		z-index: 0;
+		user-select: none;
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 5px;
+			top: 5px;
+			right: 5px;
+			bottom: 5px;
+			background: $dialog-header-button-hover-bg;
+			border-radius: 50%;
+			z-index: -1;
+
+			will-change: opacity;
+			opacity: 0;
+			transition: opacity 0.15s ease;
+		}
+
+		&:hover::after {
+			opacity: 1;
 		}
 	}
 }

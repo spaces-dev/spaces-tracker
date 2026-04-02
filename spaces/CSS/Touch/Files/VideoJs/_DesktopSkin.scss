@@ -3,6 +3,8 @@ $vjs-control-bar-icon-size: 2em;
 $vjs-timeline-height: 0.25em;
 $vjs-timeline-hover-font-size: 1.6666666667em;
 $vjs-timeline-hover-area-height: 2em;
+$vjs-big-play-button-size: 6em;
+$vjs-big-play-button-icon-size: 5.4em;
 
 @mixin vjs-icon-size($icon-size) {
 	font-size: $icon-size;
@@ -110,31 +112,103 @@ $vjs-timeline-hover-area-height: 2em;
 		background: rgba(0, 0, 0, 0.3);
 		border-radius: 50%;
 		border: none;
+		visibility: visible;
 
 		opacity: 1;
-		width: 2em;
-		height: 2em;
-		line-height: 2em;
+		font-size: 1em;
+		width: $vjs-big-play-button-size;
+		height: $vjs-big-play-button-size;
+		line-height: $vjs-big-play-button-size;
 		margin-left: 0;
 		margin-top: 0;
 		transform: translate(-50%, -50%);
-		transition: all 0.4s;
+		transition:
+			opacity 0.25s ease-out,
+			visibility 0s linear 0.25s,
+			background 0.4s;
 
 		.vjs-icon-placeholder {
-			font-size: 1.8em;
+			font-size: $vjs-big-play-button-icon-size;
 		}
 	}
 
 	&:hover .vjs-big-play-button {
 		background: rgba(0, 0, 0, 0.4);
 		border: none;
-		transition: all 0.25s;
 	}
 
 	&.vjs-has-started .vjs-big-play-button {
 		display: block;
 		opacity: 0;
-		transition: all 0.8s;
+		visibility: hidden;
+		transition:
+			opacity 0.25s ease-in,
+			visibility 0s linear 0.25s,
+			background 0.4s;
+	}
+
+	@keyframes vjs-click-feedback {
+		0% {
+			transform: translate(-50%, -50%) scale(0.6);
+			opacity: 1;
+			visibility: visible;
+		}
+
+		100% {
+			transform: translate(-50%, -50%) scale(1);
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	// Отклик на PLAY/PAUSE
+	.vjs-big-playing-status {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+
+		width: $vjs-big-play-button-size;
+		height: $vjs-big-play-button-size;
+		border-radius: 50%;
+		line-height: $vjs-big-play-button-size;
+
+		background: rgba(0, 0, 0, 0.55);
+		opacity: 0;
+		visibility: hidden;
+
+		&--animation {
+			animation: vjs-click-feedback 0.5s ease-out forwards;
+		}
+
+		.vjs-icon-placeholder {
+			font-size: $vjs-big-play-button-icon-size;
+			color: #fff;
+
+			&::before {
+				content: "";
+				font-family: VideoJS;
+				font-style: normal;
+				font-weight: 400;
+			}
+		}
+	}
+
+	&:not(.vjs-has-started) .vjs-big-playing-status, &.vjs-waiting .vjs-big-playing-status {
+		visibility: hidden;
+	}
+
+	&.vjs-has-started.vjs-paused .vjs-big-playing-status {
+		.vjs-icon-placeholder::before {
+			content: "\f103";
+		}
+	}
+
+	&.vjs-has-started.vjs-playing .vjs-big-playing-status {
+		.vjs-icon-placeholder::before {
+			content: "\f101";
+		}
 	}
 
 	// В фуллскрине цветовая схема не нужна

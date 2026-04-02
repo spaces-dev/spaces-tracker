@@ -417,6 +417,10 @@ $vjs-timeline-height: 0.25em;
 	.vjs-play-progress {
 		background-color: #ff0033;
 	}
+
+	.vjs-big-playing-status {
+		display: none;
+	}
 }
 
 @keyframes vjs-play-hide {

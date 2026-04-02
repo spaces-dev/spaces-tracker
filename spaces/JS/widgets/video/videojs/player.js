@@ -20,6 +20,7 @@ import './plugins/tapToRewind';
 import './plugins/storyboard';
 import './plugins/videoTitle';
 import './plugins/fastShowOnHover';
+import './plugins/bigPlayingStatus';
 
 // Патчим videojs
 videojsEnableSyncSetSource(videojs);

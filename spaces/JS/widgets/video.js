@@ -169,6 +169,9 @@ class VideoPlayer {
 		}
 		
 		this.deferInit();
+		this.ready(() => {
+			this.container.find('.js-vp_player').removeClass('video-player--loading');
+		});
 	}
 	
 	deferInit() {

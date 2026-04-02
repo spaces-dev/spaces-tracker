@@ -22,7 +22,7 @@ class VideoJsDriver extends BaseDriver {
 			e.preventDefault();
 		});
 
-		this.container.find('.js-vp_player')
+		this.container.find('.js-vp_player_frame')
 			.removeClass('video-player--is-stub')
 			.empty()
 			.append(video);
@@ -168,6 +168,7 @@ class VideoJsDriver extends BaseDriver {
 		}
 
 		// Плагины
+		player.bigPlayingStatus();
 		player.betterAutoplay();
 		player.resizeMonitor();
 		player.seekingStatus();
