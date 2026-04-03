@@ -603,7 +603,7 @@ extend(Spaces, {
 
 		params._origin = location.protocol + "//" + location.host
 
-		if (!params.CK)
+		if (('CK' in params) && !params.CK)
 			params.CK = Spaces.CK();
 
 		var raw_data = Url.buildQuery(params);
