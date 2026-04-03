@@ -1,12 +1,11 @@
 import require from 'require';
 import $ from './jquery';
 import cookie from './cookie';
-import Device from './device';
 import {Class} from './class';
 import * as pushstream from './core/lp';
 import Spaces from './spacesLib';
 import fixPageHeight from './min_height';
-import { base_domain, L, extend, tick, updateUrl } from './utils';
+import { L, extend, tick, updateUrl, html_wrap } from './utils';
 
 export const EVENT_TYPE = {
 	MAIL:			0,
@@ -24,29 +23,48 @@ export const TOP_COUNTER_TYPE = {
 
 var BEACON_INTERVAL = 1000 * 60 * 4; // Интервал маячка
 
-var interactive = Spaces.params.nid,
-	css_has_fixed = Device.css('position', 'fixed', /fixed/i),
+var interactive = Spaces.params.nid > 0,
 	beacon_extra = {},
 	notif_sound,
 	blinker_timeout;
 
-var tpl = {
-	notif: function (data) {
-		var SEVERITY = {1: "system-message_service", 2: "", 3: "system-message_alert"};
-		
-		var html =
-			'<div data-ypad="10" id="notif_' + data.id + '" class="oh system-message notification_item js-fix_height ' + 
-					(data.n || data.delayed ? 'hide ' : '') + 
-					(data.delayed ? 'js-notif_to_show ' : '') + 
-					SEVERITY[data.severity] + 
-			'">' + 
-				'<span class="notif_text">' + 
-					'<span class="ico ico_remove js-notif_close pointer right"></span>' + 
-				'</span>' + 
-				'<span class="notification_counter ' + (!data.n ? 'hide ' : '') + '">' + (data.n + 1) + '</span> ' + 
-				Spaces.prepareLink(data.text) + 
-			'</div>';
-		return html;
+const tpl = {
+	notif(data) {
+		const SEVERITY = {
+			1: "system-message_service",
+			2: "",
+			3: "system-message_alert"
+		};
+
+		const notificationText = `
+			${data.link || data.api ? `<a href="${data.link ?? '#'}">` : ``}
+			${data.text}
+			${data.link || data.api ? `</a>` : ``}
+		`;
+
+		return `
+			<div
+				data-ypad="10"
+				id="notif_${data.id}"
+				data-id="${data.id}"
+				${data.api ? `data-action="global_notification_click"` : ``}
+				${data.api ? `data-api="${html_wrap(JSON.stringify(data.api))}"` : ''}
+				class="
+					oh system-message notification_item js-fix_height
+					${data.link || data.api ? `system-message--clickable js-action_link` : ``}
+					${data.n || data.delayed ? 'hide ' : ''}
+					${data.delayed ? 'js-notif_to_show ' : ''}
+					${SEVERITY[data.severity]}
+				"
+			>
+				<span class="notif_text">
+					<span class="ico ico_remove js-notif_close pointer right"></span>
+				</span>
+				<span class="notification_counter ${!data.n ? 'hide ' : ''}">${data.n + 1}</span>
+				<span class="ico ico_spinner hide js-spinner"></span>
+				${Spaces.prepareLink(notificationText)}
+			</div>
+		`;
 	}
 };
 
@@ -140,6 +158,25 @@ var Notifications = Class({
 			self.window_active = true;
 			$(window).off('.activity_detect');
 		});
+
+		$('#top_notif_place').action('global_notification_click', async function (e) {
+			e.preventDefault();
+
+			const notification = $(this);
+			const { method, params } = notification.data('api');
+
+			const toggleLoading = (flag) => {
+				notification.find('.js-spinner').toggleClass('hide', !flag);
+			};
+			toggleLoading(true);
+			const response = await Spaces.asyncApi(method, { CK: null, ...(params ?? {}) });
+			toggleLoading(false);
+
+			self.closeNotification(notification.data('id'));
+
+			if (response.notification)
+				self.pushNotification(response.notification);
+		});
 	},
 	Static: {
 		counters: {
@@ -205,9 +242,6 @@ var Notifications = Class({
 			var scroll = $window.scrollTop();
 			if (scroll <= 50) {
 				self.closeTopNotif();
-			} else {
-				if (!css_has_fixed)
-					$('.lp_notif_wrapper').css({top: scroll + "px"});
 			}
 		});
 		return this;
@@ -481,7 +515,6 @@ var Notifications = Class({
 	
 	renderNotification: function (data) {
 		var self = this;
-		
 		var notif_place = $('#top_notif_place');
 		
 		var $notif = $(tpl.notif({
@@ -489,7 +522,9 @@ var Notifications = Class({
 			n: self.ncounter,
 			delayed: data.lp && !self.window_active,
 			severity: data.severity,
-			text: data.text
+			text: data.text,
+			link: data.link,
+			api: data.api,
 		}));
 		
 		$notif.find('a').each(function () {
@@ -616,13 +651,10 @@ var Notifications = Class({
 	renderTopNotif: function (data) {
 		var self = this;
 		var message = $(
-			'<div id="top_notif_id_' + data.id + '" class="lp_notif_wrapper' + 
-					(css_has_fixed ? ' lp_notif_wrapper_fixed' : '') + '">' + 
+			'<div id="top_notif_id_' + data.id + '" class="lp_notif_wrapper lp_notif_wrapper_fixed">' +
 				'<div class="lp_notif_message">' + data.text + '</div>' + 
 			'</div>'
 		);
-		if (!css_has_fixed)
-			message.css({top: $(window).scrollTop()});
 		message.find('.lp_notif_message').on('click', {id: data.id}, function (e) {
 			e.preventDefault();
 			$('html, body').scrollTop(0);

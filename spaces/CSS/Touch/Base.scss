@@ -1259,6 +1259,7 @@ a.link-blue:active {
 }
 
 .system-message {
+	display: block;
 	padding: 12px 10px;
 	background: $system-message-warning-bg;
 	color: $system-message-warning-text;
@@ -1266,9 +1267,11 @@ a.link-blue:active {
 	position: relative;
 	z-index: 100;
 	word-wrap: break-word;
-	-webkit-box-shadow: $system-message-shadow;
-	   -moz-box-shadow: $system-message-shadow;
-			box-shadow: $system-message-shadow;
+	box-shadow: $system-message-shadow;
+
+	&--clickable {
+		cursor: pointer;
+	}
 }
 
 .system-message_alert {
