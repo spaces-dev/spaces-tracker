@@ -387,7 +387,7 @@ var mailCore = {
 	},
 
 	async getVoicesUploadURL() {
-		return await Spaces.asyncApi("mail.voice.getUploadURL", { CK: true, Contact: mail_params.contactId }, {
+		return await Spaces.asyncApi("mail.voice.getUploadURL", { CK: null, Contact: mail_params.contactId }, {
 			cache: true,
 			cacheTime: 3600,
 			retry: 3,
