@@ -1,11 +1,12 @@
 import videojs from 'video.js';
 import { throttleRaf } from '../../../../utils';
 import { resizeContain, resizeLimit } from '../../../../utils/resize'; // ехал ../ через ../
+import { isMobilePlayer } from './utils';
 
 const Component = videojs.getComponent('Component');
 
 videojs.registerPlugin('storyboard', function VideoJsStoryboard(options = {}) {
-	const order = videojs.browser.TOUCH_ENABLED ? 3 : undefined;
+	const order = isMobilePlayer() ? 3 : undefined;
 	this.addChild('Storyboard', options, order);
 });
 
@@ -39,7 +40,7 @@ class Storyboard extends Component {
 		if (mouseTimeDisplay)
 			mouseTimeDisplay.hide();
 
-		if (videojs.browser.TOUCH_ENABLED) {
+		if (isMobilePlayer()) {
 			const handleScrubbing = throttleRaf((event) => {
 				if (player.scrubbing()) {
 					let time = event.target.pendingSeekTime() || player.currentTime();
@@ -115,7 +116,7 @@ class Storyboard extends Component {
 	}
 
 	_handleResize() {
-		if (videojs.browser.TOUCH_ENABLED) {
+		if (isMobilePlayer()) {
 			const playerElement = this.player().el();
 			const playerRect = playerElement.getBoundingClientRect();
 			[this.thumbW, this.thumbH] = resizeContain(this.options_.videoWidth, this.options_.videoHeight, playerRect.width, playerRect.height);
@@ -157,7 +158,7 @@ class Storyboard extends Component {
 		el.style.backgroundPositionY = `${-this.thumbH * Math.floor(spriteFrameNumber / framesPerRow)}px`;
 		el.style.backgroundSize = `${spriteCols * this.thumbW}px ${spriteRows * this.thumbH}px`;
 
-		if (!videojs.browser.TOUCH_ENABLED) {
+		if (!isMobilePlayer()) {
 			this.timeLabel.textContent = videojs.time.formatTime(currentHoverTime);
 			const maxX = this.progressControl.offsetLeft + this.progressControl.offsetWidth - this.thumbW;
 			const minX = this.progressControl.offsetLeft;

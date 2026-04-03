@@ -5,12 +5,13 @@ import cookie from '../../cookie';
 import BaseDriver from './base';
 import { setupAds } from './videojs/ads';
 import { setupStatistic, setupViewTracker } from './videojs/statistic';
+import { isMobilePlayer } from './videojs/plugins/utils';
 
 // Адаптер для video.js
 class VideoJsDriver extends BaseDriver {
 	init(callback) {
-		let video = document.createElement('video');
-		video.className = `video-js vjs-fill vjs-big-play-centered ${videojs.browser.TOUCH_ENABLED ? 'vjs-theme-touch' : 'vjs-theme-desktop'}`;
+		const video = document.createElement('video');
+		video.className = `video-js vjs-fill vjs-big-play-centered ${isMobilePlayer() ? 'vjs-theme-touch' : 'vjs-theme-desktop'}`;
 
 		// На говнобраузерах постер растягивается....
 		// Нужно сделать превьюшки на 16:9 сначала
@@ -39,7 +40,7 @@ class VideoJsDriver extends BaseDriver {
 		];
 
 		// Картинку-в-Картинке включаем только в пк и только если плеер не внутри просмотрщика
-		if (('exitPictureInPicture' in document) && !videojs.browser.TOUCH_ENABLED && !this.options.viewer)
+		if (('exitPictureInPicture' in document) && !isMobilePlayer() && !this.options.viewer)
 			controlbar_children.push('pictureInPictureToggle');
 
 		if (isFullscreenEnabled())
@@ -85,13 +86,13 @@ class VideoJsDriver extends BaseDriver {
 				children: controlbar_children,
 				progressControl: {
 					seekBar: {
-						stepSeconds: videojs.browser.TOUCH_ENABLED ? 10 : 5,
+						stepSeconds: isMobilePlayer() ? 10 : 5,
 					}
 				}
 			}
 		};
 
-		if (videojs.browser.TOUCH_ENABLED)
+		if (isMobilePlayer())
 			player_options.disableSeekWhileScrubbingOnMobile = true;
 
 		let player = videojs(video, player_options);
@@ -173,7 +174,7 @@ class VideoJsDriver extends BaseDriver {
 		player.resizeMonitor();
 		player.seekingStatus();
 
-		if (videojs.browser.TOUCH_ENABLED) {
+		if (isMobilePlayer()) {
 			const isHorizontal = this.options.videoWidth && this.options.videoHeight && this.options.videoWidth / this.options.videoHeight >= 1.05;
 			player.fullscreenOnRotate({
 				enterOnRotate: true,

@@ -1,3 +1,10 @@
+import videojs from 'video.js';
+import Device from '../../../../device';
+
+export function isMobilePlayer() {
+	return Device.type == "touch" && videojs.browser.TOUCH_ENABLED;
+}
+
 export function findSelectedSource(sources) {
 	let selectedSource;
 	let defaultSource;
