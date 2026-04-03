@@ -16,6 +16,12 @@ const tpl = {
 			<div class="dialog__shadow js-mini_games_payment_form">
 				<div class="dialog-inner-popup">
 					<div class="dialog-inner-popup__header">
+						<div class="dialog-inner-popup__header-spacer"></div>
+
+						<div class="dialog-inner-popup__header-title">
+							${L("Подтвердите покупку")}
+						</div>
+
 						<div class="dialog-inner-popup__header-actions js-action_link" data-action="payment_cancel">
 							<div class="dialog-inner-popup__button">
 								<svg viewBox="0 0 1024 1026.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor">
@@ -23,12 +29,6 @@ const tpl = {
 								</svg>
 							</div>
 						</div>
-
-						<div class="dialog-inner-popup__header-title">
-							${L("Подтвердите покупку")}
-						</div>
-
-						<div class="dialog-inner-popup__header-spacer"></div>
 					</div>
 					${cashWidget}
 					<div class="content-bl__sep"></div>

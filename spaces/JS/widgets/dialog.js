@@ -12,18 +12,18 @@ let dialogOpenInstances = [];
 const tpl = {
 	header({ title, isCollapsed }) {
 		return `
-			<div class="dialog__header-button js-dialog_close">
-				<svg viewBox="0 0 1024 1026.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor">
-					<path d="M738 226q12-13 30-13t30 13q13 12 13 30t-13 30L572 512l226 226q13 12 13 30t-13 30q-12 13-30 13t-30-13L512 572 286 798q-12 13-30 13t-30-13q-13-12-13-30t13-30l226-226-226-226q-13-12-13-30t13-30q12-13 30-13t30 13l226 226 226-226z"/>
-				</svg>
+			<div class="dialog__header-button js-dialog_expand_collapse">
+				${isCollapsed ? tpl.iconExpand() : tpl.iconCollapse()}
 			</div>
 
 			<div class="dialog__header-title js-dialog_header_title">
 				${title}
 			</div>
 
-			<div class="dialog__header-button js-dialog_expand_collapse">
-				${isCollapsed ? tpl.iconExpand() : tpl.iconCollapse()}
+			<div class="dialog__header-button js-dialog_close">
+				<svg viewBox="0 0 1024 1026.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor">
+					<path d="M738 226q12-13 30-13t30 13q13 12 13 30t-13 30L572 512l226 226q13 12 13 30t-13 30q-12 13-30 13t-30-13L512 572 286 798q-12 13-30 13t-30-13q-13-12-13-30t13-30l226-226-226-226q-13-12-13-30t13-30q12-13 30-13t30 13l226 226 226-226z"/>
+				</svg>
 			</div>
 		`;
 	},
