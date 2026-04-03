@@ -826,7 +826,6 @@
   "/js/touch/widgets/video.js",
   "/js/touch/widgets/video/android.js",
   "/js/touch/widgets/video/base.js",
-  "/js/touch/widgets/video/embed.js",
   "/js/touch/widgets/video/external.js",
   "/js/touch/widgets/video/ima.js",
   "/js/touch/widgets/video/native.js",
