@@ -16,7 +16,7 @@ if (window.devicePixelRatio)
 
 cookie.set("theme", 'light');
 
-if (SPACES_PARAMS.hetznerCheckURL)
+if (SPACES_PARAMS.checkServers)
 	windowReady(() => import("./htz-checker"));
 
 if (!SPACES_PARAMS.nid && !cookie.get("sandbox") && document.querySelectorAll) {

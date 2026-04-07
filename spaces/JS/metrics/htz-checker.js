@@ -4,10 +4,10 @@ import { TRANSPARENT_PIXEL } from '../utils';
 
 const TIMEOUT = 5000;
 
-hetznerChecker();
+serversChecker();
 
-function hetznerChecker() {
-	const htzChecks = SPACES_PARAMS.hetznerCheckURL;
+function serversChecker() {
+	const checkServersList = SPACES_PARAMS.checkServers;
 
 	if (cookie.get("Htzct"))
 		return;
@@ -23,7 +23,7 @@ function hetznerChecker() {
 			stat.push([serverName, success]);
 
 			if (checkQueueCount == 0) {
-				setTimeout(hetznerChecker, 60 * 1000);
+				setTimeout(serversChecker, 60 * 1000);
 				Spaces.api("files.servers.stat", {
 					seRver: stat.map(row => row[0]),
 					AvAilable: stat.map(row => row[1])
@@ -34,33 +34,10 @@ function hetznerChecker() {
 	};
 
 	let mask = 0;
-	for (const checkType in htzChecks) {
-		const checkData = htzChecks[checkType];
-
-		if (checkData.force || checkData.inherits || checkData.off)
-			continue;
-
-		if (checkData.nums) {
-			for (const serverIndex in checkData.nums) {
-				const serverNum = checkData.nums[serverIndex].toString();
-				const serverName = checkType + (serverNum.length < 2 ? '0' : '') + serverNum;
-
-				if (! checkData.nums32k?.includes(serverNum))
-					continue;
-
-				let checkDataUrl = checkData.nums32k?.includes(serverNum) ? checkData.url32k : checkData.url;
-				checkDataUrl = checkDataUrl.replace(checkType + '%02d', serverName);
-
-				let checkDataBit = checkData.bit;
-				checkDataBit = +checkDataBit.replace('%d', serverNum);
-
-				mask |= 1 << checkDataBit;
-				checkServer(checkDataUrl, serverName, checkDataBit);
-			}
-		} else {
-			mask |= 1 << +checkData.bit;
-			checkServer(checkData.url, checkType, +checkData.bit);
-		}
+	for (const server in checkServersList) {
+		const check = checkServersList[server];
+		mask |= 1 << check.bit;
+		checkServer(check.url, server, check.bit);
 	}
 
 	const flags = Number(cookie.get("Htzna1") || 0);
@@ -72,14 +49,14 @@ function hetznerChecker() {
 	cookie.set("Htzct", 1, { expires: 15 * 60 });
 }
 
-function setCookie(success, serverName, checkDataBit) {
+function setCookie(success, serverName, bit) {
 	let flags = Number(cookie.get("Htzna1") || 0);
 	if (success) {
-		flags &= ~(1 << checkDataBit);
-		console.log(`hetzner ${serverName} (#${checkDataBit}) is available`);
+		flags &= ~(1 << bit);
+		console.log(`server ${serverName} (#${bit}) is available`);
 	} else {
-		flags |= (1 << checkDataBit);
-		console.log(`hetzner ${serverName} (#${checkDataBit}) is NOT available`);
+		flags |= (1 << bit);
+		console.log(`server ${serverName} (#${bit}) is NOT available`);
 	}
 	cookie.set("Htzna1", flags, { expires: 3600 });
 }

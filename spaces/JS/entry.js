@@ -46,5 +46,5 @@ if (window.SPACES_PARAMS.nid) {
 if (window.devicePixelRatio)
 	cookie.set("dpr", window.devicePixelRatio);
 
-if (SPACES_PARAMS.hetznerCheckURL)
+if (SPACES_PARAMS.checkServers)
 	windowReady(() => import("./metrics/htz-checker"));
