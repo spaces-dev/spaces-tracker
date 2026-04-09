@@ -9,6 +9,22 @@
 	/* Заглушка, чтобы отработал mangle() */
 }
 
+#{mangle(".ads_title")} {
+	display: inline-block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1000;
+	background: $ads-icon-bg;
+	color: $ads-icon-text-color;
+	padding: 3px 4px;
+	font-size: 9px;
+	font-weight: 700;
+	vertical-align: middle;
+	text-transform: uppercase;
+	letter-spacing: 0.125em;
+}
+
 #{mangle(".ads_link")} {
 	padding: 5px 0;
 	color: $block-link-green-color;
@@ -39,7 +55,6 @@ img#{mangle(".p50")},
 	margin: 10px 5px;
 	border: 1px solid $default-border-color;
 	background: $content-bg;
-	text-align: center
 }
 
 .tiles_wrapper #{mangle(".rek_bl")} {

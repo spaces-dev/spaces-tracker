@@ -76,7 +76,15 @@ img#{mangle(".p50")},
 #{mangle(".ads_title")} {
 	top: 0;
 	left: 0;
-	z-index: 1000
+	z-index: 1000;
+	background: $ads-icon-bg;
+	color: $ads-icon-text-color;
+	padding: 3px 4px;
+	font-size: 9px;
+	font-weight: 700;
+	vertical-align: middle;
+	text-transform: uppercase;
+	letter-spacing: 0.125em;
 }
 
 #{mangle(".ads_link_disable")} {
@@ -105,11 +113,6 @@ img#{mangle(".p50")},
 }
 
 /* Иконки */
-#{mangle(".ads_ico")} {
-	@include use-icon("ico_buttons", "ads");
-	margin: 0;
-}
-
 #{mangle(".remove_ads_ico")} {
 	@include use-icon("ico_buttons", "close");
 }

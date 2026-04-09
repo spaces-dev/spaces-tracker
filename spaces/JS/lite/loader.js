@@ -335,7 +335,7 @@ __require_config		|	Конфиг загрузчика
 	function executeScripts(scripts) {
 		for (let i = 0, l = scripts.length; i < l; i++) {
 			const script = scripts[i];
-			const type = script.type.toLowerCase();
+			const type = script.type?.toLowerCase();
 			if (!type || type == "text/javascript" || type == "application/javascript") {
 				if (script.src) {
 					loadScript(script.src, null, null, script);
