@@ -1795,11 +1795,11 @@ html body .hide.defer {
 }
 
 /* NSFW */
-.nsfw .preview, .nsfw #{mangle(".nsfw_element")}, .nsfw .video-player {
+.nsfw .preview, .nsfw #{mangle(".block_id")}, .nsfw .video-player {
 	opacity: 0.05;
 }
 
-.nsfw .preview:hover, .nsfw #{mangle(".nsfw_element")}:hover, .nsfw .video-player:hover, .nsfw .tiled_item:hover .preview {
+.nsfw .preview:hover, .nsfw #{mangle(".block_id")}:hover, .nsfw .video-player:hover, .nsfw .tiled_item:hover .preview {
 	opacity: 1;
 }
 

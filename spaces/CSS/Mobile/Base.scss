@@ -3012,11 +3012,11 @@ html body .hide.defer {
 	display: none !important
 }
 
-.nsfw .preview, .nsfw #{mangle(".nsfw_element")}, .video_item {
+.nsfw .preview, .nsfw #{mangle(".block_id")}, .video_item {
 	opacity: 0.05;
 }
 
-.nsfw .preview:hover, .nsfw #{mangle(".nsfw_element")}:hover, .nsfw .video_item:hover {
+.nsfw .preview:hover, .nsfw #{mangle(".block_id")}:hover, .nsfw .video_item:hover {
 	opacity: 1;
 }
 
