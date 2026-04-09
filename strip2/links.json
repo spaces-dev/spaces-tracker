@@ -852,6 +852,7 @@
   "/js/ru/touch/widgets/video/videojs.js",
   "/js/ru/touch/widgets/video/videojs/ads.js",
   "/js/ru/touch/widgets/video/videojs/player.js",
+  "/js/ru/touch/widgets/video/videojs/plugins/adsOnPause.js",
   "/js/ru/touch/widgets/video/videojs/plugins/betterAutoplay.js",
   "/js/ru/touch/widgets/video/videojs/plugins/bigPlayingStatus.js",
   "/js/ru/touch/widgets/video/videojs/plugins/controlBarSpacer.js",

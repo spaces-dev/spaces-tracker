@@ -833,6 +833,7 @@
   "/js/touch/widgets/video/videojs.js",
   "/js/touch/widgets/video/videojs/ads.js",
   "/js/touch/widgets/video/videojs/player.js",
+  "/js/touch/widgets/video/videojs/plugins/adsOnPause.js",
   "/js/touch/widgets/video/videojs/plugins/betterAutoplay.js",
   "/js/touch/widgets/video/videojs/plugins/bigPlayingStatus.js",
   "/js/touch/widgets/video/videojs/plugins/controlBarSpacer.js",

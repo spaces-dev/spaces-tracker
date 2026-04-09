@@ -41,13 +41,18 @@ export function windowReady(user_callback) {
 
 export function debounce(callback, timeout) {
 	let timer;
-	return function () {
+	const newCallback = function () {
 		let args = arguments;
 		timer && clearTimeout(timer);
 		timer = setTimeout(() => {
 			callback.apply(this, args);
 		}, timeout);
 	};
+	newCallback.cancel = () => {
+		timer && clearTimeout(timer);
+		timer = undefined;
+	};
+	return newCallback;
 }
 
 export function throttle(callback, timeout) {

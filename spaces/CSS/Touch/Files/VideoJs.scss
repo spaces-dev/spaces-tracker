@@ -39,3 +39,41 @@
 		opacity: 0
 	}
 }
+
+.vjs-ads-on-pause {
+	visibility: hidden;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+	background: rgba(0, 0, 0, 0.4);
+
+	&--show {
+		visibility: visible;
+	}
+
+	&__skip {
+		display: flex;
+		cursor: pointer;
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		color: #ffffff;
+		font-size: 1.3em;
+		border-radius: 50%;
+		z-index: 10000;
+	}
+
+	&__content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 150px;
+		height: 150px;
+	}
+}

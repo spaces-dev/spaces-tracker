@@ -270,6 +270,7 @@ class VideoPlayer {
 			viewer:				options.viewer,
 			autoplay:			can_autoplay,
 			vast:				options.vast,
+			adsOnPause:			options.adsOnPause,
 			native:				options.nativeVideo,
 			viewToken:			options.viewToken,
 			heatmap:			options.heatmap,

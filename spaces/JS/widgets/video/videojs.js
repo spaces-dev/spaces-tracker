@@ -168,6 +168,9 @@ class VideoJsDriver extends BaseDriver {
 			player.muted(saved_volume.muted);
 		}
 
+		if (this.options.adsOnPause)
+			player.adsOnPause({ html: this.options.adsOnPause });
+
 		// Плагины
 		player.bigPlayingStatus();
 		player.betterAutoplay();

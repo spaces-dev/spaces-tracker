@@ -21,6 +21,7 @@ import './plugins/storyboard';
 import './plugins/videoTitle';
 import './plugins/fastShowOnHover';
 import './plugins/bigPlayingStatus';
+import './plugins/adsOnPause';
 
 // Патчим videojs
 videojsEnableSyncSetSource(videojs);
