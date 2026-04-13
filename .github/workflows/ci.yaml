@@ -2,7 +2,8 @@ name: Spaces Tracker
 
 on:
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: '0 * * * 1-5'
+    - cron: '0 */6 * * 0,6'
   workflow_dispatch:
 
 jobs:
