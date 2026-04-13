@@ -89,11 +89,6 @@ class VideoJsQualitySelector extends MenuButton {
 	}
 
 	initHealthCheck(availableServers) {
-		const player = this.player();
-		const usedProxyServers = [];
-		let healthCheckTimer;
-		let videoIsPlayable = false;
-
 		const getVideoServer = () => {
 			return (new URL(player.currentSource().src)).hostname;
 		};
@@ -130,6 +125,12 @@ class VideoJsQualitySelector extends MenuButton {
 			}
 		};
 
+		const player = this.player();
+		const usedProxyServers = [];
+		const initialServer = getVideoServer();
+		let healthCheckTimer;
+		let videoIsPlayable = false;
+
 		if (!isValidServer(getVideoServer()))
 			return;
 
@@ -157,7 +158,14 @@ class VideoJsQualitySelector extends MenuButton {
 			usedProxyServers.push(currentServer);
 			console.error(`[fp] server failed: ${currentServer}`);
 
-			const nextServer = availableServers.find((proxy) => !usedProxyServers.includes(proxy.domain))?.domain;
+			let nextServer = availableServers.find((proxy) => !usedProxyServers.includes(proxy.domain))?.domain;
+			if (!nextServer) {
+				if (currentServer != initialServer) {
+					console.log(`[fp] reset to initial server ${initialServer}`);
+					nextServer = initialServer;
+				}
+			}
+
 			if (nextServer) {
 				e.stopPropagation();
 				e.stopImmediatePropagation();
