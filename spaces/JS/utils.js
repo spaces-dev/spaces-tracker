@@ -88,13 +88,30 @@ export function throttleRaf(callback) {
 	};
 }
 
-export function renderDelayed(id, html) {
+function freqLimit(id, callback, freqLimit) {
+	if (!freqLimit) {
+		callback();
+		return;
+	}
+
+	const key = `freq-limit-${id}`;
+	const lastTime = parseInt(sessionStorage[key] ?? "0");
+	if (Date.now() - lastTime > freqLimit * 1000) {
+		sessionStorage[key] = Date.now();
+		callback();
+	}
+}
+
+export function renderDelayed(blockId, html, options = {}) {
+	options = { id: 'unknown', freqLimit: 0, ...options };
 	windowReady(() => {
-		let el = document.getElementById(id);
-		if (el) {
-			el.innerHTML = html;
-			executeScripts(el.getElementsByTagName('script'));
-		}
+		freqLimit(options.id, () => {
+			const el = document.getElementById(blockId);
+			if (el) {
+				el.innerHTML = html;
+				executeScripts(el.getElementsByTagName('script'));
+			}
+		}, options.freqLimit);
 	});
 }
 
