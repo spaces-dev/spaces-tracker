@@ -1,7 +1,6 @@
 import require from 'require';
 import module from 'module';
 import $ from './jquery';
-import Device from './device';
 import * as pushstream from './core/lp';
 import {Spaces, Codes} from './spacesLib';
 import page_loader from './ajaxify';
@@ -10,8 +9,9 @@ import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
 import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
-import { preventScrollShifting } from './utils/scroll';
-import { isFullyVisibleOnScreen, isVisibleOnScreen } from './utils/dom';
+import { isFullyVisibleOnScreen } from './utils/dom';
+
+let focusIntersectionObserver;
 
 var CHAT_REFRESH_INTERVAL = 30 * 1000;
 var tpl = {
@@ -422,6 +422,28 @@ var Chat = {
 				self.resetMsgQueue(true);
 			}
 		});
+
+		this.handleFocusedMessages();
+	},
+	handleFocusedMessages() {
+		if (!window.IntersectionObserver)
+			return;
+
+		const focusedMessages = messages_list.find('.js-message[data-focused="true"]');
+		if (!focusedMessages.length)
+			return;
+
+		focusIntersectionObserver = new IntersectionObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.isIntersecting ) {
+					entry.target.classList.add('message--seen');
+					focusIntersectionObserver.unobserve(entry.target);
+				}
+			}
+		});
+
+		for (const message of focusedMessages)
+			focusIntersectionObserver.observe(message);
 	},
 	getApiExtra: function (url) {
 		return {
@@ -442,6 +464,11 @@ var Chat = {
 		if (last_refresh) {
 			Spaces.cancelApi(last_refresh.req);
 			last_refresh = null;
+		}
+
+		if (focusIntersectionObserver) {
+			focusIntersectionObserver.disconnect();
+			focusIntersectionObserver = undefined;
 		}
 	},
 	getMessages: function (data, callback, opts) {

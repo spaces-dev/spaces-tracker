@@ -44,16 +44,6 @@ $reactions-theme-chat-answer: (
 	"selected-text": #FFFFFF
 );
 
-$reactions-theme-chat-focused: (
-	"text": $default-text-color,
-	"bg": theme(#ECD3E8, #632C3D),
-	"border": transparent,
-	"hover-bg": theme(#E0C3DB, #6A3143),
-	"active-bg": theme(#D3B4CF, #713749),
-	"selected-bg": theme(#C7A5C2, #783D4F),
-	"selected-text": #FFFFFF
-);
-
 $reactions-theme-topic: (
 	"text": $default-text-color,
 	"bg": theme(#EBEFF4, #494B4D),

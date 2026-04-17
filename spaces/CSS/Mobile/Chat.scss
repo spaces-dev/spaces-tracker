@@ -6,6 +6,38 @@
 	border: none
 }
 
+.chat_msg-wrap {
+	position: relative;
+}
+
+@if ($LITE) {
+	.chat_msg-wrap--focused {
+		&::before {
+			content: '';
+			background: rgba($accent-blue-color, 0.5);
+			position: absolute;
+			top: -4px;
+			bottom: 6px;
+			left: 0;
+			right: 0;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: -4px;
+			bottom: 6px;
+			left: 0;
+			width: 3px;
+			background: $accent-blue-color;
+		}
+	}
+} @else {
+	.chat_msg-wrap--focused {
+		border-left: 3px solid $accent-blue-color;
+	}
+}
+
 .chat_msg-avatar {
 	position: absolute;
 	top: 0; left: 0
@@ -45,13 +77,6 @@
 
 .touch_light .chat_msg-room {
     padding: 5px 0px 5px 0;
-}
-
-.chat_msg.selected {
-	background: $chat-message-selected-bg
-}
-.chat_msg-body .chat_msg.selected::after {
-	border-right-color: $chat-message-selected-bg
 }
 
 .chat_msg {

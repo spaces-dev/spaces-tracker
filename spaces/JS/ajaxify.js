@@ -11,6 +11,7 @@ import {trackHit} from './metrics/track';
 import {extend, ge, html_unwrap, find_var, tick} from './utils';
 import * as sidebar from './widgets/swiper';
 import {TOP_COUNTER_TYPE, default as notifications, Notifications} from './notifications';
+import { scrollIntoViewIfNotVisible } from './utils/scroll';
 
 var RE_SKIP_AJAX = /^\/(p\/|m\/|f\/|v\/|advertise|neoapi|beta|sbox|api|capcha\/|captcha\/|i\/|js\/|css\/|\w{2}\/[a-f0-9]{32})/i,
 	RE_NO_AJAX = /(\s|^)(no_ajax)(\s|$)/,
@@ -1047,44 +1048,8 @@ var PageLoader = Class({
 		});
 	},
 	
-	documentAutoScroller: function (el, interval, timeout) {
-		var self = this,
-			htmlbody = $('html, body'),
-			$window = $(window),
-			scroll_time = (new Date).getTime(),
-			scroll_interval,
-			old_scroll_top = 0,
-			abs_value = typeof el != "object" && $.isNumeric(el) ? parseInt(el) : null;
-		
-		interval = interval || 200;
-		timeout = timeout || 30000;
-		
-		var events = "touchmove.auto_scroller touchstart.auto_scroller keydown.auto_scroller click.auto_scroller " + 
-			"MozMousePixelScroll.auto_scroller mousewheel.auto_scroller wheel.auto_scroller scroll.auto_scroller";
-		var disable_scroll = function (e) {
-			if (e && !e.originalEvent)
-				return;
-			if (e && e.type == "scroll" && e.originalEvent && old_scroll_top == $window.scrollTop())
-				return;
-			
-			clearInterval(scroll_interval);
-			scroll_interval = null;
-			
-			$window.off('.auto_scroller');
-		};
-		var scroller = function () {
-			htmlbody.scrollTop(abs_value !== null ? abs_value : parseInt(el.offset().top));
-			old_scroll_top = $window.scrollTop();
-			
-			if ((new Date).getTime() - scroll_time > timeout)
-				disable_scroll();
-		};
-		scroll_interval = setInterval(scroller, interval);
-		scroller();
-		
-		$window.on(events, disable_scroll);
-		
-		self.onRequestStart("auto_scroller", disable_scroll);
+	documentAutoScroller: function (el) {
+		scrollIntoViewIfNotVisible(el[0], { start: "center", end: "center" });
 	},
 	
 	scrollDocument: function (hash) {
@@ -1101,13 +1066,8 @@ var PageLoader = Class({
 				}
 			} catch (e) { console.error(e.toString()); }
 		}
-		if (Device.browser.name == "firefox") {
-			// Mobile FireFox не нужен >_<
-			$('html, body').scrollTop(scroll_val || 0);
-			setTimeout(function () { $('html, body').scrollTop(scroll_val || 0); }, 15);
-		} else {
-			$('html, body').scrollTop(scroll_val || 0);
-		}
+
+		window.scrollTo(0, scroll_val || 0);
 	},
 	
 	refreshWidgets: function (widgets, callback) {

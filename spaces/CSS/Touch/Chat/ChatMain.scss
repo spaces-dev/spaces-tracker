@@ -31,6 +31,7 @@
 
 .message {
 	position: relative;
+	scroll-margin: 100px;
 
 	&__more {
 		display: inline-block;
@@ -47,6 +48,39 @@
 			top: -15px;
 			z-index: 1;
 		}
+	}
+
+	&--focused {
+		&::before {
+			content: '';
+			background: rgba($accent-blue-color, 0.5);
+			transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+			position: absolute;
+			top: -6px;
+			bottom: -6px;
+			left: -15px;
+			right: -15px;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: -6px;
+			bottom: -6px;
+			left: -15px;
+			width: 4px;
+			background: $accent-blue-color;
+		}
+	}
+
+	&--focused.message--seen {
+		&::before {
+			background: transparent;
+		}
+	}
+
+	a[name^="com"] {
+		scroll-margin: 100px;
 	}
 }
 
@@ -70,6 +104,7 @@
 .message__description {
 	background: $chat-message-in-bg;
 	padding: 10px 10px;
+	box-sizing: border-box;
 	position: relative;
 	margin-left: 55px;
 	cursor: pointer;
@@ -131,15 +166,6 @@
 
 	&::before {
 		border-right-color: $chat-message-quest-bg;
-	}
-}
-
-.message__description.selected {
-	background: $chat-message-selected-bg;
-	@include reactions-use-theme($reactions-theme-chat-focused);
-
-	&::before {
-		border-right-color: $chat-message-selected-bg !important;
 	}
 }
 
