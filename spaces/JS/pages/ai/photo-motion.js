@@ -89,7 +89,16 @@ function initForm() {
 		checkbox.toggleClass('hide', !flag);
 	};
 
+	const enableAudio = (flag) => {
+		const checkbox = form.find('input[type="checkbox"][name="Audio"]').parents('.js-checkbox_wrap');
+		checkbox.toggleClass('hide', !flag);
+	};
+
 	form.on('change input', 'input, textarea, select', () => updateCost());
+
+	form.on('change', 'input[type="range"][name="Duration"]', function () {
+		enableAudio(parseInt(this.value) >= 4);
+	});
 
 	form.on('change', 'input[type="radio"][name="Dir"]', function () {
 		enableSharedZone(this.value < 0);
