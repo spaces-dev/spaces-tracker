@@ -187,6 +187,7 @@ class VideoJsDriver extends BaseDriver {
 				lockToLandscapeOnManualEnter: isHorizontal,
 			});
 			player.tapToRewind();
+			player.swipeFromFullscreen();
 		} else {
 			player.smartAltTab();
 			player.hideOnBlur();

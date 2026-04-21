@@ -868,6 +868,7 @@
   "/js/ru/touch/widgets/video/videojs/plugins/seekingStatus.js",
   "/js/ru/touch/widgets/video/videojs/plugins/smartAltTab.js",
   "/js/ru/touch/widgets/video/videojs/plugins/storyboard.js",
+  "/js/ru/touch/widgets/video/videojs/plugins/swipeFromFullscreen.js",
   "/js/ru/touch/widgets/video/videojs/plugins/tapToRewind.js",
   "/js/ru/touch/widgets/video/videojs/plugins/utils.js",
   "/js/ru/touch/widgets/video/videojs/plugins/videoTitle.js",
