@@ -1,4 +1,5 @@
 import module from 'module';
+import 'howler/src/howler.core.js';
 import $ from './jquery';
 import cookie from './cookie';
 import Device from './device';
@@ -7,7 +8,6 @@ import SpacesApp from './android/api';
 import {Spaces, Url, Codes} from './spacesLib';
 import {IPCSingleton} from './core/ipc';
 import page_loader from './ajaxify';
-import {SpacesSound} from './sound';
 import * as sidebar from './widgets/swiper';
 import notifications from './notifications';
 import DdMenu from './dd_menu';
@@ -43,9 +43,7 @@ var $global_player, $global_player_win, $playlist_scroll,
 	playlist, // Константный плейлист
 	page_tmp_playlist, // Временный плейлист
 	current, // Текущий трек
-	sound,
 	same_find = false,
-	init_triggered = false,
 	no_update_timeline = false,
 	rewind_stop_update_timeline = false,
 	initialized = false,
@@ -55,7 +53,6 @@ var $global_player, $global_player_win, $playlist_scroll,
 		flying_btn: null,
 		volume: null
 	},
-	ipc_interval,
 	last_scroll = 0,
 	
 	gp_state = {
@@ -65,6 +62,10 @@ var $global_player, $global_player_win, $playlist_scroll,
 	
 	delayed_populate_timeout,
 	run_delayed_populate = false; // Запустить populate после init
+
+let audio;
+let timeUpdateTimer;
+let onAudioUnload = [];
 
 var tpl = {
 	globalPlayerButton: function (data) {
@@ -549,7 +550,7 @@ var MusicPlayer = {
 	},
 	
 	populate: function () {
-		var self = this, volume = self.volume();
+		var self = this;
 		var players = $('body').find('.player_item'),
 			changed = 0,
 			now = Date.now();
@@ -825,17 +826,13 @@ var MusicPlayer = {
 				position: 0, lastPosition: 0
 			};
 			
+			self.showError(current.el, false);
 			current.el.find('.js-music_error').remove();
 			
 			if (!android_app_player()) {
-				self.unsupportedError();
-				
 				self.saveState();
-				
-				self.sound(function () {
-					sound.load(player.src);
-				});
-				
+				self.loadAudio(player.src);
+
 				if (playlist.avail()) {
 					if (current.index * 100 / playlist.loaded() >= 70)
 						self.loadNextPage();
@@ -935,15 +932,14 @@ var MusicPlayer = {
 			
 			if (!android_app_player()) {
 				if (!no_api_call) {
-					self.sound(function (sound) {
-						if (v)
-							sound.setVolume(self.volume());
-						v ? sound.play() : sound.pause();
-						self.saveState(true);
-					});
-				} else {
-					self.saveState(true);
+					if (v) {
+						audio.volume(self.volume() / 100);
+						audio.play();
+					} else {
+						audio.pause();
+					}
 				}
+				self.saveState(true);
 			}
 			
 			if (changed) {
@@ -976,11 +972,8 @@ var MusicPlayer = {
 		if (current) {
 			self.play(false);
 			
-			if (!android_app_player()) {
-				self.sound(function () {
-					sound.stop();
-				});
-			}
+			if (!android_app_player())
+				audio.stop();
 			
 			var v = current.view;
 			v.duration.show(); v.time.hide();
@@ -1019,14 +1012,12 @@ var MusicPlayer = {
 							uniqId:		page_tmp_playlist.uniqId()
 						});
 					} else {
-						self.sound(function () {
-							sound.setPosition(current.duration / 100 * v);
-							rewind_stop_update_timeline = true;
-							
-							setTimeout(function () {
-								rewind_stop_update_timeline = false;
-							}, 1000);
-						});
+						audio.seek(current.duration / 100 * v);
+						rewind_stop_update_timeline = true;
+
+						setTimeout(function () {
+							rewind_stop_update_timeline = false;
+						}, 1000);
 					}
 				}
 			}
@@ -1073,11 +1064,8 @@ var MusicPlayer = {
 			el = el ? el.find('.js-music_vol') : $('.js-music_vol');
 			el.css("width", volume + "%");
 		}
-		if (current) {
-			self.sound(function () {
-				sound.setVolume(volume);
-			});
-		}
+		if (current)
+			audio.volume(volume / 100);
 	},
 	
 	// Прибиндить GP к текущему плееру
@@ -1451,8 +1439,8 @@ var MusicPlayer = {
 				music_add.parents('td').first().toggle(track.type == Spaces.TYPES.MUSIC && !track.my);
 				music_add.find('.js-ico').prop("className", classes.copy2me[(track.saved && track.saved.state) || 0]);
 			}
-			
-			self.showError(false);
+
+			self.showError(main_player, false);
 		}
 		
 		if (update.playState || update.track) {
@@ -1570,7 +1558,7 @@ var MusicPlayer = {
 		if ($global_player_win)
 			$global_player_win.remove();
 		render_mode.dev = $global_player_win = $global_player = null;
-		self.destroySound();
+		self.unloadAudio();
 		self.resetState();
 	},
 	
@@ -1610,6 +1598,10 @@ var MusicPlayer = {
 	providePosition: function (pos, total) {
 		var self = this;
 		if (current) {
+			// FIXME: иногда по мере загрузки меняется реальная длительность
+			if (current.duration != audio.duration())
+				this.provideRealDuration(audio.duration());
+
 			current.realPosition = pos;
 			if (!no_update_timeline) {
 				current.position = pos;
@@ -1651,96 +1643,118 @@ var MusicPlayer = {
 	},
 
 	showError: function (player, err) {
-		$('.js-music_error').remove();
-		if (err && player)
+		player.find('.js-music_error').remove();
+		if (err)
 			player.append($(tpl.playerInlineError(err)));
 	},
 	
-	unsupportedError: function () {
-		var self = this;
-		if (self.unsupported) {
-			self.trackLoading(false);
-			self.showError(current.el, L("Ваш браузер не поддерживает воспроизведение mp3."));
-		}
+	onTimeUpdate() {
+		this.providePosition(audio.seek(), audio.duration());
+		timeUpdateTimer = requestAnimationFrame(() => this.onTimeUpdate());
 	},
-	
-	sound: function (callback, only_if_inited) {
-		var self = this;
-		
-		if (android_app_player())
+
+	startTimeUpdate() {
+		if (timeUpdateTimer)
 			return;
-		
-		if (!init_triggered) {
-			init_triggered = true;
-			
-			sound = new SpacesSound({
-				autoLoad: true,
-				onPlay: function () {
-					self.play(true, true);
-				},
-				onPause: function () {
-					self.play(false, true);
-				},
-				onEnded: function () {
-					if (self.repeat) {
-						self.setPosition(0);
-						self.play();
-					} else {
-						self.move(1);
-					}
-				},
-				onTimeUpdate: function () {
-					if (current.duration != sound.duration)
-						self.provideRealDuration(sound.duration);
-					self.providePosition(sound.currentTime, sound.duration);
-					current.loading && self.trackLoading(false);
-				},
-				onDurationChange: function () {
-					self.provideRealDuration(sound.duration);
-				},
-				onLoadStart: function () {
-					self.trackLoading(true);
-				},
-				onLoadEnd: function () {
-					self.trackLoading(false);
-				},
-				onBuffer: function (e) {
-					self.provideBuffer(sound.buffered);
-				},
-				onError: function (error) {
-					self.showError(current.el, error);
-					self.move(1);
-				},
-				onUnsupported: function () {
-					self.unsupported = true;
-					self.unsupportedError();
-					self.resetState();
-				}
-			});
-			sound.setVolume(self.volume());
-		}
-		if (callback && (!only_if_inited || sound))
-			callback(sound);
-		return sound;
+		this.onTimeUpdate();
 	},
-	
+
+	stopTimeUpdate() {
+		if (!timeUpdateTimer)
+			return;
+		cancelAnimationFrame(timeUpdateTimer);
+		timeUpdateTimer = undefined;
+	},
+
+	loadAudio(src) {
+		if (audio) {
+			console.warn("Previous audio is not unloaded!!!!");
+			this.unloadAudio();
+		}
+
+		this.trackLoading(true);
+
+		const handleError = (errorCode) => {
+			const errorsDescription = {
+				1: L('Ошибка загрузки файла'),
+				2: L('Ошибка загрузки файла'),
+				3: L('Ошибка декодирования mp3'),
+				4: L('Ошибка загрузки файла'),
+			};
+			const errorText = `${errorsDescription[errorCode] ?? L("Неизвестная ошибка")} (#${errorCode})`;
+			this.showError(current.el, errorText);
+		};
+
+		audio = new Howl({
+			src: [src],
+			format: ['mp3'],
+			html5: true,
+			preload: true,
+			volume: this.volume() / 100,
+			rate: 1,
+			onload: () => {
+				this.trackLoading(false);
+				this.provideRealDuration(audio.duration());
+			},
+			onloaderror: (_id, error) => {
+				console.error(`[Howl] load error:`, error);
+				handleError(error);
+				this.move(1);
+			},
+			onplayerror: (_id, error) => {
+				console.error(`[Howl] play error:`, error);
+				handleError(error);
+				this.move(1);
+			},
+			onplay: () => {
+				this.play(true, true);
+				this.startTimeUpdate();
+			},
+			onpause: () => {
+				this.play(false, true);
+				this.stopTimeUpdate();
+			},
+			onend: () => {
+				this.stopTimeUpdate();
+				if (this.repeat) {
+					this.setPosition(0);
+					this.play();
+				} else {
+					this.move(1);
+				}
+			}
+		});
+
+		const handleAudioBuffer = () => {
+			if (nativeAudio.buffered.length > 0) {
+				const buffered = nativeAudio.buffered.end(nativeAudio.buffered.length - 1) / nativeAudio.duration;
+				this.provideBuffer(buffered);
+			}
+		};
+		const nativeAudio = audio._sounds[0]._node;
+		nativeAudio.addEventListener('progress', handleAudioBuffer, { passive: true });
+		onAudioUnload.push(() => nativeAudio.removeEventListener('progress', handleAudioBuffer));
+	},
+
+	unloadAudio() {
+		if (audio) {
+			for (const handler of onAudioUnload)
+				handler();
+			onAudioUnload = [];
+			audio.unload();
+			audio = undefined;
+		}
+		this.stopTimeUpdate();
+	},
+
 	playing: function () {
-		return !!sound;
+		return !!audio;
 	},
 	
 	triggerEx: function (name) {
 		name = 'on' + name.substr(0, 1).toUpperCase() + name.substr(1);
 		if (window.SpacesMusicPlayer && window.SpacesMusicPlayer[name])
 			tick(() => window.SpacesMusicPlayer[name]());
-	},
-	
-	destroySound: function () {
-		var self = this;
-		self.sound(function () {
-			sound.destroy();
-			sound = null;
-		});
-		init_triggered = false;
 	},
 	
 	// Отформатировать время в формате [hh:]mm:ss
@@ -1755,7 +1769,7 @@ var MusicPlayer = {
 	}
 };
 
-export {MusicPlayer};
+export { MusicPlayer };
 
 /*
 	Реализация плейлистов

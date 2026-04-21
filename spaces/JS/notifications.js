@@ -138,10 +138,18 @@ var Notifications = Class({
 		});
 		
 		if (interactive) {
-			import("./sound").then(({SpacesSound}) => {
-				notif_sound = new SpacesSound();
-				notif_sound.load(ICONS_BASEURL + 'sounds/newMessage.mp3');
+			import('howler/src/howler.core.js').then(() => {
+				notif_sound = new Howl({
+					src: [ICONS_BASEURL + 'sounds/newMessage.mp3'],
+					html5: true,
+					preload: true,
+					volume: 1,
+					onplayerror(error) {
+						console.error(`[Howl]`, error);
+					}
+				});
 			});
+
 			pushstream.on("message", "notifications", self.onLongPolling.bind(self));
 			self.beacon_interval = setInterval(function() {
 				Spaces.api("common.beacon", beacon_extra);
@@ -675,24 +683,10 @@ var Notifications = Class({
 	
 	// Звуковые оповещения
 	playSound: function () {
-		if (!interactive)
-			return;
-		import("./sound").then(({SpacesSound}) => {
-			let can_play = true;
-
-			if (notif_sound.isSingle()) {
-				require.loaded(import.meta.id('./music'), ({MusicPlayer}) => {
-					if (MusicPlayer.playing())
-						can_play = false;
-				});
-			}
-
-			if (can_play) {
-				notif_sound.setVolume(100);
-				notif_sound.stop();
-				tick(() => notif_sound.play());
-			}
-		});
+		if (notif_sound) {
+			notif_sound.stop();
+			notif_sound.play();
+		}
 		return this;
 	},
 	
