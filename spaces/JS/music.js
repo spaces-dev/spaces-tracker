@@ -870,7 +870,7 @@ var MusicPlayer = {
 					handler();
 				});
 			} else {
-				tick(handler);
+				handler();
 			}
 		}
 	},
