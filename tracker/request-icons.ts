@@ -8,7 +8,7 @@ import type { SourceConfig } from './types.ts'
 const ICONS_SOURCE = '/css/custom/pc/b/main.css'
 const ICONS_REGEX = /url\(['"]?(\/i\/[^'")]+)['"]?\)/g
 
-function parseIcons(res: string) {
+export function parseIcons(res: string) {
   const paths = res.matchAll(ICONS_REGEX)
     .map((match) => match[1].split('?')[0])
 
