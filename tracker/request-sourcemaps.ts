@@ -86,14 +86,16 @@ async function loadSourcemap(sourcemapPath: string, source: SourceConfig) {
       }
 
       const isFileExists = await fileExists(contentPath)
-
       if (isFileExists) {
         const currentFile = await fs.readFile(contentPath, 'utf-8')
         isChanged = await fileIsChanged(sourceContent, currentFile)
-        if (isChanged) lastCommitDate = await fileLastCommitDate(contentPath)
-
-        const fileStats = await fs.stat(contentPath)
-        fileSize = compareFileSize(fileStats.size, sourceContent.length)
+        if (isChanged) {
+          lastCommitDate = await fileLastCommitDate(contentPath)
+          fileSize = compareFileSize(
+            Buffer.byteLength(currentFile, 'utf-8'),
+            Buffer.byteLength(sourceContent, 'utf-8'),
+          )
+        }
       } else {
         isAdded = true
         lastCommitDate = 'new'
