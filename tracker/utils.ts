@@ -85,7 +85,7 @@ function formatFileSize(bytes: number) {
 export function compareFileSize(beforeBytes: number, afterBytes: number): string {
   const afterFormatted = formatFileSize(afterBytes)
   const diff = afterBytes - beforeBytes
-  if (diff === 0) return afterFormatted
+  if (diff === 0 || beforeBytes === 0) return afterFormatted
 
   const diffAbs = Math.abs(diff)
   const diffFormatted = formatFileSize(diffAbs)
