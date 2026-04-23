@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node tracker/main.ts",
     "validate-models": "node tracker/validate-models.ts",
+    "test": "vitest run",
     "lint": "eslint tracker --cache",
     "lint:fix": "eslint tracker --fix --cache",
     "type-check": "tsc"
@@ -15,6 +16,7 @@
     "@types/node": "25.6.0",
     "eslint": "9.39.2",
     "lefthook": "2.1.6",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "4.1.5"
   }
 }
