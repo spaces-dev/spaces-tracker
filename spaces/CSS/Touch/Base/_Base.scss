@@ -214,6 +214,19 @@ textarea:-ms-input-placeholder { white-space: normal; }
 	}
 }
 
+/* Базовые цвета иконок */
+.icon-secondary-color {
+	color: $icon-grey-color;
+}
+
+.icon-accent-color {
+	color: $icon-blue-color;
+}
+
+.icon-primary-color {
+	color: $icon-darkblue-color;
+}
+
 /* Базовые цвета текста */
 .yellow {
 	color: $yellow-text-color;

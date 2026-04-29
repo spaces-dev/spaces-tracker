@@ -80,17 +80,16 @@
 		width: 26px;
 		height: 26px;
 		border-radius: 50%;
-		color: $icon-grey-color;
+		color: $reactions-selector-expand-color;
 
 		@media (hover: hover) {
 			&:hover {
-				color: $accent-blue-color;
+				color: $reactions-selector-expand-hover-color;
 			}
 		}
 
 		&:active {
-			// FIXME: active??? hover???
-			color: $accent-blue-hover-color;
+			color: $reactions-selector-expand-active-color;
 		}
 	}
 }

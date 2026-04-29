@@ -453,7 +453,7 @@
 	padding-left: 3px
 }
 
-.drop-down-label{
+.drop-down-label {
 	display: inline-block;
 	position: relative;
 	cursor: pointer;
@@ -466,6 +466,10 @@
 
 	&--is-readonly {
 		pointer-events: none;
+	}
+
+	&[data-popper-open="true"] {
+		@include replace-icon("ico", "arr_down", "arr_up");
 	}
 }
 

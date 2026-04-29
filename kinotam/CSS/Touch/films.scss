@@ -40,39 +40,6 @@
 	margin-top: -1em;
 }
 
-/* Табы под нижней панелью */
-.subnavi {
-	background-color: $content-bg;
-	border-bottom: 1px solid $subnavi-separator;
-}
-
-.subnavi a,
-.subnavi .active{
-	color: $subnavi-link-color;
-	display: block;
-	position: relative;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 71.031%;
-    line-height: 100%;
-	padding: 9px 1px;
-}
-
-.subnavi a:hover,
-.subnavi .active{
-	color: $subnavi-link-hover-color;
-}
-
-.subnavi a:hover:after,
-.subnavi .active:after{
-	position: absolute;
-	content: '';
-	bottom: 0;
-	left: 0;
-	right: 0;
-	border-bottom: 4px solid $subnavi-link-hover-border;
-}
-
 .horiz-menu__link.current {
 	position: relative;
 	background-color: $header-link-selected-bg;

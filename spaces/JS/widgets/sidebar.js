@@ -1,6 +1,6 @@
 import $ from '../jquery';
 import { L } from '../utils';
-import { getCurrentTheme, getEffectiveTheme, switchTheme, isSupportSystemTheme, onThemeChange } from '../core/theme';
+import { getCurrentTheme, getEffectiveTheme, switchTheme, onThemeChange } from '../core/theme';
 import { Spaces } from '../spacesLib';
 import './swiper';
 
@@ -28,8 +28,13 @@ $('#page_sidebar').on('click', '.js-site-theme', function (e) {
 	Spaces.api("settings.theme", {theme: new_theme, CK: null, Ti: Spaces.tabId()});
 	switchTheme(new_theme);
 	syncCurrentTheme();
+	this.title = L("Тема: {0}", THEME2TITLE[getCurrentTheme()]);
 });
 
 function syncCurrentTheme() {
-	$('#page_sidebar .js-site-theme-title').text(THEME2TITLE[getCurrentTheme()]);
+	const currentTheme = getCurrentTheme();
+	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-title'))
+		block.textContent = THEME2TITLE[currentTheme];
+	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-state'))
+		block.classList.toggle('hide', block.dataset.theme !== currentTheme);
 }

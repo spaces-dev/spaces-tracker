@@ -37,35 +37,35 @@
 }
 
 .subnavi {
+	display: flex;
 	background-color: $content-bg;
 	border-bottom: 1px solid $subnavi-separator;
-}
 
-.subnavi a,
-.subnavi .active{
-	color: $subnavi-link-color;
-	display: block;
-	position: relative;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 71.031%;
-    line-height: 100%;
-	padding: 9px 1px;
-}
+	&__link {
+		flex: 1;
+		color: $subnavi-link-color;
+		display: block;
+		position: relative;
+		text-transform: uppercase;
+		font-weight: bold;
+		font-size: smaller;
+		line-height: 100%;
+		padding: 9px 1px;
+		text-align: center;
 
-.subnavi a:hover,
-.subnavi .active{
-	color: $subnavi-link-hover-color;
-}
+		&--is-active {
+			color: $subnavi-link-hover-color;
+		}
 
-.subnavi a:hover:after,
-.subnavi .active:after{
-	position: absolute;
-	content: '';
-	bottom: 0;
-	left: 0;
-	right: 0;
-	border-bottom: 4px solid $subnavi-link-hover-border;
+		&--is-active::after, &:hover::after {
+			position: absolute;
+			content: '';
+			bottom: 0;
+			left: 0;
+			right: 0;
+			border-bottom: 4px solid $subnavi-link-hover-border;
+		}
+	}
 }
 
 .horiz-menu__link.current {
@@ -181,6 +181,24 @@ a.horiz-menu__link {
 	vertical-align: top
 }
 
+/* sidebar panel */
+.sidebar-panel {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 15px;
+	box-sizing: border-box;
+	height: 42px;
+	background: $content-bg;
+	border-bottom: 1px solid $separator-color;
+	--popper-arrow-offset: -6;
+
+	.auth & {
+		height: 34px;
+		--popper-arrow-offset: 0;
+	}
+}
+
 /* footer */
 .footer__text .footer__link-wrapper {
 	width: 20%
@@ -228,7 +246,7 @@ a:hover {
 	@include replace-icon("ico_porn", "comms_black", "comms");
 }
 
-.subnavi .active, .subnavi a:hover {
+.subnavi__link--is-active, .subnavi__link:hover {
 	@include replace-icon("ico_porn", "photo_black", "photo");
 	@include replace-icon("ico_porn", "users_black", "users");
 	@include replace-icon("ico_porn", "video_black", "video");

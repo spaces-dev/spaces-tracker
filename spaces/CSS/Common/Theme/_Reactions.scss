@@ -104,6 +104,10 @@ $reactions-selector-item-hover-bg:				theme(#ECF5FD, #424446);
 $reactions-selector-item-active-bg:				theme(#B8CDE3, #555759);
 $reactions-selector-item-selected-bg:			theme(#DDEBF7, #4B4D4E);
 
+$reactions-selector-expand-color:				theme(#A7B8C6, #A7B8C6);
+$reactions-selector-expand-hover-color:			$accent-blue-color;
+$reactions-selector-expand-active-color:		$accent-blue-hover-color;
+
 @mixin reactions-use-theme($theme) {
 	--reaction-text: #{map.get($theme, "text")};
 	--reaction-bg: #{map.get($theme, "bg")};

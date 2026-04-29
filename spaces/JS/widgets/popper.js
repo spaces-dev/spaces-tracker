@@ -88,7 +88,7 @@ export class Popper {
 			fixed: false,
 			padding: 5,
 			fullWidth: false,
-			container: '#siteContent',
+			container: getDefaultContainer(this.popperElement),
 			arrow: false,
 			flip: false,
 			exclusive: false,
@@ -532,6 +532,12 @@ export function hasOpenPoppers(container) {
 function handleBodyClick(e) {
 	for (const popperInstance of popperOpenInstances)
 		popperInstance.handleBodyClick(e);
+}
+
+function getDefaultContainer(el) {
+	if (document.querySelector('#sidebar')?.contains(el))
+		return `#sidebar`;
+	return `#siteContent`;
 }
 
 function parsePopperOptions(element) {
