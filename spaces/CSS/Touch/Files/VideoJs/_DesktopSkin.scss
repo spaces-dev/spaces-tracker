@@ -264,6 +264,13 @@ $vjs-big-play-button-icon-size: 5.4em;
 		height: $vjs-control-bar-height !important;
 	}
 
+	&.vjs-no-audio {
+		.vjs-volume-panel {
+			pointer-events: none;
+			opacity: 0.5;
+		}
+	}
+
 	// Прогрессбар
 	.vjs-volume-bar.vjs-slider-horizontal {
 		margin-bottom: 0;

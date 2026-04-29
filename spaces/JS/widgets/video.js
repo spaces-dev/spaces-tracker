@@ -282,6 +282,7 @@ class VideoPlayer {
 			videoHeight:		options.videoHeight,
 			duration:			options.duration,
 			loop:				options.loop ?? false,
+			noAudioTrack:		options.noAudioTrack ?? false,
 			altProxyDomains:	options.altProxyDomains ?? [],
 			file:			$.extend({
 				id:			options.fileId,
@@ -367,7 +368,7 @@ class VideoPlayer {
 	}
 	
 	onStoryboardReady(totalFramesCount) {
-		this.driver.onStoryboardReady(totalFramesCount);
+		this.ready(() => this.driver.onStoryboardReady(totalFramesCount));
 	}
 
 	hideConverterStatus() {

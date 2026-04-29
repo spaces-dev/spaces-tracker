@@ -216,6 +216,13 @@ $vjs-timeline-height: 0.25em;
 		}
 	}
 
+	&.vjs-no-audio {
+		.vjs-volume-panel {
+			pointer-events: none;
+			opacity: 0.5;
+		}
+	}
+
 	// Большая кнопка play/pause/repeat
 	.vjs-control-bar > .vjs-play-control {
 		position: absolute;

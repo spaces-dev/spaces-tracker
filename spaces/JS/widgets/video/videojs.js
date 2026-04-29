@@ -11,7 +11,13 @@ import { isMobilePlayer } from './videojs/plugins/utils';
 class VideoJsDriver extends BaseDriver {
 	init(callback) {
 		const video = document.createElement('video');
-		video.className = `video-js vjs-fill vjs-big-play-centered ${isMobilePlayer() ? 'vjs-theme-touch' : 'vjs-theme-desktop'}`;
+		video.className = `
+			video-js
+			vjs-fill
+			vjs-big-play-centered
+			${this.options.noAudioTrack ? 'vjs-no-audio' : ''}
+			${isMobilePlayer() ? 'vjs-theme-touch' : 'vjs-theme-desktop'}
+		`;
 
 		// На говнобраузерах постер растягивается....
 		// Нужно сделать превьюшки на 16:9 сначала
@@ -91,6 +97,9 @@ class VideoJsDriver extends BaseDriver {
 				}
 			}
 		};
+
+		if (this.options.noAudioTrack)
+			player_options.muted = true;
 
 		if (isMobilePlayer())
 			player_options.disableSeekWhileScrubbingOnMobile = true;
