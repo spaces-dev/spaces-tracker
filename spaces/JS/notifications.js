@@ -223,7 +223,6 @@ var Notifications = Class({
 		
 		if (data.act == pushstream.TYPES.NOTIFICATION_SEND) {
 			if ($.inArray(Spaces.params.sid, data.sessions_ctimes) >= 0) {
-				data.lp = true;
 				if (self.pushNotification(data))
 					self.showNewEvent(L('Новое событие'), { type: EVENT_TYPE.NOTIFICATION });
 			}
@@ -479,16 +478,16 @@ var Notifications = Class({
 			return false;
 		}
 		
-		if (data.lp) {
-			var qnotid = parseInt(cookie.get('qnotid')) || 0;
-			if (qnotid >= data.id) {
+		if (data.id) {
+			const notificationId = parseInt(data.id);
+			const lastNotificationId = parseInt(cookie.get('qnotid')) || 0;
+			if (lastNotificationId >= notificationId) {
 				console.error("Старая нотификация", data, new Date);
 				return false;
 			}
 			if (this.window_active)
-				cookie.set('qnotid', data.id, {expires: 7 * 24 * 3600});
+				cookie.set('qnotid', notificationId, { expires: 7 * 24 * 3600 });
 			if (this.lock) {
-				data.lp = false;
 				self.deffered.push(data);
 				return false;
 			}
