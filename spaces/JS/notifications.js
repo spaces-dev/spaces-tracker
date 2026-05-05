@@ -560,6 +560,7 @@ var Notifications = Class({
 		
 		$notif.find('.js-notif_close').on('click', function (e) {
 			e.preventDefault();
+			e.stopPropagation();
 			if (data.close_link)
 				Spaces.api(data.close_link, {});
 			self.closeNotification(data.id);
