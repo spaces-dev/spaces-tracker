@@ -203,7 +203,7 @@ $icon-to-align-fix: (
 		.link-return:hover &,
 		.link-stnd:hover &,
 		.link-light:hover &,
-		.use-icon-state:hover & {
+		.use-icon-state:not(.js-clicked):hover & {
 			@if ($DARK_MODE) {
 				/*!__PURE__*/ background-position-y: #{get-sprite-state-offset($sprite, $color2)};
 			} @else {

@@ -1,0 +1,134 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+.game-activity-progress {
+	position: relative;
+	height: 6px;
+	border-radius: 2px;
+	overflow: hidden;
+	background: $progress-bar-bg;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: var(--progress-percent);
+		background: $progress-bar-runner-bg;
+	}
+}
+
+.game-activity-player {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+
+	&__info {
+		display: flex;
+		justify-content: space-between;
+		align-items: end;
+	}
+
+	&__metric {
+		color: $secondary-text-color;
+		font-size: smaller;
+	}
+}
+
+.game-activity-card {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	text-align: left;
+
+	&__image {
+		display: flex;
+		align-self: self-start;
+		position: relative;
+
+		img {
+			object-fit: cover;
+			height: 100px;
+			width: 100px;
+			border-radius: 4px;
+		}
+
+		.game-activity-card--is-blurred & img {
+			filter: blur(2.56px);
+		}
+	}
+
+	&__nsfw {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+	}
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+
+	&__title {
+		font-weight: bold;
+	}
+
+	&__description {
+		color: $secondary-text-color;
+	}
+
+	&__row-title {
+		display: flex;
+		justify-content: space-between;
+		align-items: end;
+		padding-bottom: 3px;
+		color: $secondary-text-color;
+	}
+
+	&__game-players {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+}
+
+.mini-games-selector {
+	&__content {
+		display: flex;
+		padding: 5px;
+	}
+
+	&__loading {
+		display: none;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: $content-bg;
+		align-items: center;
+		justify-content: center;
+		color: $icon-grey-color;
+
+		svg {
+			width: 32px;
+			height: 32px;
+			animation: mini-games-selector-loader-spin 0.8s linear infinite;
+		}
+
+		.mini-games-selector--is-loading & {
+			display: flex;
+		}
+	}
+}
+
+@keyframes mini-games-selector-loader-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}

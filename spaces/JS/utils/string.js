@@ -5,3 +5,7 @@ export function toKebabCase(str) {
 		.replace(/[\s_.]+/g, '-')
 		.toLowerCase();
 }
+
+export function snakeToCamelCase(str) {
+	return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}

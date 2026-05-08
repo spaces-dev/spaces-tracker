@@ -99,6 +99,10 @@ export class Dialog {
 		return this.dialogElement;
 	}
 
+	content() {
+		return this.dialogElement.querySelector('.js-dialog_content') ?? this.dialogElement;
+	}
+
 	opener() {
 		return this.referenceElement;
 	}
@@ -243,7 +247,12 @@ export class Dialog {
 			},
 			modifiers: [
 				interact.modifiers.restrictRect({
-					restriction: 'parent'
+					restriction: () => ({
+						left: window.scrollX,
+						right: window.scrollX + getViewportWidth(),
+						top: window.scrollY,
+						bottom: window.scrollY + getViewportHeight(),
+					})
 				}),
 			],
 			listeners: {
@@ -278,18 +287,16 @@ export class Dialog {
 							inner: (_x, _y, self) => {
 								const rect = self.element.getBoundingClientRect();
 								return {
-									left: rect.right - this.options.minWidth,
-									right: rect.left + this.options.minWidth,
+									left: rect.right + window.scrollX - this.options.minWidth,
+									right: rect.left + window.scrollX + this.options.minWidth,
 								};
 							},
-							outer: () => {
-								return {
-									left: 0,
-									right: window.innerWidth,
-									top: 0,
-									bottom: window.innerHeight,
-								};
-							}
+							outer: () => ({
+								left: window.scrollX,
+								right: window.scrollX + getViewportWidth(),
+								top: window.scrollY,
+								bottom: window.scrollY + getViewportHeight(),
+							})
 						}),
 					]
 				}),
@@ -324,20 +331,27 @@ export class Dialog {
 	}
 
 	calcWindowSizeAndLocation() {
+		const viewportWidth = getViewportWidth();
+		const viewportHeight = getViewportHeight();
+
 		if (this.isResized()) {
-			[this.w, this.h] = resizeLimit(this.w, this.h, window.innerWidth, window.innerHeight);
+			[this.w, this.h] = resizeLimit(this.w, this.h, viewportWidth, viewportHeight);
 		} else {
-			[this.w, this.h] = resizeLimit(this.options.width, this.options.height, window.innerWidth, window.innerHeight);
+			[this.w, this.h] = resizeLimit(this.options.width, this.options.height, viewportWidth, viewportHeight);
 		}
 
 		if (this.isMoved()) {
-			if (this.x + this.w > window.innerWidth)
-				this.x = window.innerWidth - this.w;
-			if (this.y + this.h > window.innerHeight)
-				this.y = window.innerHeight - this.h;
+			if (this.x < 0)
+				this.x = 0;
+			if (this.x + this.w > viewportWidth)
+				this.x = viewportWidth - this.w;
+			if (this.y < 0)
+				this.y = 0;
+			if (this.y + this.h > viewportHeight)
+				this.y = viewportHeight - this.h;
 		} else {
-			this.x = (window.innerWidth - this.w) / 2;
-			this.y = (window.innerHeight - this.h) / 2;
+			this.x = (viewportWidth - this.w) / 2;
+			this.y = (viewportHeight - this.h) / 2;
 		}
 
 		this.updatePosition();
@@ -501,5 +515,13 @@ module.on("componentpagedone", () => {
 });
 
 function isWideScreen() {
-	return window.innerWidth >= 600 && window.innerHeight >= 500;
+	return getViewportWidth() >= 600 && getViewportHeight() >= 500;
+}
+
+function getViewportWidth() {
+	return document.documentElement.clientWidth;
+}
+
+function getViewportHeight() {
+	return document.documentElement.clientHeight;
 }
