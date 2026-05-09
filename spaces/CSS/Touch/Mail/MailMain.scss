@@ -220,7 +220,24 @@
 				display: flex;
 			}
 		}
+
+		&--type-mention {
+			background: $mail-contact-unread-border;
+			color: $important-counter-text-color;
+
+			.mail-contact--has-mentions & {
+				display: flex;
+			}
+		}
 	}
+}
+
+.mail-messages-list {
+	display: flex;
+	gap: 15px;
+	flex-direction: column;
+	padding: 15px;
+	background: $content-bg;
 }
 
 #mail-text-field {
@@ -351,6 +368,7 @@
 .mail__dialog_system {
 	background: $mail-message-system-bg;
 	text-align: center;
+	padding-top: 10px;
 }
 
 .mail__dialog_unread:before {
@@ -358,21 +376,62 @@
 	content: '';
 	display: block;
 	width: 3px;
-	left: 0;
+	left: -15px;
 	top: 0;
 	bottom: 0;
 	background: $mail-contact-unread-border;
 }
 
-.mail__dialog_wrapper{
-	margin: 18px 0;
-	padding: 0 15px;
+.mail__dialog_wrapper { // FIXME: это походу BEM 3.0 блин
 	position: relative;
+
+	&--focused {
+		&::before {
+			content: '';
+			background: rgba($accent-blue-color, 0.5);
+			transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+			position: absolute;
+			top: -6px;
+			bottom: -6px;
+			left: -15px;
+			right: -15px;
+		}
+	}
+
+	&--focused.mail__dialog_wrapper--seen {
+		&::before {
+			background: transparent;
+		}
+	}
+
+	a[name^="com"] {
+		scroll-margin: 100px;
+	}
 }
 
 .mail__dialog_wrapper_extended {
 	margin: 0;
     padding: 0;
+}
+
+.w_ava .mail__dialog_message:before {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 12px;
+	height: 0;
+	width: 0;
+	left: 35px;
+	border: 8px solid transparent;
+	border-right-color: $mail-message-out-bg;
+}
+
+.w_ava .mail__dialog_answer:before {
+	border-right-color: $mail-message-in-bg;
+}
+
+.w_ava .mail__dialog_system:before {
+	border-right-color: $mail-message-system-bg;
 }
 
 .mail__dialog_wrapper:first-child {
@@ -424,26 +483,6 @@
 #mail_search_query .search__btn {
 	max-height: 50px;
 	min-height: 40px;
-}
-
-.w_ava .mail__dialog_message:before{
-	content: '';
-	display: block;
-	position: absolute;
-	top: 12px;
-	height: 0;
-	width: 0;
-	left: 50px;
-	border: 8px solid transparent;
-	border-right-color: $mail-message-out-bg;
-}
-
-.w_ava .mail__dialog_answer:before{
-	border-right-color: $mail-message-in-bg;
-}
-
-.w_ava .mail__dialog_system:before{
-	border-right-color: $mail-message-system-bg;
 }
 
 .text-input__inline {

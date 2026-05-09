@@ -55,7 +55,8 @@ var MailPage,
 	before_edit_state,
 	last_edit_req,
 
-	isVoiceRecording = false;
+	isVoiceRecording = false,
+	focusIntersectionObserver;
 
 var TAB_ID				= 'm' + Date.now();
 var TYPING_TIMEOUT		= 5000;
@@ -1267,7 +1268,28 @@ var mailCore = {
 	},
 	clearUndo: function () {
 		$('.js-mail_contact_undo').parent().find('.js-notif_close').click();
-	}
+	},
+
+	handleFocusedMessages() {
+		for (const message of $('#messages_list').find('.js-message[data-focused="true"]'))
+			this.focusMessage(message);
+	},
+	focusMessage(message) {
+		if (!focusIntersectionObserver) {
+			focusIntersectionObserver = new IntersectionObserver((entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting ) {
+						entry.target.classList.add('mail__dialog_wrapper--seen');
+						focusIntersectionObserver.unobserve(entry.target);
+					}
+				}
+			});
+		}
+
+		message.classList.add('mail__dialog_wrapper--focused');
+		message.classList.remove('mail__dialog_wrapper--seen');
+		focusIntersectionObserver.observe(message);
+	},
 };
 
 
@@ -1292,6 +1314,11 @@ var mailServices = {
 		}
 
 		destroyVoiceMessages();
+
+		if (focusIntersectionObserver) {
+			focusIntersectionObserver.disconnect();
+			focusIntersectionObserver = undefined;
+		}
 	},
 	
 	init: function() {
@@ -1307,6 +1334,10 @@ var mailServices = {
 		mail_place = MailPage.data('place');
 		mail_params = $('#mail_params').data() || {};
 		
+		MailPage.on('message:focus', '.js-message', function (e) {
+			mailCore.focusMessage(this);
+		});
+
 		MailPage.on('popper:beforeOpen', '.js-message', function (e) {
 			const message = $(this);
 			if (!e.target.id.startsWith('mail_message_menu_'))
@@ -2076,6 +2107,7 @@ var mailServices = {
 
 		mailServices.fullMessageCheck();
 		mailCore.monitorTextareaTyping();
+		mailCore.handleFocusedMessages();
 
 		if ($('#messages_list').length)
 			initVoiceMessages();
@@ -2201,13 +2233,23 @@ var mailServices = {
 		    message_list = mailServices.getQueryWord('message_list');
 		
 		switch (data.act) {
-			case pushstream.TYPES.USER_OBJECT_ADD_REACTION:
-			case pushstream.TYPES.USER_OBJECT_DELETE_REACTION:
-			case pushstream.TYPES.USER_OBJECT_VIEW_REACTION: {
+			case pushstream.TYPES.USER_OBJECT_REACTION_ADD:
+			case pushstream.TYPES.USER_OBJECT_REACTION_DELETE:
+			case pushstream.TYPES.USER_OBJECT_REACTION_VIEW: {
 				if (data.newReactionsCnt != null) {
 					const contactItem = document.querySelector(`#contact_${data.parentId}`);
 					if (contactItem)
 						contactItem.classList.toggle('mail-contact--has-reactions', +data.newReactionsCnt > 0);
+				}
+				break;
+			}
+
+			case pushstream.TYPES.USER_MENTION_ADD:
+			case pushstream.TYPES.USER_MENTION_DELETE: {
+				if (data.newReactionsCnt != null) {
+					const contactItem = document.querySelector(`#contact_${data.parentId}`);
+					if (contactItem)
+						contactItem.classList.toggle('mail-contact--has-mentions', +data.newMentionsCnt > 0);
 				}
 				break;
 			}

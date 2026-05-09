@@ -32,9 +32,11 @@ export function isVisibleOnScreen(target) {
 	const rect = target.getBoundingClientRect();
 	const vw = window.innerWidth;
 	const vh = window.innerHeight;
-	if (rect.bottom < 0 || rect.top > vh)
+	if (target.offsetParent === null)
 		return false;
-	if (rect.right < 0 || rect.left > vw)
+	if (rect.bottom <= 0 || rect.top >= vh)
+		return false;
+	if (rect.right <= 0 || rect.left >= vw)
 		return false;
 	return true;
 }

@@ -9,7 +9,7 @@ import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
 import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
-import { isFullyVisibleOnScreen } from './utils/dom';
+import { isFullyVisibleOnScreen, waitTransitionEnd } from './utils/dom';
 
 let focusIntersectionObserver;
 
@@ -288,6 +288,10 @@ var Chat = {
 		$('#main').on('focuswindow', function () {
 			new_messages_cnt = 0;
 		});
+
+		$('#main').on('message:focus', '.js-message', function (e) {
+			Chat.focusMessage(this);
+		});
 		
 		// Показ селектора реакций
 		$('#main').on('popper:beforeOpen', '.js-chat_message_menu', function (e) {
@@ -426,24 +430,23 @@ var Chat = {
 		this.handleFocusedMessages();
 	},
 	handleFocusedMessages() {
-		if (!window.IntersectionObserver)
-			return;
-
-		const focusedMessages = messages_list.find('.js-message[data-focused="true"]');
-		if (!focusedMessages.length)
-			return;
-
-		focusIntersectionObserver = new IntersectionObserver((entries) => {
-			for (const entry of entries) {
-				if (entry.isIntersecting ) {
-					entry.target.classList.add('message--seen');
-					focusIntersectionObserver.unobserve(entry.target);
+		for (const message of messages_list.find('.js-message[data-focused="true"]'))
+			this.focusMessage(message);
+	},
+	focusMessage(message) {
+		if (!focusIntersectionObserver) {
+			focusIntersectionObserver = new IntersectionObserver((entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting ) {
+						entry.target.classList.add('message--seen');
+						focusIntersectionObserver.unobserve(entry.target);
+					}
 				}
-			}
-		});
-
-		for (const message of focusedMessages)
-			focusIntersectionObserver.observe(message);
+			});
+		}
+		message.classList.add('message--focused');
+		message.classList.remove('message--seen');
+		focusIntersectionObserver.observe(message);
 	},
 	getApiExtra: function (url) {
 		return {

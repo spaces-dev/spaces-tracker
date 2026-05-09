@@ -1,4 +1,3 @@
-import 'CommentWidget/Reactions.css';
 import module from "module";
 import $ from "../jquery";
 import Spaces from "../spacesLib";
@@ -245,7 +244,7 @@ module.on("componentpage", () => {
 	});
 
 	pushstream.on('message', 'reactions', (message) => {
-		if (message.act == pushstream.TYPES.USER_OBJECT_ADD_REACTION || message.act == pushstream.TYPES.USER_OBJECT_DELETE_REACTION) {
+		if (message.act == pushstream.TYPES.USER_OBJECT_REACTION_ADD || message.act == pushstream.TYPES.USER_OBJECT_REACTION_DELETE) {
 			if (!document.getElementById(`reactions_${message.objectType}_${message.objectId}`))
 				return;
 			if (message.hash == Spaces.tabId())
@@ -526,13 +525,18 @@ function handleReactionsRead(reactionsWidget) {
 	observer.unobserve(reactionsWidget[0]);
 }
 
+export function isReactionsVisible(objectType, objectId) {
+	const reactionsWidget = document.getElementById(`reactions_${objectType}_${objectId}`);
+	return reactionsWidget && (isVisibleOnScreen(reactionsWidget) || isVisibleOnScreen(reactionsWidget.parentNode));
+}
+
 export function getVisibleUnreadReactionsCount() {
-	let visibleUnreadReactionsCount = 0;
+	let count = 0;
 	for (const reactionsWidget of document.querySelectorAll('.js-reactions_list')) {
-		if (reactionsWidget.dataset.unread && isVisibleOnScreen(reactionsWidget))
-			visibleUnreadReactionsCount++;
+		if (reactionsWidget.dataset.unread && (isVisibleOnScreen(reactionsWidget)))
+			count++;
 	}
-	return visibleUnreadReactionsCount;
+	return count;
 }
 
 async function getAvailableReactions(objectType) {

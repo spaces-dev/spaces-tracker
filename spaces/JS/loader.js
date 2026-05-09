@@ -87,8 +87,11 @@ __require_config		|	Конфиг загрузчика
 		const module = modules_cache[name];
 		if (module.oncomponentpage && !page_components[name]) {
 			page_components[name] = true;
-			module.oncomponentpage();
-			
+			const finalizer = module.oncomponentpage();
+			if (finalizer && typeof finalizer === "function") {
+				module.oncomponentpagedone = finalizer;
+				module.oncomponentpagedoneTemporary = true;
+			}
 			if (module.oncomponent) {
 				runOnNextTick(() => module.oncomponent());
 			}
@@ -128,6 +131,9 @@ __require_config		|	Конфиг загрузчика
 					});
 				}
 				module.oncomponentpagedone()
+
+				if (module.oncomponentpagedoneTemporary)
+					module.oncomponentpagedone = undefined;
 			});
 		};
 		
