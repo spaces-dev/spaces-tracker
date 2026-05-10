@@ -5,110 +5,90 @@ loadEnvFile()
 
 const API_KEY = process.env.OPENROUTER_API_KEY
 
-interface EndpointPricing {
+interface ModelPricing {
   prompt: string
   completion: string
 }
 
-interface Endpoint {
-  name: string
-  pricing: EndpointPricing
-  context_length: number
-  is_free?: boolean
+interface Model {
+  id: string
+  pricing: ModelPricing
 }
 
-interface EndpointsResponse {
-  data: {
-    endpoints: Endpoint[]
-  }
+interface ModelsResponse {
+  data: Model[]
 }
 
-type ValidationStatus = | 'ok' | 'not_found' | 'no_free_tier' | 'error'
+type ValidationStatus = 'ok' | 'not_found' | 'no_free_tier' | 'error'
 
 interface ValidationResult {
   model: string
   status: ValidationStatus
-  freeEndpoints?: string[]
   message?: string
 }
 
-function parseModelId(modelId: string) {
-  const isFreeVariant = modelId.endsWith(':free')
-  const cleanId = modelId.replace(/:free$/, '')
-  const [author, ...slugParts] = cleanId.split('/')
-
-  return {
-    author,
-    slug: slugParts.join('/'),
-    isFreeVariant,
-  }
+function isFreePrice(val: string | null | undefined): boolean {
+  return val == null || val === '' || Number.parseFloat(val) === 0
 }
 
-async function validateModel(modelId: string): Promise<ValidationResult> {
-  const { author, slug, isFreeVariant } = parseModelId(modelId)
+async function fetchAllModels(): Promise<Model[]> {
+  const res = await fetch('https://openrouter.ai/api/v1/models', {
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  })
 
-  try {
-    const url = `https://openrouter.ai/api/v1/models/${author}/${slug}/endpoints`
-    const res = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    })
+  if (!res.ok) {
+    throw new Error(`Failed to fetch models: ${res.status} ${res.statusText}`)
+  }
 
-    if (res.status === 404) {
-      return {
-        model: modelId,
-        status: 'not_found',
-        message: 'Модель не найдена (404)',
-      }
-    }
+  const json: ModelsResponse = await res.json()
+  return json.data
+}
 
-    if (!res.ok) {
-      return {
-        model: modelId,
-        status: 'error',
-        message: `HTTP ${res.status}: ${res.statusText}`,
-      }
-    }
+function validateModel(modelId: string, modelMap: Map<string, Model>): ValidationResult {
+  const model = modelMap.get(modelId)
 
-    const json: EndpointsResponse = await res.json()
-    const endpoints = json?.data?.endpoints ?? []
-
-    const freeEndpoints = endpoints.filter((endpoint) => {
-      return Number.parseFloat(endpoint.pricing.prompt) === 0
-        && Number.parseFloat(endpoint.pricing.completion) === 0
-    })
-
-    if (isFreeVariant && freeEndpoints.length === 0) {
-      return {
-        model: modelId,
-        status: 'no_free_tier',
-        message: 'Модель помечена как :free, но бесплатных эндпоинтов нет',
-      }
-    }
-
+  if (!model) {
     return {
       model: modelId,
-      status: 'ok',
-      freeEndpoints: freeEndpoints.map((e) => e.name),
-      message: freeEndpoints.length > 0
-        ? `✅ ${freeEndpoints.length} бесплатных эндпоинтов`
-        : '⚠️ Только платные эндпоинты',
+      status: 'not_found',
+      message: 'Модель не найдена',
     }
-  } catch (err) {
+  }
+
+  const { prompt, completion } = model.pricing
+  const free = isFreePrice(prompt) && isFreePrice(completion)
+  if (!free) {
     return {
       model: modelId,
-      status: 'error',
-      message: `Ошибка запроса: ${String(err)}`,
+      status: 'no_free_tier',
+      message: `Платная: prompt=${prompt}, completion=${completion}`,
     }
+  }
+
+  return {
+    model: modelId,
+    status: 'ok',
+    message: '✅ Бесплатная',
   }
 }
 
 async function main() {
   console.log(`🔍 Валидация ${Config.Models.length} моделей...\n`)
 
-  const results = await Promise.all(Config.Models.map(validateModel))
+  let allModels: Model[]
+
+  try {
+    allModels = await fetchAllModels()
+  } catch (err) {
+    console.error(`💥 Не удалось загрузить список моделей: ${String(err)}`)
+    process.exit(1)
+  }
+
+  const modelMap = new Map(allModels.map((m) => [m.id, m]))
+  const results = Config.Models.map((modelId) => validateModel(modelId, modelMap))
 
   const statusIcon: Record<ValidationStatus, string> = {
     ok: '✅',
@@ -121,9 +101,6 @@ async function main() {
     const icon = statusIcon[result.status]
     console.log(`${icon} ${result.model}`)
     console.log(`   → ${result.message}`)
-    if (result.freeEndpoints?.length) {
-      console.log(`   → Providers: ${result.freeEndpoints.join(', ')}`)
-    }
     console.log()
   }
 
