@@ -1,3 +1,5 @@
+import { escapeHtml } from './utils'
+
 export async function sendTelegramMessage(
   token: string,
   chatId: string,
@@ -6,7 +8,7 @@ export async function sendTelegramMessage(
 ) {
   const params: Record<string, string> = {
     chat_id: chatId,
-    text,
+    text: escapeHtml(text),
     parse_mode: 'html',
     disable_web_page_preview: 'true',
     reply_markup: JSON.stringify(replyMarkup),
