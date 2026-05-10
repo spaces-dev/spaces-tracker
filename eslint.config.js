@@ -1,9 +1,13 @@
 import antfu from '@antfu/eslint-config'
+import n from 'eslint-plugin-n'
 
 export default antfu({
   typescript: true,
   markdown: true,
   yaml: true,
+  plugins: {
+    kloun2: n,
+  },
   ignores: [
     'spaces',
     'kinotam',
@@ -19,6 +23,7 @@ export default antfu({
     'antfu/no-top-level-await': 'off',
     'unused-imports/no-unused-imports': 'warn',
     'eslint-comments/no-unlimited-disable': 'off',
+    'kloun2/file-extension-in-import': ['error', 'always'],
     'perfectionist/sort-imports': ['error', {
       groups: [
         'value-builtin',
