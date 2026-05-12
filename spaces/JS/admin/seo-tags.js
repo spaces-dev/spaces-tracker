@@ -39,7 +39,7 @@ module.on('componentpage', () => {
 		const selectedCats = seoTag.data('selectedCats');
 		$(`#cats_other_${seoTag.data('id')}`).show().html(tpl.selectCats({
 			tagId: seoTag.data('id'),
-			cats: allCats.filter((cat) => !selectedCats.includes(cat.id))
+			cats: allCats.filter((cat) => !selectedCats.includes(cat.cid))
 		}));
 		$(this).hide();
 		seoTag.find('.js-seo_tag_hide_all_cats').show();
