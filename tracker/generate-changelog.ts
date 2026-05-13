@@ -1,5 +1,5 @@
 import { Config } from './config.ts'
-import { getGitDiff } from './utils.ts'
+import { escapeHtml, getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
 const BLOCKQUOTE_OPEN = '<blockquote expandable>'
@@ -46,7 +46,7 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
       const summary = data.choices?.[0]?.message?.content || ''
       if (summary) {
         return {
-          summary,
+          summary: escapeHtml(summary),
           model,
         }
       }
