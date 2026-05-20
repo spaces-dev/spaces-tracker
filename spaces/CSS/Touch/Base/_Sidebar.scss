@@ -213,6 +213,10 @@ a.sidebar-item__cnt:hover .small_cnt {
 }
 
 .root {
+	&--no-scroll {
+		overflow: hidden;
+	}
+
 	&__overlay {
 		display: none;
 		position: absolute;

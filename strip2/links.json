@@ -849,6 +849,7 @@
   "/js/ru/touch/widgets/reactions.js",
   "/js/ru/touch/widgets/recaptcha.js",
   "/js/ru/touch/widgets/sidebar.js",
+  "/js/ru/touch/widgets/statTable.js",
   "/js/ru/touch/widgets/sticker_info.js",
   "/js/ru/touch/widgets/swiper.js",
   "/js/ru/touch/widgets/toaster.js",

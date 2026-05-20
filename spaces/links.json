@@ -830,6 +830,7 @@
   "/js/touch/widgets/reactions.js",
   "/js/touch/widgets/recaptcha.js",
   "/js/touch/widgets/sidebar.js",
+  "/js/touch/widgets/statTable.js",
   "/js/touch/widgets/sticker_info.js",
   "/js/touch/widgets/swiper.js",
   "/js/touch/widgets/toaster.js",
