@@ -1598,9 +1598,11 @@ var MusicPlayer = {
 	providePosition: function (pos, total) {
 		var self = this;
 		if (current) {
-			// FIXME: иногда по мере загрузки меняется реальная длительность
-			if (current.duration != audio.duration())
-				this.provideRealDuration(audio.duration());
+			if (!android_app_player()) {
+				// FIXME: иногда по мере загрузки меняется реальная длительность
+				if (current.duration != audio.duration())
+					this.provideRealDuration(audio.duration());
+			}
 
 			current.realPosition = pos;
 			if (!no_update_timeline) {
