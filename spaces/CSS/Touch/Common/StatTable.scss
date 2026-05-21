@@ -4,9 +4,6 @@
 	th {
 		background: $stat-table-title-bg;
 		font-weight: bold;
-		position: sticky;
-		top: var(--table-sticky-offset, 0);
-		z-index: 100000;
 	}
 
 	tr {
@@ -18,6 +15,7 @@
 	}
 
 	th, td {
+		position: relative;
 		padding: 5px;
 		border: 1px solid $default-border-color;
 		color: $default-text-color;
@@ -29,6 +27,23 @@
 
 	tr:last-child td {
 		border-bottom: none;
+	}
+
+	&__sticky {
+		position: sticky;
+		top: var(--table-sticky-offset, 0);
+		z-index: 100000;
+
+		th, td {
+			&::after {
+				content: "";
+				position: absolute;
+				inset: -1px;
+				pointer-events: none;
+				z-index: 1;
+				box-shadow: inset 0 0 0 1px $default-border-color;
+			}
+		}
 	}
 
 	&__row-separator {

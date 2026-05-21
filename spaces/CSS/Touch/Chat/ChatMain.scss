@@ -8,12 +8,13 @@
 }
 
 .chat-room {
-	&__reactions-counter {
+	&__events-counter {
 		float: right;
 		display: flex;
 		gap: 3px;
 		color: $blue-text-color;
 		align-items: center;
+		padding-left: 5px;
 
 		svg {
 			color: $icon-blue-color;

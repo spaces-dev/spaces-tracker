@@ -18,6 +18,7 @@
 	}
 
 	&__content {
+		overflow-x: scroll;
 		.maximizable-block--fullscreen & {
 			overflow-y: scroll;
 		}
