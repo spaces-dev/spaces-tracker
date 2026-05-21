@@ -41,12 +41,23 @@
 	right: 0;
 	top: 0;
 	bottom: 0;
-	min-width: 16px
+	min-width: 16px;
 }
 
 .header_links_fixer a{
 	padding: 9px 14px 9px 14px;
 	display: block;
+}
+
+.b-title__sublink {
+	&--icon {
+		.js-ico, svg {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+	}
 }
 
 @if ($PC) {
@@ -63,12 +74,13 @@
 }
 
 .b-title__sublink:active {
+	transform: translateY(1px);
 	color: $default-text-color;
 	background: $default-clicked-bg;
 }
 
 .b-title__link:active{
-	padding: 10px 14px 8px 14px;
+	transform: translateY(1px);
 }
 
 .b-title__edit-link{

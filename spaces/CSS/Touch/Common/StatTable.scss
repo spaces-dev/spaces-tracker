@@ -1,31 +1,11 @@
 @use "Common/Theme" as *;
 
-.stat_table_container {
-	&--fullscreen {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 10000;
-		overflow: scroll;
-	}
-
-	&--header {
-		display: none;
-
-		.stat_table_container--fullscreen & {
-			display: block;
-		}
-	}
-}
-
 .stat_table {
 	th {
 		background: $stat-table-title-bg;
 		font-weight: bold;
 		position: sticky;
-		top: 0;
+		top: var(--table-sticky-offset, 0);
 		z-index: 100000;
 	}
 

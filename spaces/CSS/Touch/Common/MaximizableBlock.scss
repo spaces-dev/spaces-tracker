@@ -1,0 +1,25 @@
+@use "Common/Theme" as *;
+
+.maximizable-block {
+	display: flex;
+	flex-direction: column;
+	margin: 15px 10px;
+	box-shadow: $default-block-shadow;
+
+	&--fullscreen {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10000;
+		margin: 0;
+		box-shadow: none;
+	}
+
+	&__content {
+		.maximizable-block--fullscreen & {
+			overflow-y: scroll;
+		}
+	}
+}
