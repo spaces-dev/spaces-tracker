@@ -8,18 +8,42 @@ const tpl = {
 			.map((alias) => `<option value="${alias.id}">${alias.title}</option>`)
 			.join("");
 	},
-	selectCats({ tagId, cats }) {
+	selectCats({ tagId, cats, selectedCats }) {
+		const isChecked = (cat) => selectedCats.includes(cat.cid);
+
 		return cats
 			.map((cat) => `
 				<div class="bordered inl_bl">
 					<label>
-						<input name="InT_cats_${tagId}" type="checkbox" value="${cat.cid}" class="js-seo_tag_cat" />
+						<input
+							name="InT_cats_${tagId}"
+							type="checkbox"
+							value="${cat.cid}"
+							class="js-seo_tag_cat"
+							${isChecked(cat) ? 'checked' : ''}
+						/>
 						${cat.title}
 					</label>
 				</div>
 			`.trim())
 			.join(" ");
 	},
+	selectedCats({ tagId, cats }) {
+		return cats
+			.map((cat) => `
+				<label>
+					<input
+						name="InT_cats_${tagId}"
+						type="checkbox"
+						value="${cat.cid}"
+						class="js-seo_tag_cat"
+						checked
+					/>
+					${cat.title}
+				</label>
+			`.trim())
+			.join(" ");
+	}
 };
 
 module.on('componentpage', () => {
@@ -31,6 +55,15 @@ module.on('componentpage', () => {
 		seoTag.find('.js-seo_tag_toggle_int_query').prop("checked", value.length > 0);
 	});
 
+	const updateSelected = (seoTag) => {
+		const tagId = seoTag.data('id');
+		const selectedCats = $([`#cats_other_${tagId}`, `#cats_selected_${tagId}`].join(', '))
+			.find('.js-seo_tag_cat:checked')
+			.toArray()
+			.map((input) => +input.value);
+		seoTag.data('selectedCats', selectedCats);
+	};
+
 	$('#main').on('click', '.js-seo_tag_show_all_cats', function (e) {
 		e.preventDefault();
 		const seoTag = $(this).parents('.js-seo_tag');
@@ -39,8 +72,10 @@ module.on('componentpage', () => {
 		const selectedCats = seoTag.data('selectedCats');
 		$(`#cats_other_${seoTag.data('id')}`).show().html(tpl.selectCats({
 			tagId: seoTag.data('id'),
-			cats: allCats.filter((cat) => !selectedCats.includes(cat.cid))
+			cats: allCats,
+			selectedCats,
 		}));
+		$(`#cats_selected_${seoTag.data('id')}`).hide().html('');
 		$(this).hide();
 		seoTag.find('.js-seo_tag_hide_all_cats').show();
 		console.timeEnd("init seo cats");
@@ -48,8 +83,14 @@ module.on('componentpage', () => {
 	.on('click', '.js-seo_tag_hide_all_cats', function (e) {
 		e.preventDefault();
 		const seoTag = $(this).parents('.js-seo_tag');
+		updateSelected(seoTag);
 
+		const selectedCats = seoTag.data('selectedCats');
 		$(`#cats_other_${seoTag.data('id')}`).hide().html(``);
+		$(`#cats_selected_${seoTag.data('id')}`).show().html(tpl.selectedCats({
+			tagId: seoTag.data('id'),
+			cats: allCats.filter((cat) => selectedCats.includes(cat.cid)),
+		}));
 		$(this).hide();
 		seoTag.find('.js-seo_tag_show_all_cats').show();
 	})
