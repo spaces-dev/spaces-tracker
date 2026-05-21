@@ -78,16 +78,11 @@ function initForm() {
 			requestId: "photoMotionGetCost"
 		}, (response) => {
 			if (response.code == 0) {
-				const buttonLabel = form.find('button[name="cfms"] .js-btn_val');
+				const buttonLabel = form.find('button[data-action="process_photo"] .js-btn_val');
 				buttonLabel.text(response.caption);
 			}
 		});
 	}, 250);
-
-	const enableSharedZone = (flag) => {
-		const checkbox = form.find('input[type="checkbox"][name="Sz"]').parents('.js-checkbox_wrap');
-		checkbox.toggleClass('hide', !flag);
-	};
 
 	const enableAudio = (flag) => {
 		const checkbox = form.find('input[type="checkbox"][name="Audio"]').parents('.js-checkbox_wrap');
@@ -98,10 +93,6 @@ function initForm() {
 
 	form.on('change', 'input[type="range"][name="Duration"]', function () {
 		enableAudio(parseInt(this.value) >= 4);
-	});
-
-	form.on('change', 'input[type="radio"][name="Dir"]', function () {
-		enableSharedZone(this.value < 0);
 	});
 }
 

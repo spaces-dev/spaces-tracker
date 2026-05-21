@@ -2,14 +2,32 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
+.choice-group {
+	border: 1px solid $default-border-color;
+	border-radius: 3px;
+	overflow: hidden;
+
+	.form-checkbox {
+		border-bottom: none;
+		color: $secondary-text-color; // FIXME: надо решить с дизайнером
+	}
+}
+
 .form-checkbox{
 	display: block;
 	color: $checkbox-unchecked-color;
 	position: relative;
-	overflow: hidden;
 	cursor: pointer;
 	text-decoration: none !important;
 	padding: 7px 25px 8px 0;
+
+	&--inline {
+		padding-right: 16px;
+	}
+
+	&--is-disabled {
+		opacity: 0.5;
+	}
 }
 
 .form-checkbox_wrap {

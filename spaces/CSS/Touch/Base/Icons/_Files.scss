@@ -1,8 +1,7 @@
 @use "Common/Utils" as *;
 
-@include define-icon("ico_files", "dir") {
-	margin-bottom: 0
-}
+@include define-icon("ico_files", "dir");
+
 @include define-icon("ico_files", "dir_all") {
 	margin-bottom: 0
 }

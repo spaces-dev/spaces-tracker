@@ -368,6 +368,32 @@
 	}
 }
 
+.dropdown-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	background: $dropdown-body-bg;
+
+	&__item {
+		border-radius: 3px;
+		overflow: hidden;
+	}
+
+	&--type-spoiler {
+		background: none;
+		gap: 15px;
+
+		.dropdown-list__item {
+			box-shadow: $default-block-shadow;
+		}
+	}
+}
+
+.dropdown-item-sep { // TODO: должно стать каким-то стандартным элементом?
+	padding-top: 3px;
+	background: $dropdown-body-bg;
+}
+
 /*
  * LEGACY DD MENU
  */

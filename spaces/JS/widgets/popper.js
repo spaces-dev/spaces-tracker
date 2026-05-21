@@ -381,7 +381,9 @@ export class Popper {
 		if (this.options.autoScroll) {
 			if (this.engine)
 				this.engine.forceUpdate();
-			scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
+			requestAnimationFrame(() => {
+				scrollIntoViewIfNotVisible(this.popperElement, { start: "nearest", end: "nearest" });
+			});
 		} else {
 			if (this.engine)
 				this.engine.update();

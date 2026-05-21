@@ -3,18 +3,11 @@ import $ from './jquery';
 import cookie from './cookie';
 import Device from './device';
 import {Class} from './class';
-import {Spaces, Url, Codes} from './spacesLib';
+import {Spaces, Url, Codes, FILE_TYPE_TO_DIR_TYPE} from './spacesLib';
 import page_loader from './ajaxify';
 import fixPageHeight from './min_height';
 import {html_wrap, L, tick} from './utils';
 import { closeAllPoppers, getPopperById } from './widgets/popper';
-
-var FILE_TYPE_2_DIR_TYPE = {
-	[Spaces.TYPES.FILE]:		1,
-	[Spaces.TYPES.MUSIC]:		2,
-	[Spaces.TYPES.PICTURE]:		3,
-	[Spaces.TYPES.VIDEO]:		24
-};
 
 var tpl = {
 	saveNotif: function (data) {
@@ -236,7 +229,7 @@ var FileCollections = Class({
 				Spaces.api("files.getCollections", {
 					Fid: self.nid,
 					Ft: self.fileType,
-					Type: FILE_TYPE_2_DIR_TYPE[self.type],
+					Type: FILE_TYPE_TO_DIR_TYPE[self.type],
 					Uid: Spaces.params.nid,
 					Link_id: Spaces.params.link_id
 				}, function (res) {
@@ -274,7 +267,7 @@ var FileCollections = Class({
 				};
 				var api_data = {
 					D: -Spaces.params.nid,
-					Type: FILE_TYPE_2_DIR_TYPE[self.type],
+					Type: FILE_TYPE_TO_DIR_TYPE[self.type],
 					Col: 1,
 					a: 'cd',
 					CK: null,
@@ -333,7 +326,7 @@ var FileCollections = Class({
 					if (res.code == 0) {
 						self.showMsg(tpl.saveNotif({
 							name: $.trim(dir.find('.js-dir_name').text()),
-							url: dir.prop("href"),
+							url: dir.data("url"),
 							id: res.fileId,
 							type: self.type,
 							origNid: self.nid
@@ -370,7 +363,7 @@ var FileCollections = Class({
 					name_val = $.trim(name.val()),
 					api_data = $.extend(Url.serializeForm(form), {
 						D: -Spaces.params.nid,
-						Type: FILE_TYPE_2_DIR_TYPE[self.type],
+						Type: FILE_TYPE_TO_DIR_TYPE[self.type],
 						Col: 1,
 						a: 'cd',
 						cfms: 1,

@@ -7,6 +7,7 @@ import { isVisibleOnScreen } from '../utils/dom';
 import { numeral, L, TRANSPARENT_PIXEL } from "../utils";
 import { closeAllPoppers } from './popper';
 import { confetti } from '../effects/confetti';
+import { simplePagination } from "./fragments/simplePagination";
 
 const USERS_PER_PAGE = 5;
 const TOP_EMOJI_COUNT = 7;
@@ -176,57 +177,6 @@ const tpl = {
 				${errorMessage}
 			</div>
 		`;
-	},
-
-	pagination({ current, total }) {
-		if (total <= 1)
-			return '';
-
-		return `
-			<div class="pgn-wrapper">
-				<div class="pgn">
-					<table class="table__wrap pgn__table">
-						<tr>
-							<td class="table__cell" width="35%">
-								<button
-									class="
-										js-reaction_users_pgn
-										pgn__button
-										pgn__link_prev
-										pgn__link_hover
-										${current == 1 ? 'pgn__link_disabled' : ''}
-									"
-									data-dir="prev"
-								>
-									<span class="js-ico ico ico_arr_left"></span>
-									<span class="js-text">${L("Назад")}</span>
-								</button>
-							</td>
-							<td class="table__cell">
-								<div class="pgn__counter pgn__range">
-									${L("{0} из {1}", current, total)}
-								</div>
-							</td>
-							<td class="table__cell table__cell_last" width="35%">
-								<button
-									class="
-										js-reaction_users_pgn
-										pgn__button
-										pgn__link_next
-										pgn__link_hover
-										${current == total ? 'pgn__link_disabled' : ''}
-									"
-									data-dir="next"
-								>
-									<span class="js-text">${L("Вперёд")}</span>
-									<span class="js-ico ico ico_arr_right"></span>
-								</button>
-							</td>
-						</tr>
-					</table>
-				</div>
-			</div>
-		`;
 	}
 };
 
@@ -289,7 +239,7 @@ function initUsersMenu(objectType, objectId) {
 				count: reactionsCount,
 				reactions: [all],
 				emotionId: 0,
-				pagination: tpl.pagination({ current: currentPage, total: totalPages }),
+				pagination: simplePagination({ current: currentPage, total: totalPages }),
 			}));
 		}
 
@@ -312,7 +262,7 @@ function initUsersMenu(objectType, objectId) {
 			users: response.users,
 			count: reactionsCount,
 			emotionId,
-			pagination: tpl.pagination({ current: currentPage, total: totalPages }),
+			pagination: simplePagination({ current: currentPage, total: totalPages }),
 		}));
 	};
 
@@ -329,7 +279,7 @@ function initUsersMenu(objectType, objectId) {
 		currentPage = 1;
 		render();
 	});
-	usersListMenu.on('click', '.js-reaction_users_pgn', async function (e) {
+	usersListMenu.on('click', '.js-simple_pagination', async function (e) {
 		e.preventDefault();
 		const link = $(this);
 		const direction = link.data('dir');

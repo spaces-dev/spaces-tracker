@@ -29,6 +29,28 @@ Spaces.referer = document.referer;
 // For debug
 window.Spaces = Spaces;
 
+export const TYPES = {
+	FILE:				5,
+	MUSIC:				6,
+	PICTURE:			7,
+	FORUM_TOPIC:		8,
+	DIARY_TOPIC:		9,
+	COMM:				10,
+	USER:				11,
+	MAIL_MSG:			19,
+	VIDEO:				25,
+	COMM_DIARY_TOPIC:	49,
+	MAIL_TALK:			79,
+	EXTERNAL_VIDEO:		82
+};
+
+export const FILE_TYPE_TO_DIR_TYPE = {
+	[TYPES.FILE]:		1,
+	[TYPES.MUSIC]:		2,
+	[TYPES.PICTURE]:	3,
+	[TYPES.VIDEO]:		24
+};
+
 Codes = {
 	COMMON: {
 		code: 0,
@@ -442,20 +464,7 @@ extend(Spaces, {
 	},
 
 	SHOW_PREVIEW_RE: /^(gif|jpg|jpeg|png|bmp|avi|mpg|mp4|m4v|mpeg|asf|wmv|3gp|3gpp|flv|mov|wevm)$/i,
-	TYPES: {
-		FILE:				5,
-		MUSIC:				6,
-		PICTURE:			7,
-		FORUM_TOPIC:		8,
-		DIARY_TOPIC:		9,
-		COMM:				10,
-		USER:				11,
-		MAIL_MSG:			19,
-		VIDEO:				25,
-		COMM_DIARY_TOPIC:	49,
-		MAIL_TALK:			79,
-		EXTERNAL_VIDEO:		82
-	},
+	TYPES,
 	FILES_LIST: {
 		DIRS: 1,
 		FILES: 2,
@@ -1122,7 +1131,7 @@ Spaces.view = {
 		return parent.hasClass('error__item');
 	},
 	setInputError: function (input, error) {
-		var parent = input.parents('.js-input_error_wrap').first(),
+		var parent = input.hasClass('js-input_error_wrap') ? input : input.parents('.js-input_error_wrap').first(),
 			error_place = parent.find('.js-input_error').first();
 
 		if (!parent.length)

@@ -89,7 +89,7 @@
 	@include icon-middle-align(16);
 	@include icon-active-state("ico_acl", "black");
 	@include icon-hover-state("ico_acl", "blue", "black");
-	@include icon-disabled-state("ico_acl");
+	// @include icon-disabled-state("ico_acl");
 }
 @include define-sprite("ico_mail") {
 	/*!__PURE__*/ display: inline-block;

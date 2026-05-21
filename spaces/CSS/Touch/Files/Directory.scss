@@ -1,0 +1,87 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+.directory {
+	position: relative;
+	display: flex;
+	border-bottom: 1px solid $separator-color;
+
+	&__arrow {
+		display: none;
+		content: '';
+		display: inline-block;
+		position: absolute;
+		top: 50%;
+		right: 15px;
+		transform: translateY(-50%);
+
+		.directory--with-arrow & {
+			display: block;
+		}
+	}
+
+	&__inner-checkbox {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__outer-checkbox {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 20px;
+	}
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&__info {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		padding-top: 2px;
+	}
+
+	&__content {
+		flex: 1;
+		display: flex;
+		gap: 8px;
+		padding: 12px 15px;
+
+		.directory--with-arrow & {
+			padding-right: 38px;
+		}
+	}
+
+	&__icon {
+		display: flex;
+	}
+
+	&__name {
+		font-weight: bold;
+		color: $darkblue-text-color;
+	}
+
+	&__description {
+		color: $secondary-text-color;
+	}
+
+	&__bg {
+		cursor: pointer;
+		background: $content-bg;
+
+		&:hover {
+			background: $default-hover-bg;
+		}
+
+		&:active {
+			background: $default-clicked-bg;
+			box-shadow: $default-clicked-shadow;
+		}
+	}
+
+
+}

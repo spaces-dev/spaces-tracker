@@ -1,11 +1,6 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 
-.reactions-users-link { // TODO: должно стать каким-то стандартным элементом?
-	padding-top: 3px;
-	background: $dropdown-body-bg;
-}
-
 .reactions-selector {
 	display: none;
 	position: absolute;

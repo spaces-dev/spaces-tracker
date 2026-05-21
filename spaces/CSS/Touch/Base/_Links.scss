@@ -145,6 +145,19 @@ button::-moz-focus-inner{padding:0;border:0}
 	&--rounded {
 		border-radius: 3px;
 	}
+
+	&--short {
+		padding: 10px 15px;
+
+		&::active {
+			padding: 11px 15px 9px 15px;
+		}
+	}
+
+	&--is-disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
 }
 
 button.list-link {

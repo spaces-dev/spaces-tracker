@@ -15,7 +15,7 @@ export function scrollIntoViewIfNotVisible(target, options = {}) {
 		start: "start",
 		end: "end",
 		behavior: "smooth",
-		...options
+		...options,
 	};
 	const rect = target.getBoundingClientRect();
 	if (rect.bottom > window.innerHeight) {

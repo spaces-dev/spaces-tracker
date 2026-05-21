@@ -1,0 +1,76 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+
+.dir-selector {
+	&__location {
+		display: flex;
+		height: 40px;
+		gap: 10px;
+		align-items: center;
+		background: $content-bg;
+		border-bottom: 1px solid $separator-color;
+	}
+
+	&__location-title {
+		flex: 1;
+		text-align: center;
+		text-transform: uppercase;
+		font-weight: bold;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+
+		&:first-child {
+			text-align: left;
+			padding-left: 15px;
+		}
+	}
+
+	&__location-space {
+		width: 40px;
+		height: 40px;
+	}
+
+	&__location-button {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 40px;
+		height: 40px;
+		cursor: pointer;
+		border: none;
+		border-radius: 0;
+
+		&:hover {
+			background: $default-hover-bg;
+		}
+
+		&:active {
+			background: $default-clicked-bg;
+			box-shadow: $default-clicked-shadow;
+		}
+
+		&--is-disabled {
+			opacity: 0.5;
+			pointer-events: none;
+		}
+	}
+
+	&__list {
+		border-bottom: 1px solid $separator-color;
+	}
+
+	&__empty {
+		background: $content-bg;
+		color: $secondary-text-color;
+		padding: 15px;
+		text-align: center;
+		border-bottom: 1px solid $separator-color;
+	}
+}
+
+// FIXME: КОСТЫЛЬ! Скрываем кнопку перехода в полноэкранный селектор юзеров!
+// На текущий момент это не имеет смысла внутри dropdown (нужно переделывать наш селектор юзеров во что-то адекватное)
+.popper-dropdown .js-groups_list .user__tools-link.mail__search_btn {
+	display: none;
+}
