@@ -108,7 +108,7 @@ var Chat = {
 		last_refresh = {req: null, time: Date.now(), interval: null};
 		
 		if (notifications && chat_params)
-			notifications.setNotifFilter(new RegExp('Rid=' + chat_params.roomid));
+			notifications.setNotifFilter(new RegExp('Rid=' + chat_params.roomId));
 		
 		const handlePrivateAnswer = (el) => {
 			const is_private = el.hasClass('js-private_answer') || el.data('private');
@@ -234,7 +234,7 @@ var Chat = {
 			
 			$(this).trigger('suggestSelect');
 			
-			var api_data = {frIends: [], Rid: chat_params.roomid, CK: null},
+			var api_data = {frIends: [], Rid: chat_params.roomId, CK: null},
 				input = $('#invite_friend_input'),
 				selected_wrap = $('#invite_friend_selected');
 			selected_wrap.find('.js-selected_user').each(function () {
@@ -346,13 +346,16 @@ var Chat = {
 		if (!messages_list.length)
 			return;
 
+		// Устанавливаем тип раздела, где сейчас находится юзер
+		notifications.setPlace(chat_params.roomType, chat_params.roomId);
+
 		// LP
 		$('#main').on('submit', '#chat_msg_form', function (e) {
 			e.preventDefault();
 			var form = this;
 			var data = {
 				msg: form.msg.value,
-				Rid: chat_params.roomid
+				Rid: chat_params.roomId
 			};
 			if (form.To_user_id)
 				data.To_user_id = form.To_user_id.value;
@@ -374,7 +377,7 @@ var Chat = {
 		self.setManualRefresh(!pushstream.avail());
 
 		pushstream.on("message", "chat", function (data) {
-			if (data.room_id != chat_params.roomid)
+			if (data.room_id != chat_params.roomId)
 				return;
 
 			if (data.act == pushstream.TYPES.CHAT_SEND_MESSAGE) {
@@ -451,7 +454,7 @@ var Chat = {
 	getApiExtra: function (url) {
 		return {
 			P: $('.pgn').data('page') || 1,
-			Rid: chat_params.roomid,
+			Rid: chat_params.roomId,
 			Link_id: Spaces.params.link_id
 		};
 	},
