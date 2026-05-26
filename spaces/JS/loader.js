@@ -358,6 +358,21 @@ __require_config		|	Конфиг загрузчика
 			if (result !== undefined)
 				module.exports = result;
 			
+			// ES5 interop, что-то из 90-х
+			if (
+				module.exports &&
+				module.exports.default &&
+				typeof module.exports.default === 'object' &&
+				module.exports.default.__esModule
+			) {
+				console.log(name, module.exports)
+				for (const k in module.exports.default) {
+					if (!(k in module.exports)) {
+						module.exports[k] = module.exports.default[k];
+					}
+				}
+			}
+
 			module.loaded = true;
 			
 			let requires = modules_loading[name];

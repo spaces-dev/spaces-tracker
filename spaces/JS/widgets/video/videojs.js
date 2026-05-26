@@ -3,7 +3,7 @@ import Spaces from '../../spacesLib';
 import Device from '../../device';
 import cookie from '../../cookie';
 import BaseDriver from './base';
-import { setupAds } from './videojs/ads';
+import { setupAds } from './videojs/openVastAds';
 import { setupStatistic, setupViewTracker } from './videojs/statistic';
 import { isMobilePlayer } from './videojs/plugins/utils';
 
@@ -143,32 +143,35 @@ class VideoJsDriver extends BaseDriver {
 			this.trigger('quality-changed', [resolution]);
 		});
 
-		/*
+		// https://opencdn.b-cdn.net/pub/5.0/e-n-1/nonlinear_html_sample.xml?token=76b
+		// https://cdnzone.nuevodevel.com/pub/5.0/e-c-1/companion_sample_05.xml
+		// https://cdnzone.nuevodevel.com/pub/5.0/e-a-1/vast_adpods_sample2.xml?token=62792171
+		// https://cdnzone.nuevodevel.com/pub/5.0/e-i-1/icon_sample_02x.xml?tm=123
+
 		if (cookie.get('vast_test')) {
 			this.options.vast = [
 				{
 					"id": "postroll",
 					"offset": "end",
-					"tag": "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&correlator=&2",
+					"tag": 'https://opencdn.b-cdn.net/pub/5.0/e-v-1/postroll.xml',
 					"type": "linear"
 				},
 				{
 					"id": "midroll",
-					"offset": "00:00:15.000",
-					"tag": "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&correlator=",
+					"offset": "00:00:03.000",
+					"tag": 'https://opencdn.b-cdn.net/pub/5.0/e-v-1/midroll.xml',
 					"type": "linear"
 				},
 				{
 					"id": "preroll",
 					"offset": "start",
-					"tag": "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&correlator=",
+					"tag": 'https://opencdn.b-cdn.net/pub/5.0/e-v-1/preroll.xml',
 					"type": "linear"
 				}
 			];
 		}
-		*/
 
-		if (this.options.vast)
+		if (this.options.vast && this.options.vast.length)
 			setupAds(player, this.options.vast);
 
 		let saved_volume = getSavedVolume();

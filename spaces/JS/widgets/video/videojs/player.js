@@ -23,6 +23,7 @@ import './plugins/fastShowOnHover';
 import './plugins/bigPlayingStatus';
 import './plugins/adsOnPause';
 import './plugins/swipeFromFullscreen';
+import './plugins/vast/index';
 
 // Патчим videojs
 videojsEnableSyncSetSource(videojs);

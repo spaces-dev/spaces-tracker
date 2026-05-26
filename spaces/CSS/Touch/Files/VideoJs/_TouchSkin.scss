@@ -244,6 +244,12 @@ $vjs-timeline-height: 0.25em;
 		opacity: 0;
 	}
 
+	&.vjs-vast-loading .vjs-control-bar > .vjs-play-control,
+	&.vjs-ad-loading .vjs-control-bar > .vjs-play-control {
+		opacity: 0;
+		transition: none;
+	}
+
 	// Скрываем во время загрузки/перемотки
 	&.vjs-waiting .vjs-control-bar > .vjs-play-control,
 	&.vjs-seeking .vjs-control-bar > .vjs-play-control {
