@@ -354,17 +354,20 @@ var CommentsModule = function (wrap) {
 			wrap.on('click', '.js-comment_translate', async (e) => {
 				e.preventDefault();
 
-				let el = $(e.target);
-				let comm = el.parents('.js-comm');
-				let cid = comm.data("id");
+				const el = $(e.target);
+				const comm = el.parents('.js-comm');
+				const cid = comm.data("id");
+
+				const originalText = comm.find('.js-comment_original_text');
+				const translatedText = comm.find('.js-comment_translated_text');
 
 				if (el.data('busy'))
 					return;
 
-				let setBusy = (flag) => {
+				const setBusy = (flag) => {
 					el.data('busy', flag);
 
-					let commentDate = comm.find('.comment_date');
+					const commentDate = comm.find('.comment_date');
 					if (flag) {
 						commentDate.addClass('hide').after(tpl.dateSpinner());
 					} else {
@@ -373,36 +376,46 @@ var CommentsModule = function (wrap) {
 					}
 				};
 
-				let switchTranslate = (flag) => {
-					originalText.toggleClass('hide', flag);
-					translatedText.toggleClass('hide', !flag);
-					el.html(flag ? L("Показать оригинал") : L("Показать перевод"));
-					comm.data('translated', flag);
+				const switchTranslation = (showTranslation) => {
+					originalText.toggleClass('hide', showTranslation);
+					translatedText.toggleClass('hide', !showTranslation);
+
+					el.html(showTranslation ? L("Показать оригинал") : L("Показать перевод"));
+					comm.data('translated', showTranslation);
 				};
 
-				let originalText = comm.find('.js-comment_original_text');
-				let translatedText = comm.find('.js-comment_translated_text');
+				const fetchTranslation = async (showTranslation) => {
+					const commentText = showTranslation ? translatedText : originalText;
 
-				if (comm.data('translated')) {
-					switchTranslate(false);
-				} else if (comm.data('translateCached')) {
-					switchTranslate(true);
-				} else {
 					setBusy(true);
-					let response = await Spaces.asyncApi("comments.translate", {
+
+					const response = await Spaces.asyncApi("comments.translate", {
 						Id: cid,
 						Type: current.type,
-						...el.data('params')
+						Orig: showTranslation ? 0 : 1
 					});
+
 					setBusy(false);
 
 					if (response.code == 0) {
-						translatedText.html(response.translation);
-						switchTranslate(true);
-						comm.data('translateCached', true);
+						commentText.data('cached', true).html(response.translation);
 					} else {
-						translatedText.html(tpl.commentError(Spaces.apiError(response)));
-						switchTranslate(true);
+						commentText.html(tpl.commentError(Spaces.apiError(response)));
+					}
+					switchTranslation(showTranslation);
+				};
+
+				if (comm.data('translated')) {
+					if (originalText.data('cached')) {
+						switchTranslation(false);
+					} else {
+						fetchTranslation(false);
+					}
+				} else {
+					if (translatedText.data('cached')) {
+						switchTranslation(true);
+					} else {
+						fetchTranslation(true);
 					}
 				}
 			});
