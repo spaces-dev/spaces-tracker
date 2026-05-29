@@ -121,11 +121,11 @@ module.on("componentpage", function () {
 			selected_list.show().append(removable);
 			for (var i = 0; i < item_params.length; ++i) {
 				var param = item_params[i];
-				
 				set_hidden(parent, param.name, param.value, true);
-				
 				mark_group_contact(parent, param.name, param.value, true);
 			}
+
+			parent.trigger('groupsSelector:change', { selected: getSelected(parent) });
 			parent.find('.js-search__input').focus().val('').trigger('input').blur();
 		}
 	})
@@ -137,6 +137,7 @@ module.on("componentpage", function () {
 			parent = el.parents('.js-groups_list');
 		mark_group_contact(parent, el.data('hidden_name'), el.data('hidden_value'), data.state);
 		toggle_removebles(parent);
+		parent.trigger('groupsSelector:change', { selected: getSelected(parent) });
 		
 		// Обновляем список
 		tick(function () {
@@ -162,6 +163,7 @@ module.on("componentpage", function () {
 			hidden.remove();
 			toggle_removebles(parent, el.parents('.s-property'), false);
 		}
+		parent.trigger('groupsSelector:change', { selected: getSelected(parent) });
 		
 		// Обновляем список
 		tick(function () {
@@ -247,9 +249,27 @@ module.on("componentpage", function () {
 			return hidden && hidden.type == type && id == hidden.id && hidden.place == 'button';
 		}).parents('.js-addremove');
 	}
+
+	function getSelected(parent) {
+		const selected = [];
+		for (const hiddenInput of parent.find('input[type="hidden"]')) {
+			const parsedHidden = parseId(hiddenInput.name);
+			if (parsedHidden) {
+				switch (parsedHidden.type) {
+					case "e":
+						selected.push({ type: "email", value: hiddenInput.value });
+						break;
+					case "u":
+						selected.push({ type: "user", value: +hiddenInput.value });
+						break;
+				}
+			}
+		}
+		return selected;
+	}
 });
 
-// FIXME: Чё за дичь?
+// FIXME: Чё за дичь? (2026 UPD: тот же вопрос!)
 function parseId(id) {
 	var m;
 	if ((m = id.match(/(\w)d_(\d+)$/))) { // removable id
@@ -260,13 +280,13 @@ function parseId(id) {
 		};
 	} else if ((m = id.match(/^gl(\w+)$/))) { // gl*
 		return {
-			place: 'checbox',
+			place: 'checkbox',
 			prefix: m[1],
 			type: m[1]
 		};
 	} else if ((m = id.match(/^GlS(.*?)_(\w)$/))) { // GlS
 		return {
-			place: 'checbox',
+			place: 'checkbox',
 			prefix: m[1],
 			type: m[2]
 		};

@@ -148,7 +148,8 @@ var toggle_replace_link = function (widget, flag) {
 	widget
 		.toggleClass('hide', !flag)
 		.data('link')
-		.toggleClass('link_active', flag);
+		.toggleClass('link_active', flag)
+		.toggleClass('js-clicked', flag);
 	
 	if (table.length)
 		table.after(widget.addClass("content-bl__top_sep"));

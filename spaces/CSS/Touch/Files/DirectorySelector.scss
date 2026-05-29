@@ -68,9 +68,3 @@
 		border-bottom: 1px solid $separator-color;
 	}
 }
-
-// FIXME: КОСТЫЛЬ! Скрываем кнопку перехода в полноэкранный селектор юзеров!
-// На текущий момент это не имеет смысла внутри dropdown (нужно переделывать наш селектор юзеров во что-то адекватное)
-.popper-dropdown .js-groups_list .user__tools-link.mail__search_btn {
-	display: none;
-}

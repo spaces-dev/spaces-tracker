@@ -10,6 +10,7 @@ import AttachSelector from './widgets/attach_selector';
 import {L, html_wrap, numeral, ge} from './utils';
 import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
 import { isFullyVisibleOnScreen, waitTransitionEnd } from './utils/dom';
+import { showToast } from './widgets/toaster';
 
 let focusIntersectionObserver;
 
@@ -220,71 +221,8 @@ var Chat = {
 		}).on('click', '.js-lock_open, .js-lock_close', function (e) {
 			e.preventDefault();
 			Chat.switchAccess($(this).hasClass('js-lock_close'));
-		})
-		
-		// Приглашения
-		.on('popper:beforeOpen', '#invite_friend_menu', function (e) {
-			let input = $('#invite_friend_input');
-			Spaces.view.setInputError(input, false);
-		}).on('focus', '#invite_friend_input', function (e) {
-			$(this).parent().parent().find('.js-input_error').remove();
-		}).on('click', '.js-chat_invite', function (e) {
-			e.preventDefault(); e.stopPropagation();
-			e.stopImmediatePropagation();
-			
-			$(this).trigger('suggestSelect');
-			
-			var api_data = {frIends: [], Rid: chat_params.roomId, CK: null},
-				input = $('#invite_friend_input'),
-				selected_wrap = $('#invite_friend_selected');
-			selected_wrap.find('.js-selected_user').each(function () {
-				api_data.frIends.push($(this).data('name'));
-			});
-			if (api_data.frIends.length > 0 && !selected_wrap.data("proccess")) {
-				var ico = $('.js-chat_invite .ico');
-				ico.addClass('ico_spinner');
-				
-				input.attr("disabled");
-				selected_wrap.data("proccess", true);
-				
-				var on_done = function () {
-					selected_wrap.data("proccess", false);
-					ico.removeClass('ico_spinner');
-					selected_wrap.empty();
-					input.val('');
-					input.removeAttr("disabled");
-				};
-				
-				Spaces.api("chat.invite", api_data, function (res) {
-					on_done();
-					if (res.code != 0) {
-						Spaces.view.setInputError(input, Spaces.apiError(res));
-					} else {
-						Spaces.showMsg(L('Приглашения отправлены'), {hideTimeout: 1500});
-						$('html, body').scrollTop(0);
-						getPopperById("invite_friend_menu")?.close();
-					}
-				}, {
-					onError: function () {
-						on_done();
-					}
-				});
-			}
-		}).on('suggestSelect', function (e, data) {
-			var input = $('#invite_friend_input'),
-				user = $.trim(input.val()),
-				selected = $('#invite_friend_selected');
-			if (!data && user.length > 2)
-				data = {name: user};
-			if (data)
-				selected.append(tpl.userProperty(data));
-			input.val('');
-		}).on('click', '.js-selected_user_remove', function (e) {
-			e.preventDefault(); e.stopPropagation();
-			e.stopImmediatePropagation();
-			$(this).parents('.js-selected_user').remove();
 		});
-		
+
 		$('#main').on('focuswindow', function () {
 			new_messages_cnt = 0;
 		});
@@ -342,6 +280,8 @@ var Chat = {
 			const usersListMenu = getPopperById(`reaction_users_${objectType}_${objectId}`);
 			usersListMenu.open({}, messageMenu.opener());
 		});
+
+		this.initInviteForm();
 
 		if (!messages_list.length)
 			return;
@@ -450,6 +390,58 @@ var Chat = {
 		message.classList.add('message--focused');
 		message.classList.remove('message--seen');
 		focusIntersectionObserver.observe(message);
+	},
+	initInviteForm() {
+		const inviteForm = $('#chat_invite_form');
+		if (!inviteForm.length)
+			return;
+
+		let selectedUsers = [];
+		const userSelector = inviteForm.find('.js-groups_list');
+
+		const toggleDisabled = (flag) => {
+			const submitButton = inviteForm.find('button[data-action="chat_invite"]');
+			submitButton.toggleClass('stnd-link_disabled disabled', flag);
+			submitButton.prop('disabled', flag);
+		};
+
+		const toggleLoading = (flag) => {
+			const submitButton = inviteForm.find('button[data-action="chat_invite"]');
+			toggleDisabled(flag);
+			submitButton.find('.js-ico').toggleClass('ico_spinner', flag);
+		};
+
+		const resetForm = () => {
+			userSelector.find('.js-removable_remove').click();
+		};
+
+		userSelector.on('groupsSelector:change', function (_e, { selected }) {
+			selectedUsers = selected.filter((s) => s.type == 'user').map((s) => s.value);
+			toggleDisabled(!selectedUsers.length);
+		});
+
+		inviteForm.action('chat_invite', async function (e) {
+			e.preventDefault();
+
+			toggleLoading(true);
+			const response = await Spaces.asyncApi("chat.invite", {
+				FrIends: selectedUsers,
+				Rid: chat_params.roomId,
+				CK: null,
+			});
+			toggleLoading(false);
+
+			if (response.code != 0) {
+				Spaces.showApiError(response);
+			} else {
+				Spaces.showMsg(L('Приглашение отправлено'), { hideTimeout: 15000 });
+				resetForm();
+			}
+
+			// Закрываем форму
+			inviteForm.parents('.replace_widget_wrapper').find('.js-replace_link').click();
+		});
+
 	},
 	getApiExtra: function (url) {
 		return {
