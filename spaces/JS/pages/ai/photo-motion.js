@@ -71,6 +71,43 @@ function initForm() {
 	if (!form.length)
 		return;
 
+	let photoIsNSFW = false;
+
+	const validateForm = () => {
+		const params = Url.serializeForm(form);
+		const submitButton = form.find(`button[name="cfms"]`);
+		const audioCheckbox = form.find(`input[type="checkbox"][name="Audio"]`);
+
+		let errorsCount = 0;
+		Spaces.view.setInputError(audioCheckbox, false);
+
+		if (params.Audio) {
+			if (params.Duration < 4) {
+				Spaces.view.setInputError(audioCheckbox, L("Озвучка доступна только при длительности от 4 секунд."));
+				errorsCount++;
+			} else if (photoIsNSFW) {
+				Spaces.view.setInputError(audioCheckbox, L("Озвучка недоступна для файлов с подобным содержанием."));
+				errorsCount++;
+			}
+		}
+
+		submitButton.toggleClass('stnd-link_disabled', errorsCount > 0);
+	};
+
+	const checkNSFW = async () => {
+		const params = Url.serializeForm(form);
+		const fileId = +params.Fid;
+		const fileType = params.Ftype ? +params.Ftype : Spaces.TYPES.PICTURE;
+		if (!fileId)
+			return;
+		const response = await Spaces.asyncApi("files.file.nsfwCheck", {
+			Type: fileType,
+			Id: fileId,
+		});
+		photoIsNSFW = response.code === 0 && response.is_nsfw;
+		validateForm();
+	};
+
 	const updateCost = debounce(() => {
 		Spaces.api("services.ai.photoMotion.getCost", {
 			CK: null,
@@ -84,16 +121,15 @@ function initForm() {
 		});
 	}, 250);
 
-	const enableAudio = (flag) => {
-		const checkbox = form.find('input[type="checkbox"][name="Audio"]').parents('.js-checkbox_wrap');
-		checkbox.toggleClass('hide', !flag);
-	};
+	// FIXME: При чём тут аватар?????? Аттач????
+	$('#change_avatar-form').on('onNewAttach', () => {
+		// Селектор чуть позже обновляем параметры формы....
+		setTimeout(() => checkNSFW(), 0);
+	});
+	checkNSFW();
 
 	form.on('change input', 'input, textarea, select', () => updateCost());
-
-	form.on('change', 'input[type="range"][name="Duration"]', function () {
-		enableAudio(parseInt(this.value) >= 4);
-	});
+	form.on('change', 'input, textarea, select', () => validateForm());
 }
 
 function destroy() {

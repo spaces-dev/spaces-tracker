@@ -264,6 +264,7 @@ var AvatarChange = {
 		}
 		
 		$('#change_avatar-file_id').val(file_id);
+		$('#change_avatar-file_type').val(Spaces.TYPES.PICTURE);
 		
 		if (cfg.api) {
 			self.setAvatarLoading(true);
