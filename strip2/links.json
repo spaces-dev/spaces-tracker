@@ -639,6 +639,7 @@
   "/js/ru/touch/files/directory.js",
   "/js/ru/touch/files/directorySelector.js",
   "/js/ru/touch/files/screenshot_change.js",
+  "/js/ru/touch/files/sharedZoneSelector.js",
   "/js/ru/touch/files/sort.js",
   "/js/ru/touch/files/video-slides.js",
   "/js/ru/touch/files/video-teaser.js",

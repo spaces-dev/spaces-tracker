@@ -2,6 +2,19 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
+.button-group {
+	display: flex;
+	background: $content-bg;
+
+	&__item {
+		flex: 1;
+		border-right: 1px solid $separator-color;
+		&:last-child {
+			border-right: none;
+		}
+	}
+}
+
 .choice-group {
 	border: 1px solid $default-border-color;
 	border-radius: 3px;

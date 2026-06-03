@@ -67,4 +67,11 @@
 		text-align: center;
 		border-bottom: 1px solid $separator-color;
 	}
+
+	&__message {
+		background: $content-bg;
+		padding: 15px;
+		text-align: center;
+		border-bottom: 1px solid $separator-color;
+	}
 }

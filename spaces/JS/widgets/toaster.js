@@ -1,8 +1,9 @@
 import "Common/Toaster.css";
 import { waitTransitionEnd } from "../utils/dom";
 
-const queue = [];
+let queue = [];
 let closeTimerId;
+let currentToastId;
 
 const tpl = {
 	toast({ title, text, severity }) {
@@ -21,14 +22,15 @@ const tpl = {
 };
 
 export function showToast(toast) {
-	const id = Date.now();
+	const id = toast.id ?? Date.now();
 	const severity = toast.severity ?? "info";
+	queue = queue.filter((queuedToast) => queuedToast.id !== id);
 	queue.push({
 		id,
 		title: undefined,
 		text: "",
 		severity,
- 		timeout: severity == "info" ? 5000 : 10000,
+		timeout: severity == "info" ? 5000 : 10000,
 		...toast
 	});
 	setTimeout(() => processToasts(), 0);
@@ -38,12 +40,18 @@ export function showToast(toast) {
 function processToasts() {
 	if (!queue.length)
 		return;
+	if (currentToastId === queue[0].id) {
+		closeToast();
+		return;
+	}
 	if (document.getElementById('toast'))
 		return;
 	renderToast(queue.shift());
 }
 
 function renderToast(toast) {
+	currentToastId = toast.id;
+
 	document.body.insertAdjacentHTML('beforeend', tpl.toast({
 		title: toast.title,
 		text: toast.text,
@@ -80,5 +88,6 @@ async function closeToast() {
 		clearTimeout(closeTimerId);
 		closeTimerId = undefined;
 	}
+	currentToastId = undefined;
 	processToasts();
 }

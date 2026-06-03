@@ -623,6 +623,7 @@
   "/js/touch/files/directory.js",
   "/js/touch/files/directorySelector.js",
   "/js/touch/files/screenshot_change.js",
+  "/js/touch/files/sharedZoneSelector.js",
   "/js/touch/files/sort.js",
   "/js/touch/files/video-slides.js",
   "/js/touch/files/video-teaser.js",

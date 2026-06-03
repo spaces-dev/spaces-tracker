@@ -46,16 +46,18 @@
 		display: flex;
 		align-self: self-start;
 		position: relative;
+		overflow: hidden;
+		border-radius: 4px;
 
 		img {
 			object-fit: cover;
 			height: 100px;
 			width: 100px;
-			border-radius: 4px;
 		}
 
 		.game-activity-card--is-blurred & img {
-			filter: blur(2.56px);
+			filter: blur(12px);
+			transform: scale(1.1);
 		}
 	}
 
