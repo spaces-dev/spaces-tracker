@@ -515,6 +515,9 @@ export function init(new_cats, new_langs) {
 	cats = new_cats;
 	langs = new_langs;
 	
+	console.log("cats", cats);
+	console.log("langs", langs);
+
 	$('#cat_editor_add_new_cat').on('click', (e) => {
 		e.preventDefault();
 		$(e.target).remove();
