@@ -70,6 +70,15 @@ function init() {
 			setFormError(e.message);
 			console.error(e);
 		}
+	}).action('ai_chat_suggestion', async function (e) {
+		e.preventDefault();
+		const input = document.querySelector('.js-text_input_text textarea');
+		input.value = this.dataset.value;
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+
+		const submitButton = document.querySelector('button[data-action="ai_chat_submit"]');
+		submitButton.click();
+		scrollIntoViewIfNotVisible(input, { start: "center", end: "center" });
 	}).action('load_more', async (e) => {
 		e.preventDefault();
 
