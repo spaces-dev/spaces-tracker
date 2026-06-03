@@ -92,6 +92,7 @@ function initForm() {
 		}
 
 		submitButton.toggleClass('stnd-link_disabled', errorsCount > 0);
+		submitButton.prop("disabled", errorsCount > 0);
 	};
 
 	const checkNSFW = async () => {
