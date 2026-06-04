@@ -118,6 +118,17 @@ const tpl = {
 			</div>
 		`;
 	},
+	message(msg) {
+		return `
+			<div class="content-item3 content-bl__sep grey">
+				${msg}
+			</div>
+			<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+				<span class="ico ico_remove"></span>
+				${L('Закрыть')}
+			</div>
+		`;
+	},
 	error(errMsg) {
 		return `
 			<div class="content-item3 content-bl__sep red">
@@ -142,6 +153,10 @@ function initDirSelector(selectorWidget) {
 
 	const showError = (error) => {
 		selectorPopperContent.html(tpl.error(error));
+	};
+
+	const showMessage = (msg) => {
+		selectorPopperContent.html(tpl.message(msg));
 	};
 
 	const setSelectedDir = async (dirId, dirWidget) => {
@@ -211,8 +226,28 @@ function initDirSelector(selectorWidget) {
 		}
 	};
 
+	const checkForAdd = async () => {
+		const params = selectorWidget.data('params');
+		const response = await Spaces.asyncApi("shared_zone.checkFileForAdd", { ...params });
+		if (response.code != 0) {
+			if (response.error) {
+				showMessage(response.error);
+			} else {
+				showError(Spaces.apiError(response));
+			}
+			return false;
+		}
+		if (response.karmaNotice) {
+			showMessage(response.karmaNotice);
+			return false;
+		}
+		return true;
+	};
+
 	popper.on("beforeOpen", async () => {
 		selectorPopperContent.html(tpl.loader());
+		if (!await checkForAdd())
+			return;
 		await openDir(0); // Всегда открываем корень
 	});
 
