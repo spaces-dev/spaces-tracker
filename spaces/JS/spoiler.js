@@ -171,7 +171,7 @@ $('body').on('click', '.js-replace_link', function (e) {
 	toggle_replace_link(widget, false);
 }).action('spoiler', function (e) {
 	e.preventDefault();
-	
+
 	if ($(this).data('selector')) {
 		$($(this).data('selector')).toggleClass('hide');
 	} else if ($(this).data('id')) {

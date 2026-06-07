@@ -25,75 +25,80 @@ const tpl = {
 		};
 
 		return `
-			<div class="dir-selector dropdown-list">
-				<div class="dropdown-list__item">
-					<div class="dir-selector__location">
-						<button
-							class="
-								js-action_link dir-selector__location-button use-icon-state
-								${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
-							"
-							data-action="dir_selector_back"
-							data-dir-id="${prevDir.nid}"
-							title="${L('Перейти назад')}"
-						>
-							<span class="js-ico ico-alone ico ico_arr_left"></span>
-						</button>
-						<div class="dir-selector__location-title">
-							<span class="ico_files ico_files_dir"></span>
-							${curDir.name}
-						</div>
-						<button
-							class="
-								js-action_link dir-selector__location-button use-icon-state
-								${canCreateDir ? '' : 'dir-selector__location-button--is-disabled'}
-							"
-							data-action="dir_selector_create_dir_form"
-							title="${isCollection ? L('Создать коллекцию') : L('Создать папку')}"
-						>
-							<span class="js-ico ico-alone ico ${canCreateDir ? 'ico_dir_create_blue' : 'ico_dir_create'}"></span>
-						</button>
-					</div>
-					${subDirs.length ? `
-						<div class="dir-selector__list">
-							${subDirs.join("")}
-						</div>
-						${pagination}
-					` : `
-						<div class="dir-selector__empty">
-							${emptyMessage()}
-						</div>
-					`}
-				</div>
-
-				<div class="dropdown-list__item ${fileMoveError ? '' : 'hide'}">
-					<div class="stnd-block grey t_center">
-						<span class="ico ico_block"></span>
-						${fileMoveError ?? ''}
-					</div>
-				</div>
-
-				<div class="dropdown-list__item ${isFileAlreadyInDir ? '' : 'hide'}">
-					<div class="stnd-block grey t_center">
-						${isCollection ? L('Файл уже находится в текущей коллекции.') : L('Файл уже находится в текущей папке.')}
-					</div>
-				</div>
-
-				<div class="dropdown-list__item ${isFileAlreadyInDir || fileMoveError || !canMoveHere ? 'hide' : ''}">
-					<div
-						class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
-						data-action="dir_selector_select"
+			<div class="dir-selector dropdown-content">
+				<div class="dir-selector__location">
+					<button
+						class="
+							js-action_link dir-selector__location-button use-icon-state
+							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
+						"
+						data-action="dir_selector_back"
+						data-dir-id="${prevDir.nid}"
+						title="${L('Перейти назад')}"
 					>
-						<span class="ico ico_ok_blue js-ico"></span>
-						${isCollection ? L('Выбрать текущую коллекцию') : L('Выбрать текущую папку')}
+						<span class="js-ico ico-alone ico ico_arr_left"></span>
+					</button>
+					<div class="dir-selector__location-title">
+						<span class="ico_files ico_files_dir"></span>
+						${curDir.name}
 					</div>
+					<button
+						class="
+							js-action_link dir-selector__location-button use-icon-state
+							${canCreateDir ? '' : 'dir-selector__location-button--is-disabled'}
+						"
+						data-action="dir_selector_create_dir_form"
+						title="${isCollection ? L('Создать коллекцию') : L('Создать папку')}"
+					>
+						<span class="js-ico ico-alone ico ${canCreateDir ? 'ico_dir_create_blue' : 'ico_dir_create'}"></span>
+					</button>
 				</div>
+				${subDirs.length ? `
+					<div class="dir-selector__list">
+						${subDirs.join("")}
+					</div>
+					${pagination}
+				` : `
+					<div class="dir-selector__empty">
+						${emptyMessage()}
+					</div>
+				`}
+			</div>
+
+			<div class="dropdown-content ${fileMoveError ? '' : 'hide'}">
+				<div class="stnd-block grey t_center">
+					<span class="ico ico_block"></span>
+					${fileMoveError ?? ''}
+				</div>
+			</div>
+
+			<div class="dropdown-content ${isFileAlreadyInDir ? '' : 'hide'}">
+				<div class="stnd-block grey t_center">
+					${isCollection ? L('Файл уже находится в текущей коллекции.') : L('Файл уже находится в текущей папке.')}
+				</div>
+			</div>
+
+			<div class="dropdown-content ${isFileAlreadyInDir || fileMoveError || !canMoveHere ? 'hide' : ''}">
+				<div
+					class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
+					data-action="dir_selector_select"
+				>
+					<span class="ico ico_ok_blue js-ico"></span>
+					${isCollection ? L('Выбрать текущую коллекцию') : L('Выбрать текущую папку')}
+				</div>
+			</div>
+		`;
+	},
+	createDir({ form }) {
+		return `
+			<div class="dropdown-content">
+				${form}
 			</div>
 		`;
 	},
 	loader() {
 		return `
-			<div class="dir-selector">
+			<div class="dropdown-content dir-selector">
 				<div class="dir-selector__empty">
 					<span class="ico ico_spinner"></span>
 					${L('Загрузка....')}
@@ -103,12 +108,14 @@ const tpl = {
 	},
 	error(errMsg) {
 		return `
-			<div class="content-item3 content-bl__sep red">
-				${errMsg}
-			</div>
-			<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
-				<span class="ico ico_remove"></span>
-				${L('Закрыть')}
+			<div class="dropdown-content">
+				<div class="content-item3 content-bl__sep red">
+					${errMsg}
+				</div>
+				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+					<span class="ico ico_remove"></span>
+					${L('Закрыть')}
+				</div>
 			</div>
 		`;
 	}
@@ -239,7 +246,7 @@ function initDirSelector(selectorWidget) {
 		if (response.dirId) {
 			await openDir(response.dirId);
 		} else {
-			selectorPopperContent.html(response.widget);
+			selectorPopperContent.html(tpl.createDir({ form: response.widget }));
 		}
 	});
 	selectorPopperContent.action('dir_selector_create_dir_form', async function (e) {
@@ -261,7 +268,7 @@ function initDirSelector(selectorWidget) {
 			showError(Spaces.apiError(response));
 			return;
 		}
-		selectorPopperContent.html(response.widget);
+		selectorPopperContent.html(tpl.createDir({ form: response.widget }));
 	});
 	selectorPopperContent.action('dir_selector_select', async function (e) {
 		e.preventDefault();

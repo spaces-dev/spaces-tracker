@@ -626,6 +626,11 @@ body .strong_clicked:active{
 	color: $inline-link-default-clicked-color !important;
 }
 
+.inl-link--dotted {
+	display: inline-block;
+	border-bottom: 1px dotted currentColor;
+}
+
 .quote {
 	padding: 10px;
 	background: $bubble-bg;

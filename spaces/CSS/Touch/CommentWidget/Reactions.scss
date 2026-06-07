@@ -112,6 +112,8 @@
 	}
 
 	&--variant-topic {
+		margin-top: 8px;
+
 		&[data-disabled="true"][data-count="0"] {
 			display: none;
 		}

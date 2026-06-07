@@ -4,6 +4,12 @@ import Spaces from '../../spacesLib';
 import { L, numeral } from '../../utils';
 import * as pushstream from '../../core/lp';
 
+export const WALLET_RENDER_MODE = {
+	DEFAULT: 0,
+	DROPDOWN: 1,
+	INLINE: 2,
+};
+
 function updateAiPayedTokens(tokens) {
 	const payedTokensInfo = document.querySelector('#ai-payed-tokens');
 	const tokensNoun = numeral(tokens, [L('токен'), L('токена'), L('токенов')]);

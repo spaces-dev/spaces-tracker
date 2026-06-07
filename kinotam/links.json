@@ -847,6 +847,7 @@
   "/js/touch/widgets/action_bar.js",
   "/js/touch/widgets/ajax_form.js",
   "/js/touch/widgets/attach_selector.js",
+  "/js/touch/widgets/blog/factCheck.js",
   "/js/touch/widgets/bonus-coins.js",
   "/js/touch/widgets/chart.js",
   "/js/touch/widgets/cookie-banner.js",

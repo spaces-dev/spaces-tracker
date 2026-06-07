@@ -15,31 +15,29 @@ const tpl = {
 		const isRoot = curDir.shared_dir === 0;
 
 		return `
-			<div class="dir-selector dropdown-list">
-				<div class="dropdown-list__item">
-					<div class="dir-selector__location">
-						<button
-							class="
-								js-action_link dir-selector__location-button use-icon-state
-								${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
-							"
-							data-action="sz_dir_selector_back"
-							data-dir-id="${prevDir.shared_dir}"
-							title="${L('Перейти назад')}"
-						>
-							<span class="js-ico ico-alone ico ico_arr_left"></span>
-						</button>
-						<div class="dir-selector__location-title">
-							<span class="ico_files ico_files_dir"></span>
-							${curDir.name}
-						</div>
-						<div class="dir-selector__location-space"></div>
+			<div class="dir-selector dropdown-content">
+				<div class="dir-selector__location">
+					<button
+						class="
+							js-action_link dir-selector__location-button use-icon-state
+							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
+						"
+						data-action="sz_dir_selector_back"
+						data-dir-id="${prevDir.shared_dir}"
+						title="${L('Перейти назад')}"
+					>
+						<span class="js-ico ico-alone ico ico_arr_left"></span>
+					</button>
+					<div class="dir-selector__location-title">
+						<span class="ico_files ico_files_dir"></span>
+						${curDir.name}
 					</div>
-					<div class="dir-selector__list">
-						${dirs.join("")}
-					</div>
-					${pagination}
+					<div class="dir-selector__location-space"></div>
 				</div>
+				<div class="dir-selector__list">
+					${dirs.join("")}
+				</div>
+				${pagination}
 			</div>
 		`;
 	},
@@ -49,47 +47,45 @@ const tpl = {
 		const isRoot = curDir.shared_dir === 0;
 
 		return `
-			<div class="dir-selector dropdown-list">
-				<div class="dropdown-list__item">
-					<div class="dir-selector__location">
-						<button
-							class="
-								js-action_link dir-selector__location-button use-icon-state
-								${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
-							"
+			<div class="dir-selector dropdown-content">
+				<div class="dir-selector__location">
+					<button
+						class="
+							js-action_link dir-selector__location-button use-icon-state
+							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
+						"
+						data-action="sz_dir_selector_back"
+						data-dir-id="${prevDir.shared_dir}"
+						title="${L('Перейти назад')}"
+					>
+						<span class="js-ico ico-alone ico ico_arr_left"></span>
+					</button>
+					<div class="dir-selector__location-title">
+						<span class="ico_files ico_files_dir"></span>
+						${curDir.name}
+					</div>
+					<div class="dir-selector__location-space"></div>
+				</div>
+				<div class="dir-selector__message">
+					${addMessage}
+				</div>
+				<div class="button-group">
+					<div class="button-group__item">
+						<div
+							class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
+							data-action="sz_dir_selector_select"
+						>
+							<span class="ico ico_ok_blue js-ico"></span>
+							${L("Да")}
+						</div>
+					</div>
+					<div class="button-group__item">
+						<div
+							class="js-action_link list-link list-link-grey list-link--short list-link_last t_center"
 							data-action="sz_dir_selector_back"
 							data-dir-id="${prevDir.shared_dir}"
-							title="${L('Перейти назад')}"
 						>
-							<span class="js-ico ico-alone ico ico_arr_left"></span>
-						</button>
-						<div class="dir-selector__location-title">
-							<span class="ico_files ico_files_dir"></span>
-							${curDir.name}
-						</div>
-						<div class="dir-selector__location-space"></div>
-					</div>
-					<div class="dir-selector__message">
-						${addMessage}
-					</div>
-					<div class="button-group">
-						<div class="button-group__item">
-							<div
-								class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
-								data-action="sz_dir_selector_select"
-							>
-								<span class="ico ico_ok_blue js-ico"></span>
-								${L("Да")}
-							</div>
-						</div>
-						<div class="button-group__item">
-							<div
-								class="js-action_link list-link list-link-grey list-link--short list-link_last t_center"
-								data-action="sz_dir_selector_back"
-								data-dir-id="${prevDir.shared_dir}"
-							>
-								${L("Нет")}
-							</div>
+							${L("Нет")}
 						</div>
 					</div>
 				</div>
@@ -110,7 +106,7 @@ const tpl = {
 	},
 	loader() {
 		return `
-			<div class="dir-selector">
+			<div class="dropdown-content dir-selector">
 				<div class="dir-selector__empty">
 					<span class="ico ico_spinner"></span>
 					${L('Загрузка....')}
@@ -120,23 +116,27 @@ const tpl = {
 	},
 	message(msg) {
 		return `
-			<div class="content-item3 content-bl__sep grey">
-				${msg}
-			</div>
-			<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
-				<span class="ico ico_remove"></span>
-				${L('Закрыть')}
+			<div class="dropdown-content">
+				<div class="content-item3 content-bl__sep grey">
+					${msg}
+				</div>
+				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+					<span class="ico ico_remove"></span>
+					${L('Закрыть')}
+				</div>
 			</div>
 		`;
 	},
 	error(errMsg) {
 		return `
-			<div class="content-item3 content-bl__sep red">
-				${errMsg}
-			</div>
-			<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
-				<span class="ico ico_remove"></span>
-				${L('Закрыть')}
+			<div class="dropdown-content">
+				<div class="content-item3 content-bl__sep red">
+					${errMsg}
+				</div>
+				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+					<span class="ico ico_remove"></span>
+					${L('Закрыть')}
+				</div>
 			</div>
 		`;
 	}

@@ -260,6 +260,7 @@
 	display: none;
 	z-index: 1101;
 	border: 10px solid $dropdown-body-bg;
+	color: $default-text-color;
 	background: $content-bg;
 	box-shadow: $default-block-shadow;
 	box-sizing: border-box;
@@ -268,6 +269,16 @@
 
 	&[data-popper-open="true"] {
 		display: block;
+	}
+
+	&--with-layout {
+		flex-direction: column;
+		gap: 4px;
+		background: $dropdown-body-bg;
+
+		&[data-popper-open="true"] {
+			display: flex;
+		}
 	}
 
 	&--with-opacity-animation {
@@ -368,25 +379,10 @@
 	}
 }
 
-.dropdown-list {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	background: $dropdown-body-bg;
-
-	&__item {
-		border-radius: 3px;
-		overflow: hidden;
-	}
-
-	&--type-spoiler {
-		background: none;
-		gap: 15px;
-
-		.dropdown-list__item {
-			box-shadow: $default-block-shadow;
-		}
-	}
+.dropdown-content {
+	border-radius: 3px;
+	background: $content-bg;
+	overflow: hidden;
 }
 
 .dropdown-item-sep { // TODO: должно стать каким-то стандартным элементом?

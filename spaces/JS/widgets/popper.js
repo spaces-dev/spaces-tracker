@@ -124,6 +124,14 @@ export class Popper {
 		return this.popperElement.querySelector('.js-popper_content') ?? this.popperElement;
 	}
 
+	$element() {
+		return $(this.element);
+	}
+
+	$content() {
+		return $(this.content());
+	}
+
 	opener() {
 		return this.referenceElement;
 	}
