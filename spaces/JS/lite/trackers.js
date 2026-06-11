@@ -1,11 +1,9 @@
-import {loadScript} from 'loader';
-import {base_domain, tick, windowReady} from './utils';
+import { loadScript } from 'loader';
+import { L, tick, windowReady } from './utils';
 
-var GOOGLE_ANALYTICS		= SPACES_PARAMS.GA;
-var YANDEX_METRIC_ID		= SPACES_PARAMS.YM;
-var LIVEINTERNET_ENABLED	= SPACES_PARAMS.LI;
-
-var ga_replace_domains_re = false;
+const GOOGLE_ANALYTICS		= SPACES_PARAMS.GA;
+const YANDEX_METRIC_ID		= SPACES_PARAMS.YM;
+const LIVEINTERNET_ENABLED	= SPACES_PARAMS.LI;
 
 if (GOOGLE_ANALYTICS) {
 	// Google Analytics
@@ -58,8 +56,25 @@ if (YANDEX_METRIC_ID) {
 trackHit(document.location.href, document.title, document.referrer);
 
 // Единая функция отправки метрики
-function trackHit(url, title, referer, firstInit) {
+function trackHit(url, title, referer) {
 	tick(() => {
+		// Mobtop
+		windowReady(() => {
+			const mobtopCounter = document.getElementById('mobtop');
+			if (mobtopCounter) {
+				const { mobtopId, mobtopHost } = mobtopCounter.dataset;
+				const link = document.createElement("a");
+				link.href = `//${mobtopHost}/in/${mobtopId}`;
+				link.title = L("Рейтинг мобильных сайтов.");
+				const img = document.createElement("img");
+				img.alt = "MobTop - Top Mobile Rating";
+				img.src = `//${mobtopHost}/${mobtopId}.gif?rnd=${Date.now()}&ref=${encodeURIComponent(referer)}`;
+				link.appendChild(img);
+				mobtopCounter.innerHTML = '';
+				mobtopCounter.appendChild(link);
+			}
+		});
+
 		// Google Analytics
 		if (GOOGLE_ANALYTICS && GOOGLE_ANALYTICS.id) {
 			ga('set', 'referrer', referer);
@@ -90,23 +105,31 @@ function trackHit(url, title, referer, firstInit) {
 		
 		// Liveinternet
 		if (LIVEINTERNET_ENABLED) {
-			let img = document.createElement('img');
-			img.src = "//counter.yadro.ru/hit?t41.6;r" + 
-				escape(referer) + 
-				("undefined" == typeof screen ? "" : ";s" + screen.width + "*" + screen.height + "*" + (screen.colorDepth ? screen.colorDepth : screen.pixelDepth)) + 
-				";u" + escape(url) + ";" + Math.random();
-			
-			img.setAttribute('width', '1');
-			img.setAttribute('height', '1');
-			img.setAttribute('alt', 'liveinternet');
-			
-			img.onload = function () {
-				if (img.parentNode)
-					img.parentNode.removeChild(img);
-				img.onload = null;
-			};
-			
-			document.getElementById('LI').appendChild(img);
+			windowReady(() => {
+				const img = document.createElement('img');
+				img.src = (
+					"//counter.yadro.ru/hit?t41.6;r" +
+					escape(referer) +
+					(
+						"undefined" == typeof screen ?
+							"" :
+							";s" + screen.width + "*" + screen.height + "*" + (screen.colorDepth ? screen.colorDepth : screen.pixelDepth)
+					 ) +
+					";u" + escape(url) + ";" + Math.random()
+				);
+
+				img.setAttribute('width', '1');
+				img.setAttribute('height', '1');
+				img.setAttribute('alt', 'liveinternet');
+
+				img.onload = function () {
+					if (img.parentNode)
+						img.parentNode.removeChild(img);
+					img.onload = null;
+				};
+
+				document.getElementById('LI').appendChild(img);
+			});
 		}
 	});
 }
