@@ -1,31 +1,40 @@
-export async function sendTelegramMessage(
+interface InputRichMessage {
+  html: string
+  is_rtl?: boolean
+  skip_entity_detection?: boolean
+}
+
+async function invokeTelegramApi(
+  token: string,
+  method: string,
+  body: Record<string, unknown>,
+) {
+  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  const data = await response.json()
+  if (!response.ok) throw new Error(`Telegram API error: ${JSON.stringify(data)}`)
+}
+
+export async function sendTelegramRichMessage(
   token: string,
   chatId: string,
   text: string,
-  replyMarkup: object,
-) {
-  const params: Record<string, string> = {
+  replyMarkup: Record<string, unknown>,
+): Promise<void> {
+  const richMessage: InputRichMessage = {
+    html: text,
+  }
+
+  await invokeTelegramApi(token, 'sendRichMessage', {
     chat_id: chatId,
-    text,
-    parse_mode: 'html',
-    disable_web_page_preview: 'true',
-    reply_markup: JSON.stringify(replyMarkup),
-  }
-
-  const body = new URLSearchParams(params)
-
-  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    body,
+    rich_message: richMessage,
+    reply_markup: replyMarkup,
   })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(`Telegram API error: ${JSON.stringify(data)}`)
-  }
-
-  return data
 }
 
 export async function sendNotifications(
@@ -48,18 +57,12 @@ export async function sendNotifications(
     inline_keyboard: [
       [
         { text: 'GitHub', url: repoUrl },
-        { text: `Commit`, url: commitUrl },
+        { text: 'Commit', url: commitUrl },
       ],
     ],
   }
 
-  for (let i = 0; i < messageChunks.length; i++) {
-    const message = messageChunks[i]
-    await sendTelegramMessage(
-      botToken,
-      chatId,
-      message,
-      keyboard,
-    )
+  for (const chunk of messageChunks) {
+    await sendTelegramRichMessage(botToken, chatId, chunk, keyboard)
   }
 }

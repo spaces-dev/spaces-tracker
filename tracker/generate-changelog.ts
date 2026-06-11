@@ -2,15 +2,19 @@ import { Config } from './config.ts'
 import { escapeHtml, getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
-const BLOCKQUOTE_OPEN = '<blockquote expandable>'
-const BLOCKQUOTE_CLOSE = '</blockquote>'
-const PRE_OPEN = '<pre>'
-const PRE_CLOSE = '</pre>'
+const MESSAGE_LIMIT = 4000
+const TABLE_OPEN_RE = /<table>/
+const TABLE_CLOSE = '</table>'
+const DETAILS_OPEN = '<details open>'
+const DETAILS_CLOSE = '</details>'
+const REPO_URL = `https://github.com/${process.env.REPOSITORY}`
 
 async function generateAiSummary(diff: string): Promise<{ summary: string, model?: string }> {
   if (!process.env.OPENROUTER_API_KEY) {
     console.log('⚠️ OPENROUTER_API_KEY is not set')
-    return { summary: '' }
+    return {
+      summary: 'OPENROUTER_API_KEY is not set',
+    }
   }
 
   let lastError = ''
@@ -60,64 +64,71 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
 }
 
 export async function generateChangelog(stats: Stats) {
-  const lines = [`chore: Changed ${stats.changed.length + stats.added.length} file(s)`]
+  const lines: string[] = []
 
   if (stats.changed.length > 0) {
-    lines.push(`Changed files (${stats.changed.length}):`)
-    const formattedChanged = formatTable(stats.changed.map(file => ({
-      path: file.path,
-      size: file.fileSize,
-      date: file.lastCommitDate,
-    })))
-    lines.push(PRE_OPEN + formattedChanged[0])
-    lines.push(...formattedChanged.slice(1))
-    lines.push(PRE_CLOSE)
+    lines.push(`<h4>Changed files: ${stats.changed.length}</h4>`)
+    lines.push(
+      formatTable(
+        stats.changed.map((file) => ({
+          path: file.path,
+          size: file.fileSize,
+          date: file.lastCommitDate,
+        })),
+      ),
+    )
   }
 
   if (stats.added.length > 0) {
-    lines.push(`Added files (${stats.added.length}):`)
-    const formattedAdded = formatTable(stats.added.map(file => ({
-      path: file.path,
-      size: file.fileSize,
-    })))
-    lines.push(PRE_OPEN + formattedAdded[0])
-    lines.push(...formattedAdded.slice(1))
-    lines.push(PRE_CLOSE)
+    lines.push(`<h4>Added files: ${stats.added.length}<h4>`)
+    lines.push(
+      formatTable(
+        stats.added.map((file) => ({
+          path: file.path,
+          size: file.fileSize,
+        })),
+      ),
+    )
   }
 
   if (stats.removed.length > 0) {
-    lines.push(`Removed files (${stats.removed.length}):`)
-    lines.push(PRE_OPEN + stats.removed[0])
-    lines.push(...stats.removed.slice(1))
-    lines.push(PRE_CLOSE)
+    lines.push(`<h4>Removed files: ${stats.removed.length}</h4>`)
+    lines.push(
+      formatTable(
+        stats.removed.map((file) => ({
+          path: file,
+        })),
+      ),
+    )
   }
 
   if (stats.failed.length > 0) {
-    lines.push(`Failed downloads (${stats.failed.length}):`)
-    const formattedFailed = formatTable(stats.failed.map(file => ({
-      path: file.path,
-      size: file.error,
-    })))
-    lines.push(PRE_OPEN + formattedFailed[0])
-    lines.push(...formattedFailed.slice(1))
-    lines.push(PRE_CLOSE)
+    lines.push(`<h4>Failed downloads: ${stats.failed.length}<h4>`)
+    lines.push(
+      formatTable(
+        stats.failed.map((file) => ({
+          path: file.path,
+          size: file.error,
+        })),
+      ),
+    )
   }
 
   const diff = await getGitDiff()
   const { summary, model } = await generateAiSummary(diff)
   if (summary) {
-    lines.push(model ? `Summary (${model}):` : 'Summary:')
-    lines.push(BLOCKQUOTE_OPEN + summary.trim())
-    lines.push(BLOCKQUOTE_CLOSE)
+    lines.push(`${DETAILS_OPEN}<summary>${model ? `Summary (${model})` : 'Summary'}</summary>`)
+    lines.push(summary.trim())
+    lines.push(DETAILS_CLOSE)
   }
 
-  const commitMessage = lines.join('\n')
-    .replaceAll(BLOCKQUOTE_OPEN, '')
-    .replaceAll(BLOCKQUOTE_CLOSE, '')
-    .replaceAll(PRE_OPEN, '')
-    .replaceAll(PRE_CLOSE, '')
+  const commitMessage = `chore: Changed ${stats.changed.length + stats.added.length} files
 
-  const telegramMessage = splitTelegramMessage(lines.slice(1).join('\n'))
+${model ? `Summary: ${model}` : 'Summary'}
+${summary}
+  `
+
+  const telegramMessage = splitTelegramMessage(lines.join('\n'))
 
   return {
     commitMessage,
@@ -131,41 +142,31 @@ interface TableRow {
   date?: string | null
 }
 
-function formatTable(rows: TableRow[]): string[] {
-  if (rows.length === 0) return []
+function formatTable(rows: TableRow[]) {
+  if (rows.length === 0) return ''
 
-  const maxPath = Math.max(...rows.map(row => row.path.length))
-  const hasSize = rows.some(row => row.size)
-  const hasDate = rows.some(row => row.date)
-  const maxSize = hasSize
-    ? Math.max(...rows.filter(row => row.size).map(row => row.size!.length))
-    : 0
-  const maxDate = hasDate
-    ? Math.max(...rows.filter(row => row.date).map(row => row.date!.length))
-    : 0
+  const hasSize = rows.some((row) => row.size)
+  const hasDate = rows.some((row) => row.date)
 
-  return rows.map(row => {
-    const path = row.path.padEnd(maxPath, ' ')
+  const header = [
+    '<table bordered>',
+    '<tr>',
+    '<th>File</th>',
+    hasSize ? '<th>Size</th>' : '',
+    hasDate ? '<th>Last update</th>' : '',
+    '</tr>',
+  ].filter(Boolean).join('')
 
-    let line = path
-
-    if (hasSize && row.size) {
-      line += ` | ${row.size.padEnd(maxSize, ' ')}`
-    } else if (hasSize) {
-      line += ` | ${' '.repeat(maxSize)}`
-    }
-
-    if (hasDate && row.date) {
-      line += ` | ${row.date.padEnd(maxDate, ' ')}`
-    } else if (hasDate) {
-      line += ` | ${' '.repeat(maxDate)}`
-    }
-
-    return line
+  const bodyRows = rows.map((row) => {
+    const fileUrl = `${REPO_URL}/blob/main/${row.path}`
+    const fileCell = `<td><a href="${fileUrl}">${escapeHtml(row.path)}</a></td>`
+    const sizeCell = hasSize ? `<td>${row.size ? escapeHtml(row.size) : ''}</td>` : ''
+    const dateCell = hasDate ? `<td>${row.date ? escapeHtml(row.date) : ''}</td>` : ''
+    return `<tr>${fileCell}${sizeCell}${dateCell}</tr>`
   })
-}
 
-const MESSAGE_LIMIT = 3900
+  return `${header}${bodyRows.join('')}</table>`
+}
 
 function splitTelegramMessage(message: string): string[] {
   const chunks: string[] = []
@@ -175,28 +176,29 @@ function splitTelegramMessage(message: string): string[] {
   const lines = message.split('\n')
 
   const getClosingTag = (openTag: string) => {
-    if (openTag === BLOCKQUOTE_OPEN) return BLOCKQUOTE_CLOSE
-    if (openTag === PRE_OPEN) return PRE_CLOSE
+    if (openTag === DETAILS_OPEN) return DETAILS_CLOSE
+    if (openTag.startsWith('<table>')) return TABLE_CLOSE
     return ''
   }
 
   for (const line of lines) {
     let newOpenTag: string | null = null
-    if (line.includes(BLOCKQUOTE_OPEN)) newOpenTag = BLOCKQUOTE_OPEN
-    else if (line.includes(PRE_OPEN)) newOpenTag = PRE_OPEN
 
-    const isClosing = line.includes(BLOCKQUOTE_CLOSE) || line.includes(PRE_CLOSE)
+    if (line.includes(DETAILS_OPEN)) {
+      newOpenTag = DETAILS_OPEN
+    } else if (TABLE_OPEN_RE.test(line)) {
+      newOpenTag = '<table>'
+    }
 
+    const isClosing = line.includes(DETAILS_CLOSE) || line.includes(TABLE_CLOSE)
     const potentialChunk = currentChunk + (currentChunk ? '\n' : '') + line
 
     if (potentialChunk.length > MESSAGE_LIMIT) {
-      if (currentOpenTag) {
-        currentChunk += getClosingTag(currentOpenTag)
-      }
-
+      if (currentOpenTag) currentChunk += getClosingTag(currentOpenTag)
       chunks.push(currentChunk)
-
-      currentChunk = currentOpenTag ? `${currentOpenTag}\n${line}` : line
+      currentChunk = currentOpenTag
+        ? `${currentOpenTag}\n${line}`
+        : line
     } else {
       currentChunk = potentialChunk
     }
@@ -206,9 +208,7 @@ function splitTelegramMessage(message: string): string[] {
   }
 
   if (currentChunk) {
-    if (currentOpenTag) {
-      currentChunk += `\n${getClosingTag(currentOpenTag)}`
-    }
+    if (currentOpenTag) currentChunk += getClosingTag(currentOpenTag)
     chunks.push(currentChunk)
   }
 
