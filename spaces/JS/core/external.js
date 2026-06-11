@@ -4,5 +4,5 @@
  * */
 import { load } from '../ads/mobiads';
 import { initOnPlay } from '../ads/clickunder';
-import { renderDelayed, addClass, removeClass, readyForInteractive } from '../utils';
+import { renderDelayed, addClass, removeClass } from '../utils';
 import { load as loadExternalVideo } from '../widgets/video/external';

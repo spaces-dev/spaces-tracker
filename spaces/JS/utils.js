@@ -1,32 +1,32 @@
-import { tick, clearTick, domReady, windowReady, executeScripts } from 'loader';
+import {tick, clearTick, domReady, executeScripts} from 'loader';
 
 export const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
-let interactiveReadyFired = false;
-let interactiveReadyCallbacks = [];
+let window_ready_fired = false;
+let window_ready_callbacks = [];
 
 // Функция для отложенного запуска кода после полной загрузки страницы + 3 секунды
 // Используется, чтобы не тормозить начальную загрузку страницы
-export function readyForInteractive(user_callback) {
+export function windowReady(user_callback) {
 	const ONLOAD_TIMEOUT = 3000;
 	const DCL_TIMEOUT = 5000;
 	
-	if (interactiveReadyFired) {
+	if (window_ready_fired) {
 		tick(user_callback);
 	} else {
-		interactiveReadyCallbacks.push(user_callback);
-
-		if (interactiveReadyCallbacks.length == 1) {
-			const callback = () => {
-				interactiveReadyFired = true;
-				for (let i = 0, l = interactiveReadyCallbacks.length; i < l; i++)
-					tick(interactiveReadyCallbacks[i]);
-				interactiveReadyCallbacks = [];
+		window_ready_callbacks.push(user_callback);
+		
+		if (window_ready_callbacks.length == 1) {
+			let callback = (timeout) => {
+				window_ready_fired = true;
+				for (let i = 0, l = window_ready_callbacks.length; i < l; i++)
+					tick(window_ready_callbacks[i]);
+				window_ready_callbacks = [];
 			};
 			
 			// onload уже случился, поэтому запускаем таймер на SPACES_LOAD_START + ONLOAD_TIMEOUT
 			if (document.readyState === "complete") {
-				const delta = Date.now() - window.SPACES_LOAD_START;
+				let delta = Date.now() - window.SPACES_LOAD_START;
 				setTimeout(callback, Math.ceil(DCL_TIMEOUT - delta));
 			}
 			// Ждём onload
@@ -104,7 +104,7 @@ function freqLimit(id, callback, freqLimit) {
 
 export function renderDelayed(blockId, html, options = {}) {
 	options = { id: 'unknown', freqLimit: 0, ...options };
-	readyForInteractive(() => {
+	windowReady(() => {
 		freqLimit(options.id, () => {
 			const el = document.getElementById(blockId);
 			if (el) {
@@ -360,4 +360,4 @@ export function formatDuration(time) {
 	return values.join(':');
 }
 
-export { windowReady, tick, clearTick, domReady } from 'loader';
+export {tick, clearTick, domReady} from 'loader';

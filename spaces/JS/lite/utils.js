@@ -1,43 +1,9 @@
-import {tick, clearTick, domReady, windowReady, executeScripts} from 'loader';
+import {tick, clearTick, domReady, executeScripts} from 'loader';
 
 export const TRANSPARENT_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
-let interactiveReadyFired = false;
-let interactiveReadyCallbacks = [];
-
-// Функция для отложенного запуска кода после полной загрузки страницы + 3 секунды
-// Используется, чтобы не тормозить начальную загрузку страницы
-export function readyForInteractive(user_callback) {
-	const ONLOAD_TIMEOUT = 3000;
-	const DCL_TIMEOUT = 5000;
-
-	if (interactiveReadyFired) {
-		tick(user_callback);
-	} else {
-		interactiveReadyCallbacks.push(user_callback);
-
-		if (interactiveReadyCallbacks.length == 1) {
-			const callback = () => {
-				interactiveReadyFired = true;
-				for (let i = 0, l = interactiveReadyCallbacks.length; i < l; i++)
-					tick(interactiveReadyCallbacks[i]);
-				interactiveReadyCallbacks = [];
-			};
-
-			// onload уже случился, поэтому запускаем таймер на SPACES_LOAD_START + ONLOAD_TIMEOUT
-			if (document.readyState === "complete") {
-				const delta = Date.now() - window.SPACES_LOAD_START;
-				setTimeout(callback, Math.ceil(DCL_TIMEOUT - delta));
-			}
-			// Ждём onload
-			else {
-				if (document.addEventListener) {
-					window.addEventListener('load', () => setTimeout(callback, ONLOAD_TIMEOUT), false);
-				}
-			}
-		}
-	}
-}
+let window_ready_fired = false;
+let window_ready_callbacks = [];
 
 export function debounce(callback, timeout) {
 	let timer;
@@ -64,8 +30,44 @@ export function throttle(callback, timeout) {
 	};
 }
 
+// Функция для отложенного запуска кода после полной загрузки страницы + 3 секунды
+// Используется, чтобы не тормозить начальную загрузку страницы
+export function windowReady(user_callback) {
+	const ONLOAD_TIMEOUT = 3000;
+	const DCL_TIMEOUT = 5000;
+
+	if (window_ready_fired) {
+		tick(user_callback);
+	} else {
+		window_ready_callbacks.push(user_callback);
+
+		if (window_ready_callbacks.length == 1) {
+			let callback = (timeout) => {
+				window_ready_fired = true;
+				for (let i = 0, l = window_ready_callbacks.length; i < l; i++)
+					tick(window_ready_callbacks[i]);
+				window_ready_callbacks = [];
+			};
+
+			// onload уже случился, поэтому запускаем таймер на SPACES_LOAD_START + ONLOAD_TIMEOUT
+			if (document.readyState === "complete") {
+				let delta = Date.now() - window.SPACES_LOAD_START;
+				setTimeout(callback, Math.ceil(DCL_TIMEOUT - delta));
+			}
+			// Ждём onload
+			else {
+				if (document.addEventListener) {
+					window.addEventListener('load', () => { setTimeout(callback, ONLOAD_TIMEOUT) }, false);
+				} else if (document.attachEvent) {
+					window.attachEvent("onload", () => { setTimeout(callback, ONLOAD_TIMEOUT) });
+				}
+			}
+		}
+	}
+}
+
 export function renderDelayed(id, html) {
-	readyForInteractive(() => {
+	windowReady(() => {
 		let el = document.getElementById(id);
 		if (el) {
 			el.innerHTML = html;
@@ -293,4 +295,4 @@ export function copyToClipboard(text) {
 	}
 }
 
-export { tick, clearTick, domReady, windowReady } from 'loader';
+export {tick, clearTick, domReady} from 'loader';

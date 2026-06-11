@@ -1,5 +1,5 @@
-import { windowReady } from 'loader';
-import { tick } from '../utils';
+import {loadScript} from 'loader';
+import {tick} from '../utils';
 import * as jsonp from './lp/jsonp';
 
 const POLL_TIMEOUT	= 30 * 1000;
@@ -136,7 +136,7 @@ function init() {
 		console.error("[LP] error: ", e.message);
 	});
 
-	windowReady(() => {
+	waitWindowReady(() => {
 		is_ready = true;
 		poll();
 	});
@@ -282,6 +282,14 @@ function getPollUrl() {
 		"&_" + Date.now();
 
 	return url;
+}
+
+function waitWindowReady(calllback) {
+	if (document.readyState === "complete") {
+		setTimeout(calllback, 0);
+	} else {
+		window.addEventListener('load', calllback, false);
+	}
 }
 
 function disable() {
