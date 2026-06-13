@@ -1,2 +1,9 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
 onlyBuiltDependencies:
   - lefthook
+
+allowBuilds:
+  lefthook: true
