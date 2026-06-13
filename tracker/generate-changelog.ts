@@ -7,7 +7,7 @@ const TABLE_OPEN_RE = /<table>/
 const TABLE_CLOSE = '</table>'
 const DETAILS_OPEN = '<details open>'
 const DETAILS_CLOSE = '</details>'
-const REPO_URL = `https://github.com/${process.env.REPOSITORY}`
+const REPO_URL = `https://github.com/${process.env.REPOSITORY}/blob/master/`
 
 async function generateAiSummary(diff: string): Promise<{ summary: string, model?: string }> {
   if (!process.env.OPENROUTER_API_KEY) {
@@ -158,7 +158,7 @@ function formatTable(rows: TableRow[]) {
   ].filter(Boolean).join('')
 
   const bodyRows = rows.map((row) => {
-    const fileUrl = `${REPO_URL}/blob/main/${row.path}`
+    const fileUrl = `${REPO_URL}${row.path}`
     const fileCell = `<td><a href="${fileUrl}">${escapeHtml(row.path)}</a></td>`
     const sizeCell = hasSize ? `<td>${row.size ? escapeHtml(row.size) : ''}</td>` : ''
     const dateCell = hasDate ? `<td>${row.date ? escapeHtml(row.date) : ''}</td>` : ''
