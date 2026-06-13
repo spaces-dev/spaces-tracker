@@ -1,4 +1,6 @@
 pre-commit:
   jobs:
+    - name: Lint
+      run: pnpm lint
     - name: Type Check
       run: pnpm type-check
