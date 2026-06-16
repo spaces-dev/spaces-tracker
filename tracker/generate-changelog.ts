@@ -104,14 +104,13 @@ export async function generateChangelog(stats: Stats) {
 
   if (stats.failed.length > 0) {
     lines.push(`<h4>Failed downloads: ${stats.failed.length}<h4>`)
-    lines.push(
-      formatTable(
-        stats.failed.map((file) => ({
-          path: file.path,
-          size: file.error,
-        })),
-      ),
-    )
+    const errorTable = formatTable(
+      stats.failed.map((file) => ({
+        path: file.path,
+        size: file.error,
+      })),
+    ).replace('<th>Size</th>', '<th>Error</th>')
+    lines.push(errorTable)
   }
 
   const diff = await getGitDiff()
