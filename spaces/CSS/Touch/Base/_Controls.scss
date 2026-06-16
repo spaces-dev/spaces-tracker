@@ -454,11 +454,6 @@ body input.search__btn:focus {
 	border: 1px solid transparent;
 }
 
-.text-input__wrap_private-message,
-.text-input__wrap_personal-message{
-	padding-right: 55px;
-}
-
 .text-input__wrap_personal-message .text-input{
 	background: $chat-message-in-bg;
 	color: $secondary-text-color;
