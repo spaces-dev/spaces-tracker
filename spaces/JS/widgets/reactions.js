@@ -281,13 +281,20 @@ function initUsersMenu(objectType, objectId) {
 	});
 	usersListMenu.on('click', '.js-simple_pagination', async function (e) {
 		e.preventDefault();
+
 		const link = $(this);
+		if (link.data('busy'))
+			return;
+
 		const direction = link.data('dir');
 		if (direction == 'prev')
 			currentPage--;
 		if (direction == 'next')
 			currentPage++;
+
+		link.data('busy', true);
 		await render();
+		link.data('busy', false);
 	});
 }
 

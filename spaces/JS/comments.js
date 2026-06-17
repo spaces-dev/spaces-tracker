@@ -767,15 +767,17 @@ var CommentsModule = function (wrap) {
 		loadEndPage: function (root_id, new_cnt, callback, onerror) {
 			var self = this;
 			
-			if (current.lenta) {
-				self.getMoreMessages(root_id, 0, current.onPage, callback, onerror);
-			} else if (root_id) {
+			if (root_id) {
 				self.loadSubComments({id: root_id, expand: true, last: true}, callback, onerror);
 			} else {
-				var active_page = current.sort[root_id] ? 1 : Math.ceil(new_cnt / current.onPage);
-				self.loadComments({
-					page: active_page
-				}, callback, onerror);
+				if (current.lenta) {
+					self.getMoreMessages(root_id, 0, current.onPage, callback, onerror);
+				} else {
+					var active_page = current.sort[root_id] ? 1 : Math.ceil(new_cnt / current.onPage);
+					self.loadComments({
+						page: active_page
+					}, callback, onerror);
+				}
 			}
 		},
 		
