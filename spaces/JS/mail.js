@@ -1506,7 +1506,7 @@ var mailServices = {
 		}).on('message', 'mail', mailServices.longpollingMessage);
 		mailServices.setManualRefresh(!pushstream.avail());
 		
-		MailPage.on('click', '.mysite-nick', function (e) {
+		MailPage.on('click', '.js-message .mysite-nick', function (e) {
 			if (mail_params && mail_params.talkId) {
 				var nick = $.trim($(this).text()),
 					ta = $('#MailPage textarea');
