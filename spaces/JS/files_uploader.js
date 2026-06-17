@@ -301,7 +301,7 @@ var FileUploader = new (Class({
 				type = $(this).data('type');
 			if (id !== undefined) {
 				uploader.remove(id);
-				self.removeTmpFile(id);formPostfixes
+				self.removeTmpFile(id);
 			} else
 				uploader.reset();
 		});
