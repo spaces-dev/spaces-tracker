@@ -1852,7 +1852,7 @@ MAttachSelector = Class({
 		if (!AttachSelector.isBusy())
 			self.form.trigger('onAttachesComplete');
 	},
-	deleteAttach: function (id, type, silentDelete) {
+	deleteAttach: async function (id, type, silentDelete) {
 		let self = this;
 		
 		let attach = $('#' + id + '_' + type);
@@ -1889,25 +1889,18 @@ MAttachSelector = Class({
 			Ft: type
 		};
 		removeIcon.addClass('ico_spinner');
-		Spaces.api("attach.delete", api_data, function (res) {
-			if (res.code != 0) {
-				removeIcon.removeClass('ico_spinner');
-				Spaces.showApiError(res);
-			} else {
-				onAttachDeleted();
-			}
-		}, {
-			onError(err) {
-				Spaces.showError(err);
-				removeIcon.removeClass('ico_spinner');
-			}
-		});
+		const response = await Spaces.asyncApi("attach.delete", api_data);
+		removeIcon.removeClass('ico_spinner');
+		if (response.code != 0) {
+			Spaces.showApiError(response);
+		} else {
+			onAttachDeleted();
+		};
 	},
-	deleteAll: function (silent) {
-		var self = this,
-			attaches = self.getAttaches();
+	deleteAll: async function (silent) {
+		const attaches = this.getAttaches();
 		for (var i = 0; i < attaches.length; ++i)
-			self.deleteAttach(attaches[i].nid, attaches[i].type, silent);
+			await this.deleteAttach(attaches[i].nid, attaches[i].type, silent);
 	},
 	markMusic: function (id, flag) {
 		var self = this,

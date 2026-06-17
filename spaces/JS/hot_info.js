@@ -32,6 +32,9 @@ module.on("component", () => {
 
 module.on("componentpagedone", () => {
 	cache = {};
+
+	if (currentHoveredLink)
+		hideHotInfo(false);
 });
 
 function getConfig(el) {
@@ -55,7 +58,7 @@ function initHotInfo(el) {
 	el.addEventListener('mouseover', onMouseOver);
 	el.addEventListener('mouseout', () => {
 		if (currentHoveredLink == el) {
-			hideHotInfo();
+			hideHotInfo(true);
 			currentHoveredLink = undefined;
 		}
 	});
@@ -91,14 +94,14 @@ async function loadHotInfo(el) {
 
 function showHotInfo(widget) {
 	if (!hotInfoPopper) {
-		const windowElement = document.createElement('div');
-		windowElement.className = 'popper-dropdown popper-dropdown--with-opacity-animation';
-		document.getElementById('main_content').appendChild(windowElement);
+		const popperElement = document.createElement('div');
+		popperElement.className = 'popper-dropdown popper-dropdown--with-opacity-animation';
+		document.getElementById('siteContent').appendChild(popperElement);
 
-		windowElement.addEventListener('mouseover', () => cancelHiding());
-		windowElement.addEventListener('mouseout', () => hideHotInfo());
+		popperElement.addEventListener('mouseover', () => cancelHiding());
+		popperElement.addEventListener('mouseout', () => hideHotInfo(true));
 
-		hotInfoPopper = new Popper(windowElement, {
+		hotInfoPopper = new Popper(popperElement, {
 			exclusive: false,
 			autoScroll: false,
 			flip: true,
@@ -110,7 +113,7 @@ function showHotInfo(widget) {
 	hotInfoPopper.open({}, currentHoveredLink);
 }
 
-function hideHotInfo() {
+function hideHotInfo(animation) {
 	if (showTimerId) {
 		clearTimeout(showTimerId);
 		showTimerId = undefined;
@@ -120,11 +123,18 @@ function hideHotInfo() {
 	if (!hotInfoPopper)
 		return;
 
-	if (!hideTimerId) {
-		hideTimerId = setTimeout(() => {
-			hideTimerId = undefined;
-			hotInfoPopper.closeWithAnimation();
-		}, HIDE_TIMEOUT);
+	if (hideTimerId)
+		return;
+
+	if (animation) {
+		if (!hideTimerId) {
+			hideTimerId = setTimeout(() => {
+				hideTimerId = undefined;
+				hotInfoPopper.closeWithAnimation();
+			}, HIDE_TIMEOUT);
+		}
+	} else {
+		hotInfoPopper.close();
 	}
 }
 

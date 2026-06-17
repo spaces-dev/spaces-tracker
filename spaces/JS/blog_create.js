@@ -2,6 +2,7 @@ import module from 'module';
 import $ from './jquery';
 import UniversalSearch from './search';
 import {L} from './utils';
+import AttachSelector from './widgets/attach_selector';
 
 var tpl = {
 	suggestItem: function (data) {
@@ -11,8 +12,6 @@ var tpl = {
 };
 
 var has_adult_files, has_adult_channel;
-
-console.log("shit");
 
 UniversalSearch.register("blog_channels", {
 	apiMethod: 'blogs.findChannel',
@@ -103,8 +102,16 @@ module.on("componentpage", function () {
 	}).on('onAdultAttach', function (e, data) {
 		has_adult_files = data.hasAdult;
 		toggleAdult();
-	}).action("cancel", () => {
-		$('textarea').val("").trigger("change");
+	}).action("cancel", async function (e) {
+		const link = $(this);
+		if (link.data('canceled'))
+			return;
+		e.preventDefault();
+		const form = $('.js-blog_create_form');
+		form.find('textarea[name="subject"]').val("").trigger("change");
+		form.find('input[name="headeR"]').val("").trigger("change");
+		await AttachSelector.instance(form).deleteAll();
+		link.data('canceled', true).click();
 	});
 });
 
