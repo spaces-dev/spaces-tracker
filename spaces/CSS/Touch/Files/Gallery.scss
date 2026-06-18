@@ -661,7 +661,7 @@
 }
 
 /* files_selector */
-.pc .gallery_fileselector .gallery__image-wrapper {
+.gallery_fileselector .gallery__image-wrapper {
 	margin: 48px 0 0 0;
 	overflow: auto;
 }
@@ -670,20 +670,8 @@
 	background: $body-bg;
 }
 
-.touch .gallery_fileselector,
-.touch .gallery_fileselector .gallery__image-wrapper {
-	position: relative;
-	top: auto;
-	bottom: auto;
-	left: auto;
-	right: auto;
-}
 .gallery_fileselector {
 	overflow: visible
-}
-.touch .gallery_fileselector .gallery__image-wrapper {
-	padding-top: 50px;
-	margin-top: 0;
 }
 
 /* Контейнер с сиблингами и гланой картинкой */

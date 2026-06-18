@@ -45,8 +45,7 @@ var LIKE_ICONS = [
 	['ico_gallery_vote_down', 'ico_gallery_vote_down_on']
 ];
 
-var has_shadows = Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
-	gallery_transp = Device.type == 'desktop' && has_shadows,
+var gallery_transp = Device.type == 'desktop',
 	features = {
 		zoom: true
 	},
@@ -66,7 +65,6 @@ var has_shadows = Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
 	current,
 	position_delta = 0,
 	gallery_rect,
-	last_scroll = 0,
 	cid = 0,
 	last_click_action,
 	last_click_cnt = 0,
@@ -85,7 +83,6 @@ var has_shadows = Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
 	gallery, // главный блок галлереи
 	gallery_container, // контейнер с картинкой и сиблингами
 	
-	old_body_css,
 	touching = false,
 	hide_notif_timeout,
 	notif_showed,
@@ -368,14 +365,6 @@ Gallery = {
 			global_lock = click_lock = lock_touch = false;
 			
 			var tmp_gid = Date.now();
-			if (!lite_open) {
-				last_scroll = $(window).scrollTop();
-				if (!gallery_transp) {
-					// Реклама Mobiads скроллит o_O, фиксим это
-					$('html, body').scrollTop(0);
-				}
-			}
-			
 			first_init = true;
 
 			if (!form_history)
@@ -402,7 +391,7 @@ Gallery = {
 				gallery_wrap.append(gallery);
 				
 				$('#main_wrap').append(gallery_wrap);
-				$('body').addClass(gallery_transp ? 'gallery__transp_open' : 'gallery__open');
+				$('body').addClass('gallery__transp_open');
 				$('html, body').addClass('gallery__doc');
 			}
 			gallery_container = $('#gallery-container');
@@ -685,15 +674,9 @@ Gallery = {
 		$('#main').off('.gallery');
 		$(window).off('.gallery');
 		
-		let restore_scroll = () => {
-			$('html, body').scrollTop(last_scroll);
-		};
-		
 		if (!lite_exit) {
 			$('body').removeClass('gallery__transp_open gallery__open');
 			$('html, body').removeClass('gallery__doc');
-			document.body.style.cssText = old_body_css;
-			old_body_css = null;
 			gallery.remove();
 			$('#gallery_wrap').remove();
 			gallery = gallery_container = null;
@@ -703,11 +686,6 @@ Gallery = {
 		page_loader.on('mailrequestend', "removegallery", false);
 		
 		if (!lite_exit) {
-			if (!gallery_transp) { // Скролл и так сохраняется
-				restore_scroll();
-				tick(restore_scroll);
-				setTimeout(restore_scroll, 100);
-			}
 			self._onGroupTrigger(current.gid, 'exit', []);
 		}
 		
@@ -848,7 +826,7 @@ Gallery = {
 			disableContextMenu: false,
 			onlyEvents: true,
 			realtime: true,
-			scroll: gallery_transp,
+			scroll: true,
 			detectZoom: true,
 			fastEvents: true,
 			forceStart: true,
@@ -2162,7 +2140,7 @@ Gallery = {
 		if (gallery_transp) {
 			var max = Math.ceil(Math.max(($(window).innerWidth() - gallery_rect.w) / 2, ($(window).innerHeight() - gallery_rect.rh / 2))),
 				shadow = '0px 0px 0px ' + max + 'px ' + OPT_SHADOW_COLOR;
-			gallery.css(has_shadows, shadow + (inset ? ', inset ' + shadow : ''));
+			gallery.css("box-shadow", shadow + (inset ? ', inset ' + shadow : ''));
 		}
 	},
 	onResize: function (manual) {
@@ -2172,24 +2150,7 @@ Gallery = {
 			return;
 		
 		if (!gallery_rect || !manual) {
-			let inner_h = $(window).innerHeight();
-			let min_height = Math.max(window.innerHeight, inner_h);
-			
-			if (old_body_css == null)
-				old_body_css = document.body.style.cssText;
-			
-			if (Device.type == 'ucbrowser') {
-				// SPAC-14658
-				document.body.style.cssText = old_body_css + "; height:" + min_height + "px !important";
-			} else {
-				document.body.style.cssText = old_body_css + "; " + (inner_h != min_height ? "min-height:" + min_height + "px !important" : "");
-			}
-			
 			gallery_rect = get_gallery_rect();
-			
-			tick(() => {
-			//	alert("rh:"+gallery_rect.rh+",h:"+screen.availHeight+",wh:"+window.innerHeight);
-			});
 		}
 		
 		self.switchShadow(false);

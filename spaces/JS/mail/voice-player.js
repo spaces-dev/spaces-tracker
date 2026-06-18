@@ -262,7 +262,6 @@ function initializeCurrentPlayer() {
 	let id = currentPlayerId;
 	startDraggable(currentPlayer.view.waveformElement, {
 		calcRelative: true,
-		preventTouchScroll: false,
 		onBeforeDragStart() {
 			return currentPlayerId === id;
 		},

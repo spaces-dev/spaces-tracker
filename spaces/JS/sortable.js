@@ -182,7 +182,6 @@ export function startSortable(container, options) {
 	
 	startDraggable(container, {
 		coordinates: 'client',
-		preventClick: true,
 		onBeforeDragStart(e) {
 			let el = $(e.target);
 			if (options.dragButtonSelector) {

@@ -25,11 +25,10 @@ var default_params = {
 	*/
 };
 
-var params, last_api_request, saved_scroll,
+var params, last_api_request,
 	selected = {}, selected_cnt = 0,
 	opened = false,
-	has_shadows = !cookie.get('gal_no_transp') && Device.css('box-shadow', '0px 0px 0px #000', /\d\w/),
-	gallery_transp = Device.type == 'desktop' && has_shadows,
+	gallery_transp = Device.type == 'desktop',
 	cur_state = {},
 	type2name = {
 		[Spaces.TYPES.FILE]: L('Файлы'),
@@ -83,7 +82,6 @@ var tpl = {
 };
 
 function open(args) {
-	saved_scroll = $(window).scrollTop();
 	params = extend({}, default_params, args);
 	cur_state = {};
 	opened = true;
@@ -102,11 +100,6 @@ function realClose() {
 	if (opened) {
 		$('#Gallery').remove();
 		$('body').removeClass('gallery__open gallery__transp_open').off('.files_selector');
-		if (!gallery_transp) {
-			tick(function () {
-				$('html, body').scrollTop(saved_scroll);
-			});
-		}
 		
 		opened = false;
 		selected = {};
@@ -148,7 +141,7 @@ function init() {
 	showFilesList(function () {
 		$('#main_wrap').append(tpl.selectorWin());
 		$('body')
-			.addClass(!gallery_transp ? 'gallery__open' : 'gallery__transp_open')
+			.addClass('gallery__transp_open')
 			.on('keydown.files_selector', function (e) {
 				if (e.keyCode == 27) // ESC
 					close();

@@ -176,6 +176,8 @@ export class Dialog {
 		if (!this._triggerEvent("beforeClose"))
 			return;
 
+		document.body.classList.remove('root--no-scroll');
+
 		if (dialogInstances.has(this)) {
 			this.dialogElement.classList.add('dialog--transition-in');
 			this.dialogElement.dataset.dialogOpen = "false";
@@ -367,6 +369,7 @@ export class Dialog {
 	updateMode() {
 		this.dialogElement.classList.toggle('dialog--mode-window', isWideScreen());
 		this.dialogElement.classList.toggle('dialog--mode-fullscreen', !isWideScreen());
+		document.body.classList.toggle('root--no-scroll', !isWideScreen() && !this.isCollapsed());
 	}
 
 	async handleResize() {

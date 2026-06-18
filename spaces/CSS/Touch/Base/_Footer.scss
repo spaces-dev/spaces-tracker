@@ -163,6 +163,10 @@
 	margin-bottom: 6px;
 }
 
+.footer_edit .footer__link {
+	touch-action: none;
+}
+
 .footer__link_edit .footer__link,
 .footer__link_moder .footer__link{
 	text-align: left !important;

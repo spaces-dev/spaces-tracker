@@ -2,7 +2,7 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import './anim';
-import './draggable';
+import { startDraggable, stopDraggable } from './core/touch/draggable';
 import {L, pad, tick} from './utils';
 import { closeAllPoppers } from './widgets/popper';
 
@@ -83,7 +83,9 @@ var tpl = {
 
 var AvatarCrop = {
 	destroy: function (content) {
-		content.find('.ava_crop-thumbs .preview, .js-ava_crop_wrap').draggable(false);
+		content.find('.ava_crop-thumb, .js-ava_crop_wrap').each(function () {
+			stopDraggable(this);
+		});
 		content.off().empty().removeData();
 	},
 	
@@ -343,36 +345,29 @@ var AvatarCrop = {
 			cursor_wrap.hide();
 			fix_thumb_size();
 		};
-		wrap.draggable({
-			fastEvents: true,
-			realtime: true,
-			forceStart: true,
-			preventStart: Device.browser.name == 'ucbrowser' || (Device.browser.name == 'firefox' && Device.type != 'desktop'),
-			scroll: true,
-			disableContextMenu: false,
-			events: events
+		startDraggable(wrap[0], {
+			coordinates: 'page',
+			onDragStart: events.dragStart,
+			onDragMove: events.dragMove,
+			onDragEnd: events.dragEnd
 		});
 		
 		// Передвижение через тумбы
 		var frame_rel_pos;
-		$([thumb_small[0], thumb_large[0]]).parent().draggable({
-			fastEvents: true,
-			calcRelative: true,
-			disableContextMenu: false,
-			forceStart: true,
-			scroll: true,
-			events: {
-				dragStart: function (e) {
+		$([thumb_small[0], thumb_large[0]]).parent().each(function () {
+			startDraggable(this, {
+				coordinates: 'page',
+				onDragStart: function () {
 					frame_rel_pos = frame.position();
 				},
-				dragMove: function (e) {
+				onDragMove: function (e) {
 					move_rect(frame_rel_pos.left + -e.dX, frame_rel_pos.top + -e.dY);
 					fix_thumb_size();
 				},
-				dragEnd: function () {
+				onDragEnd: function () {
 					// nothing!
 				}
-			}
+			});
 		});
 		
 		function init_image(tmp_img) {

@@ -67,15 +67,13 @@ class VideoJsDriver extends BaseDriver {
 
 			userActions: {
 				hotkeys: (e) => {
-					if (e.which == 39) { // ArrowRight
+					if (e.key == 'ArrowRight') {
 						e.preventDefault();
 						e.stopPropagation();
-
 						player.controlBar.progressControl.seekBar.stepForward();
-					} else if (e.which == 37) { // ArrowLeft
+					} else if (e.key == 'ArrowLeft') {
 						e.preventDefault();
 						e.stopPropagation();
-
 						player.controlBar.progressControl.seekBar.stepBack();
 					} else {
 						player.handleHotkeys(e);
@@ -284,15 +282,7 @@ class VideoJsDriver extends BaseDriver {
 	}
 
 	handleGlobalKey(e) {
-		const ev = new Event('keydown');
-		ev.key = e.key;
-		ev.code = e.code;
-		ev.keyCode = e.keyCode;
-		ev.which = e.which;
-		this.player.el().dispatchEvent(ev);
-
-		if (ev.defaultPrevented)
-			e.preventDefault();
+		this.player.handleKeyDown(e);
 	}
 
 	destroy() {

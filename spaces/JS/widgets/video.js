@@ -1,10 +1,9 @@
 import module from 'module';
 import require from 'require';
-import {executeScripts} from 'loader';
-import {base_domain, L, tick} from '../utils';
+import { executeScripts } from 'loader';
+import { L, tick } from '../utils';
 import $ from '../jquery';
 import * as pushstream from '../core/lp';
-import cookie from '../cookie';
 import Device from '../device';
 import Spaces from '../spacesLib';
 import {IPCSingleton} from '../core/ipc';
@@ -79,7 +78,7 @@ class VideoPlayer {
 			}
 		}, true);
 
-		window.addEventListener('keydown', VideoPlayer.handleGlobalKey, { passive: true });
+		window.addEventListener('keydown', VideoPlayer.handleGlobalKey);
 	}
 	
 	static destroy() {
@@ -120,8 +119,10 @@ class VideoPlayer {
 	}
 	
 	static handleGlobalKey(e) {
+		if (e.altKey || e.ctrlKey || e.metaKey)
+			return;
 		const activeElement = document.activeElement;
-		if (activeElement && activeElement.closest('.video-js'))
+		if (activeElement && activeElement.closest('.video-js, textarea, input[type="text"]'))
 			return;
 		const availablePlayers = Object.values(global_direct_instances)
 			.filter((player) => player && !player.isDetached() && player.driver)

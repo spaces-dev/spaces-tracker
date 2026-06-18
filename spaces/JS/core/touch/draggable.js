@@ -1,5 +1,4 @@
 import $ from '../../jquery';
-import { addEvent, removeEvent } from '../events';
 import * as sidebar from '../../widgets/swiper';
 
 /*
@@ -33,21 +32,20 @@ export function startDraggable(el, options) {
 		calcRelative: false,
 		
 		preventMouseClick:		true,	// Отключить клик мыши, если было движение
-		preventTouchScroll:		true,	// Отключить скроллинг при таче
 		disableContextMenu:		false,	// Отключить контекстное меню
 	}, options);
 	
 	// Context-menu не нужны
 	if (options.disableContextMenu) {
-		addEvent(el, 'contextmenu', preventDefault);
-		addEvent(el, 'dblclick', preventDefault);
+		el.addEventListener('contextmenu', preventDefault);
+		el.addEventListener('dblclick', preventDefault);
 	}
 	
 	// Нативный DND не нужен
-	addEvent(el, 'dragstart', preventDefault);
-	addEvent(el, 'dragenter', preventDefault);
+	el.addEventListener('dragstart', preventDefault);
+	el.addEventListener('dragenter', preventDefault);
 	
-	let onTouchStart = (e) => {
+	const onTouchStart = (e) => {
 		if (in_touching)
 			return;
 		
@@ -71,12 +69,7 @@ export function startDraggable(el, options) {
 		
 		sidebar.lock(true);
 
-		if (is_true_touch && options.preventTouchScroll) {
-			e.preventDefault();
-			e.stopPropagation();
-		}
-		
-		let touch = getPosition(e, options.coordinates);
+		const touch = getPosition(e, options.coordinates);
 		last_x = start_x = touch[0];
 		last_y = start_y = touch[1];
 		origin_dx = origin_dy = 0;
@@ -89,19 +82,19 @@ export function startDraggable(el, options) {
 		
 		// Динамически включаем события мыши
 		if (!is_true_touch) {
-			addEvent(document, 'mousemove', onTouchMove);
-			addEvent(document, 'mouseup', onTouchEnd);
+			document.addEventListener('mousemove', onTouchMove);
+			document.addEventListener('mouseup', onTouchEnd);
 		}
 		
 		options.onDragStart(last_event);
 	};
 	
-	let onTouchMove = (e, read_only) => {
+	const onTouchMove = (e, read_only) => {
 		// Игнорим события мыши, если работаем с тачем
 		if (!in_touching || (e.type == 'mousemove' && is_true_touch))
 			return;
 		
-		let touch = getPosition(e, options.coordinates);
+		const touch = getPosition(e, options.coordinates);
 		
 		// Зум двумя пальцами с тача
 		if (is_true_touch) {
@@ -122,8 +115,8 @@ export function startDraggable(el, options) {
 			}
 		}
 		
-		let x = touch[0] - origin_dx;
-		let y = touch[1] - origin_dy;
+		const x = touch[0] - origin_dx;
+		const y = touch[1] - origin_dy;
 		
 		if (!is_moved && (x != last_x || y != last_y))
 			is_moved = true;
@@ -162,7 +155,7 @@ export function startDraggable(el, options) {
 			options.onDragMove(last_event);
 	};
 	
-	let onTouchEnd = (e) => {
+	const onTouchEnd = (e) => {
 		// При мультитаче прилетают на каждый палец, игнорим
 		if (is_true_touch && e.touches.length > 0)
 			return;
@@ -173,15 +166,13 @@ export function startDraggable(el, options) {
 		
 		if (!is_true_touch) {
 			// Динамически выключаем события мыши
-			removeEvent(document, 'mousemove', onTouchMove);
-			removeEvent(document, 'mouseup', onTouchEnd);
+			document.removeEventListener('mousemove', onTouchMove);
+			document.removeEventListener('mouseup', onTouchEnd);
 		}
 		
-		// Если перемещения не было, симулируем клик сами
-		// Это нужно из-за того, что ранее отменили событие touchstart
-		if (options.preventTouchScroll && !is_moved && is_true_touch) {
-			$(first_target).click();
-		}
+		// Если было перемещение, то кликать не нужно
+		if (is_moved && is_true_touch && e.cancelable)
+			e.preventDefault();
 		
 		// Устанавливаем флаг, чтобы отменить следующий клик, который произодйёт после mouseup
 		if (options.preventMouseClick && is_moved && !is_true_touch) {
@@ -199,7 +190,7 @@ export function startDraggable(el, options) {
 		sidebar.lock(false);
 	};
 	
-	let onClick = (e) => {
+	const onClick = (e) => {
 		if (prevent_next_click) {
 			e.preventDefault();
 			prevent_next_click = false;
@@ -207,14 +198,14 @@ export function startDraggable(el, options) {
 	};
 	
 	// События тача
-	addEvent(el, 'touchstart', onTouchStart);
-	addEvent(el, 'touchmove', onTouchMove, true);
-	addEvent(el, 'touchend', onTouchEnd);
-	addEvent(el, 'touchcancel', onTouchEnd);
+	el.addEventListener('touchstart', onTouchStart, { passive: true });
+	el.addEventListener('touchmove', onTouchMove, { passive: true });
+	el.addEventListener('touchend', onTouchEnd, { passive: false });
+	el.addEventListener('touchcancel', onTouchEnd);
 	
 	// События мыши
-	addEvent(el, 'mousedown', onTouchStart);
-	addEvent(el, 'click', onClick);
+	el.addEventListener('mousedown', onTouchStart);
+	el.addEventListener('click', onClick);
 	
 	$(el).data('draggable', {
 		events: { onTouchStart, onTouchMove, onTouchEnd, onClick }
@@ -222,49 +213,53 @@ export function startDraggable(el, options) {
 }
 
 export function stopDraggable(el) {
-	let state = $(el).data('draggable');
+	const state = $(el).data('draggable');
 	if (state) {
-		let events = state.events;
-		
+		const events = state.events;
+
 		// События тача
-		removeEvent(el, 'touchstart', events.onTouchStart);
-		removeEvent(el, 'touchmove', events.onTouchMove, true);
-		removeEvent(el, 'touchend', events.onTouchEnd);
-		removeEvent(el, 'touchcancel', events.onTouchEnd);
+		el.removeEventListener('touchstart', events.onTouchStart);
+		el.removeEventListener('touchmove', events.onTouchMove);
+		el.removeEventListener('touchend', events.onTouchEnd);
+		el.removeEventListener('touchcancel', events.onTouchEnd);
 		
 		// События мыши
-		removeEvent(el, 'mousedown', events.onTouchStart);
-		removeEvent(el, 'click', events.onClick);
-		removeEvent(document, 'mousemove', events.onTouchMove);
-		removeEvent(document, 'mouseup', events.onTouchEnd);
+		el.removeEventListener('mousedown', events.onTouchStart);
+		el.removeEventListener('click', events.onClick);
+		document.removeEventListener('mousemove', events.onTouchMove);
+		document.removeEventListener('mouseup', events.onTouchEnd);
 		
 		// Прочее
-		removeEvent(el, 'contextmenu', preventDefault);
-		removeEvent(el, 'dblclick', preventDefault);
-		removeEvent(el, 'dragstart', preventDefault);
-		removeEvent(el, 'dragenter', preventDefault);
+		el.removeEventListener('contextmenu', preventDefault);
+		el.removeEventListener('dblclick', preventDefault);
+		el.removeEventListener('dragstart', preventDefault);
+		el.removeEventListener('dragenter', preventDefault);
 		
 		$(el).removeData('draggable');
 	}
 }
 
 function calcDistance(e) {
-	let dx = (e.touches[1].clientX - e.touches[0].clientX);
-	let dy = (e.touches[1].clientY - e.touches[0].clientY);
+	const touches = e.touches || e;
+	if (!touches || touches.length < 2)
+		return false;
+	
+	const dx = (touches[1].clientX - touches[0].clientX);
+	const dy = (touches[1].clientY - touches[0].clientY);
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
 function getPosition(e, prefix) {
-	let touches = e.touches;
-	let keyX = prefix + 'X';
-	let keyY = prefix + 'Y';
+	const touches = e.touches;
+	const keyX = prefix + 'X';
+	const keyY = prefix + 'Y';
 	
 	if (touches) {
 		if (touches.length < 2)
 			return [touches[0][keyX], touches[0][keyY]];
 		
-		let x = (touches[0][keyX] + touches[1][keyX]) / 2;
-		let y = (touches[0][keyY] + touches[1][keyY]) / 2;
+		const x = (touches[0][keyX] + touches[1][keyX]) / 2;
+		const y = (touches[0][keyY] + touches[1][keyY]) / 2;
 		
 		return [x, y, x - touches[0][keyX], y - touches[0][keyY]];
 	}

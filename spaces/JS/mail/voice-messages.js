@@ -129,7 +129,6 @@ export function initVoiceMessages() {
 
 	startDraggable(waveformElement, {
 		calcRelative: true,
-		preventTouchScroll: false,
 		onBeforeDragStart() {
 			if (alreadyPlayed) {
 				return currentState == 'playing' || currentState == 'paused';
