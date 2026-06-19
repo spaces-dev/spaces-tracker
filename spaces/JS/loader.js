@@ -59,7 +59,8 @@ __require_config		|	Конфиг загрузчика
 			loaded:		false,
 			exports:	{},
 			meta:		{},
-			on
+			on,
+			finalize: finalizeComponent
 		});
 	}
 	
@@ -117,6 +118,20 @@ __require_config		|	Конфиг загрузчика
 		}
 	}
 	
+	function finalizeComponent(name) {
+		if (!modules_cache[name] || !modules_cache[name].loaded)
+			return;
+
+		delete page_components[name];
+
+		const module = modules_cache[name];
+		if (module.oncomponentpagedone)
+			module.oncomponentpagedone()
+
+		if (module.oncomponentpagedoneTemporary)
+			module.oncomponentpagedone = undefined;
+	}
+
 	function onPageDone(callback) {
 		let counter = 0;
 		let finalizer = (module) => {
@@ -130,10 +145,7 @@ __require_config		|	Конфиг загрузчика
 						callback();
 					});
 				}
-				module.oncomponentpagedone()
-
-				if (module.oncomponentpagedoneTemporary)
-					module.oncomponentpagedone = undefined;
+				finalizeComponent(module.name);
 			});
 		};
 		
@@ -181,7 +193,6 @@ __require_config		|	Конфиг загрузчика
 		}
 
 		if (!isLinkExists("prefetch", "script", src)) {
-			console.log("preload", src);
 			const link = document.createElement("link");
 			link.rel = "prefetch";
 			link.as = "script";

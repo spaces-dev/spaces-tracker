@@ -12,6 +12,9 @@ export const WALLET_RENDER_MODE = {
 
 function updateAiPayedTokens(tokens) {
 	const payedTokensInfo = document.querySelector('#ai-payed-tokens');
+	if (!payedTokensInfo)
+		return;
+
 	const tokensNoun = numeral(tokens, [L('токен'), L('токена'), L('токенов')]);
 	payedTokensInfo.textContent = `${tokens.toLocaleString("ru-RU")} ${tokensNoun}`;
 	payedTokensInfo.classList.toggle('red', !tokens);

@@ -2,6 +2,7 @@ import module from 'module';
 import $ from '../../jquery';
 import { getPopperById } from '../popper';
 import { L } from '../../utils';
+import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
 import { WALLET_RENDER_MODE } from '../../pages/ai/wallet';
 
@@ -16,6 +17,7 @@ const tpl = {
 				<div class="content-item3 wbg content-bl__sep grey">
 					${L('ИИ проверит достоверность информации в публикации и подготовит краткое обоснование вывода.')}
 					${L('Результат проверки будет отображаться в публикации и доступен всем пользователям.')}
+					<div class="js-error system-message system-message_alert no-shadow hide mt"></div>
 				</div>
 
 				<div
@@ -45,34 +47,46 @@ const tpl = {
 					<div class="sub-title">${L('История проверок')}</div>
 					<span class="grey">Дата проверки:</span> ${result.date}
 					<div class="pad_t_a">
-						${result.text || L("Запись содержит достоверную информацию (проверено через искуственный интеллект).")}
+						${result.list ? tpl.detailsWithFacts({ result }) : tpl.details({ result })}
+
 					</div>
 				</div>
 				${pagination}
 			</div>
 		`;
 	},
-	error(errMsg) {
+	detailsWithFacts({ result }) {
 		return `
-			<div class="dropdown-content">
-				<div class="content-item3 content-bl__sep red">
-					${errMsg}
-				</div>
-				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
-					<span class="ico ico_remove"></span>
-					${L('Закрыть')}
-				</div>
-			</div>
+			<ol>
+				${result.list.map((item) => `
+					<li>
+						<span class="${item.true ? 'green' : 'red'}">
+							${item.statement}
+							(${L("достоверность:")}${item.truth <= 10 ? L("низкая") : `${item.truth}%`})
+						</span><br />
+						${item.explain}
+					</li>
+				`)}
+			</ol>
+		`;
+	},
+	details({ result }) {
+		if (result.true) {
+			return L("Запись содержит достоверную информацию (проверено через искуственный интеллект).");
+		} else {
+			return result.text;
+		}
+	},
+	errorInline(err) {
+		return `
+			<span class="red">${err}</span>
 		`;
 	}
 };
 
 function initFactCheck() {
-	const { cost, topicId, checkHistory } = $('#factcheck').data();
-
-	const resultPopper = getPopperById('factcheck_result_dropdown');
-	const historyPopper = getPopperById('factcheck_history_dropdown');
-	const requestPopper = getPopperById('factcheck_dropdown');
+	let params;
+	let resultPopper, historyPopper, requestPopper;
 
 	let currentPage = 0;
 	let totalPages = 0;
@@ -83,69 +97,108 @@ function initFactCheck() {
 	};
 
 	const showError = (error) => {
-		requestPopper.$content().html(tpl.error(error));
+		requestPopper.$content()
+			.find('.js-error')
+			.toggleClass('hide', !error)
+			.html(error ?? '');
 	};
 
 	const renderHistory = () => {
 		const offset = (currentPage - 1);
 		historyPopper.$content().html(tpl.history({
-			result: checkHistory[offset],
+			result: params.history[offset],
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
 		}));
 	};
 
-	historyPopper.on('beforeOpen', () => {
-		totalPages = checkHistory.length;
-		currentPage = 1;
-		renderHistory();
-	});
+	const replaceWidget = (widget) => {
+		module.finalize(import.meta.id('./factCheck'));
+		$('#factcheck').replaceWith(widget);
+	};
 
-	historyPopper.$content().on('click', '.js-simple_pagination', async function (e) {
-		e.preventDefault();
-		const link = $(this);
-		const direction = link.data('dir');
-		if (direction == 'prev')
-			currentPage--;
-		if (direction == 'next')
-			currentPage++;
-		renderHistory();
-	});
+	const init = () => {
+		params = $('#factcheck').data();
 
-	requestPopper.on('beforeOpen', async () => {
-		requestPopper.$content().html(tpl.loader());
+		resultPopper = getPopperById('factcheck_result_dropdown');
+		historyPopper = getPopperById('factcheck_history_dropdown');
+		requestPopper = getPopperById('factcheck_dropdown');
 
-		const wallet = await getWallet();
+		currentPage = 0;
+		totalPages = 0;
 
-		requestPopper.$content().html(tpl.checkForm({
-			cost,
-			wallet
-		}));
-	});
+		pushstream.on('message', 'diary_fact_check', async (message) => {
+			if (message.act == pushstream.TYPES.DIARY_TOPIC_FACT_CHECK && message.topic_id == params.topicId) {
+				const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, Info: 1, CK: null });
+				if (response.code == 0) {
+					replaceWidget(response.widget);
+				} else {
+					replaceWidget(tpl.errorInline(Spaces.apiError(response)));
+				}
+			}
+		});
 
-	requestPopper.$content().action("blog_check_for_truth", async function (e) {
-		e.preventDefault();
+		historyPopper.on('beforeOpen', () => {
+			totalPages = params.history.length;
+			currentPage = 1;
+			renderHistory();
+		});
 
-		const link = $(this);
-		const toggleLoading = (flag) => {
-			link.find('.js-ico').toggleClass('ico_spinner', flag);
-			link.toggleClass("list-link--is-disabled", flag);
-		};
+		historyPopper.$content().on('click', '.js-simple_pagination', async function (e) {
+			e.preventDefault();
+			const link = $(this);
+			const direction = link.data('dir');
+			if (direction == 'prev')
+				currentPage--;
+			if (direction == 'next')
+				currentPage++;
+			renderHistory();
+		});
 
-		toggleLoading(true);
-		const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: topicId, CK: null });
-		toggleLoading(false);
+		requestPopper.on('beforeOpen', async () => {
+			requestPopper.$content().html(tpl.loader());
 
-		if (response.code != 0) {
-			showError(Spaces.apiError(response));
-			return;
-		}
+			const wallet = await getWallet();
 
-		$('#factcheck').replaceWith(response.widget);
+			requestPopper.$content().html(tpl.checkForm({
+				cost: params.cost,
+				wallet
+			}));
+		});
+
+		requestPopper.$content().action("blog_check_for_truth", async function (e) {
+			e.preventDefault();
+
+			showError(undefined);
+
+			const link = $(this);
+			const toggleLoading = (flag) => {
+				link.find('.js-ico').toggleClass('ico_spinner', flag);
+				link.toggleClass("list-link--is-disabled", flag);
+			};
+
+			toggleLoading(true);
+			const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, CK: null });
+			toggleLoading(false);
+
+			if (response.code != 0) {
+				showError(Spaces.apiError(response));
+				return;
+			}
+
+			replaceWidget(response.widget);
+		});
+	};
+
+	const destroy = () => {
 		requestPopper.destroy();
 		resultPopper.destroy();
 		historyPopper.destroy();
-		setTimeout(() => initFactCheck());
-	});
+		pushstream.off('message', 'diary_fact_check');
+	};
+
+	init();
+
+	return () => destroy();
 }
 
 module.on('componentpage', initFactCheck);
