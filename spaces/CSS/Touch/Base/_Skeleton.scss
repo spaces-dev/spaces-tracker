@@ -77,38 +77,42 @@ body {
 
 @keyframes skeleton-dot {
 	0%,
+	19.99%,
+	40%,
 	100% {
-		opacity: 0;
+		opacity: 1;
 	}
 
-	25%,
-	99% {
-		opacity: 1;
+	20%,
+	39.99% {
+		opacity: 0;
 	}
 }
 
 @keyframes skeleton-dot-2 {
 	0%,
-	25%,
+	19.99%,
+	60%,
 	100% {
-		opacity: 0;
+		opacity: 1;
 	}
 
-	50%,
-	99% {
-		opacity: 1;
+	20%,
+	59.99% {
+		opacity: 0;
 	}
 }
 
 @keyframes skeleton-dot-3 {
 	0%,
-	50%,
+	19.99%,
+	80%,
 	100% {
-		opacity: 0;
+		opacity: 1;
 	}
 
-	75%,
-	99% {
-		opacity: 1;
+	20%,
+	79.99% {
+		opacity: 0;
 	}
 }

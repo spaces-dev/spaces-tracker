@@ -80,6 +80,7 @@ const tpl = {
 	errorInline(err) {
 		return `
 			<span class="red">${err}</span>
+			<a href="#" class="js-action_link" data-action="blog_check_for_truth">(повторить)</a>
 		`;
 	}
 };
@@ -101,6 +102,10 @@ function initFactCheck() {
 			.find('.js-error')
 			.toggleClass('hide', !error)
 			.html(error ?? '');
+	};
+
+	const showInlineError = (error) => {
+		$('#factcheck').html(tpl.errorInline(error));
 	};
 
 	const renderHistory = () => {
@@ -128,11 +133,15 @@ function initFactCheck() {
 
 		pushstream.on('message', 'diary_fact_check', async (message) => {
 			if (message.act == pushstream.TYPES.DIARY_TOPIC_FACT_CHECK && message.topic_id == params.topicId) {
-				const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, Info: 1, CK: null });
-				if (response.code == 0) {
-					replaceWidget(response.widget);
+				if (message.status == "SUCCESS") {
+					const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, Info: 1, CK: null });
+					if (response.code == 0) {
+						replaceWidget(response.widget);
+					} else {
+						showInlineError(Spaces.apiError(response));
+					}
 				} else {
-					replaceWidget(tpl.errorInline(Spaces.apiError(response)));
+					showInlineError(L("При проверке текста произошла ошибка"));
 				}
 			}
 		});
@@ -165,15 +174,17 @@ function initFactCheck() {
 			}));
 		});
 
-		requestPopper.$content().action("blog_check_for_truth", async function (e) {
+		$('#factcheck').action("blog_check_for_truth", async function (e) {
 			e.preventDefault();
 
 			showError(undefined);
 
 			const link = $(this);
 			const toggleLoading = (flag) => {
-				link.find('.js-ico').toggleClass('ico_spinner', flag);
-				link.toggleClass("list-link--is-disabled", flag);
+				if (link.hasClass('list-link')) {
+					link.find('.js-ico').toggleClass('ico_spinner', flag);
+					link.toggleClass("list-link--is-disabled", flag);
+				}
 			};
 
 			toggleLoading(true);
