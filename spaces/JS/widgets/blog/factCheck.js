@@ -40,33 +40,52 @@ const tpl = {
 			</div>
 		`;
 	},
-	history({ pagination, result }) {
+	history({ pagination, result, checked }) {
 		return `
 			<div class="dropdown-content">
 				<div class="content-item3 wbg">
 					<div class="sub-title">${L('История проверок')}</div>
 					<span class="grey">Дата проверки:</span> ${result.date}
-					<div class="pad_t_a">
+					<div class="pad_t_a markdown">
 						${result.list ? tpl.detailsWithFacts({ result }) : tpl.details({ result })}
-
 					</div>
 				</div>
+
 				${pagination}
+			</div>
+
+			<div class="dropdown-content ${!checked ? 'hide' : ''}">
+				<div class="js-popper_open list-link list-link-grey list-link--short list-link_last t_center" data-popper-id="factcheck_result_dropdown">
+					<span class="ico ico_history"></span>
+					${L("Показать актуальную проверку")}
+				</div>
 			</div>
 		`;
 	},
 	detailsWithFacts({ result }) {
+		const factColor = (item) => {
+			if (item.true)
+				return item.truth < 80 ? 'grey' : 'green';
+			return 'red';
+		};
 		return `
 			<ol>
 				${result.list.map((item) => `
 					<li>
-						<span class="${item.true ? 'green' : 'red'}">
+						<span class="${factColor(item)}">
 							${item.statement}
 							(${L("достоверность:")}${item.truth <= 10 ? L("низкая") : `${item.truth}%`})
 						</span><br />
 						${item.explain}
+
+						${item.source_url ? `
+							&nbsp;
+							<a href="${item.source_url}" target="_blank" rel="noopener">
+								<span class="ico_mail ico_mail_link ico-inline"></span>
+							</a>
+						` : ``}
 					</li>
-				`)}
+				`).join("")}
 			</ol>
 		`;
 	},
@@ -113,6 +132,7 @@ function initFactCheck() {
 		historyPopper.$content().html(tpl.history({
 			result: params.history[offset],
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
+			checked: params.checked,
 		}));
 	};
 
