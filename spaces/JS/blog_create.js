@@ -102,7 +102,7 @@ module.on("componentpage", function () {
 	}).on('onAdultAttach', function (e, data) {
 		has_adult_files = data.hasAdult;
 		toggleAdult();
-	}).action("cancel", async function (e) {
+	}).action("cancel_new_blog", async function (e) {
 		const link = $(this);
 		if (link.data('canceled'))
 			return;
