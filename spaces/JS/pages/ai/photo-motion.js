@@ -106,6 +106,7 @@ function initForm() {
 			Id: fileId,
 		});
 		photoIsNSFW = response.code === 0 && response.is_nsfw;
+		form.find('input[type="hidden"][name="Nsfw"]').val(photoIsNSFW ? 1 : 0);
 		validateForm();
 	};
 
