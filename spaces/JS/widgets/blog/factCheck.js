@@ -6,6 +6,8 @@ import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
 import { WALLET_RENDER_MODE } from '../../pages/ai/wallet';
 
+let instances = {};
+
 const tpl = {
 	checkForm({ cost, wallet }) {
 		return `
@@ -40,7 +42,7 @@ const tpl = {
 			</div>
 		`;
 	},
-	history({ pagination, details, checked }) {
+	history({ topicId, pagination, details, checked }) {
 		return `
 			<div class="dropdown-content">
 				<div class="content-item3 wbg">
@@ -51,7 +53,10 @@ const tpl = {
 			</div>
 
 			<div class="dropdown-content ${!checked ? 'hide' : ''}">
-				<div class="js-popper_open list-link list-link-grey list-link--short list-link_last t_center" data-popper-id="factcheck_result_dropdown">
+				<div
+					class="js-popper_open list-link list-link-grey list-link--short list-link_last t_center"
+					data-popper-id="factcheck_result_dropdown_${topicId}"
+				>
 					<span class="ico ico_history"></span>
 					${L("Показать текущую проверку")}
 				</div>
@@ -66,7 +71,7 @@ const tpl = {
 	}
 };
 
-function initFactCheck() {
+function initFactCheck(topicId) {
 	let params;
 	let resultPopper, historyPopper, requestPopper;
 
@@ -86,12 +91,13 @@ function initFactCheck() {
 	};
 
 	const showInlineError = (error) => {
-		$('#factcheck').html(tpl.errorInline(error));
+		$(`#factcheck_${topicId}`).html(tpl.errorInline(error));
 	};
 
 	const renderHistory = () => {
 		const offset = (currentPage - 1);
 		historyPopper.$content().html(tpl.history({
+			topicId,
 			details: params.history[offset],
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
 			checked: params.checked,
@@ -99,24 +105,26 @@ function initFactCheck() {
 	};
 
 	const replaceWidget = (widget) => {
-		module.finalize(import.meta.id('./factCheck'));
-		$('#factcheck').replaceWith(widget);
+		instances[topicId].destroy();
+		$(`#factcheck_${topicId}`).replaceWith(widget);
+		init();
 	};
 
 	const init = () => {
-		params = $('#factcheck').data();
+		const factCheckWidget = $(`#factcheck_${topicId}`);
+		params = factCheckWidget.data();
 
-		resultPopper = getPopperById('factcheck_result_dropdown');
-		historyPopper = getPopperById('factcheck_history_dropdown');
-		requestPopper = getPopperById('factcheck_dropdown');
+		resultPopper = getPopperById(`factcheck_result_dropdown_${topicId}`);
+		historyPopper = getPopperById(`factcheck_history_dropdown_${topicId}`);
+		requestPopper = getPopperById(`factcheck_dropdown_${topicId}`);
 
 		currentPage = 0;
 		totalPages = 0;
 
-		pushstream.on('message', 'diary_fact_check', async (message) => {
-			if (message.act == pushstream.TYPES.DIARY_TOPIC_FACT_CHECK && message.topic_id == params.topicId) {
+		instances[topicId] = {
+			handleMessage: async (message) => {
 				if (message.status == "SUCCESS") {
-					const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, Info: 1, CK: null });
+					const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: topicId, Info: 1, CK: null });
 					if (response.code == 0) {
 						replaceWidget(response.widget);
 					} else {
@@ -125,8 +133,15 @@ function initFactCheck() {
 				} else {
 					showInlineError(L("При проверке текста произошла ошибка"));
 				}
+			},
+			destroy: () => {
+				requestPopper.destroy();
+				resultPopper.destroy();
+				historyPopper.destroy();
+				delete instances[topicId];
+				requestPopper = resultPopper = historyPopper = undefined;
 			}
-		});
+		};
 
 		historyPopper.on('beforeOpen', () => {
 			totalPages = params.history.length;
@@ -156,7 +171,7 @@ function initFactCheck() {
 			}));
 		});
 
-		$('#factcheck').action("blog_check_for_truth", async function (e) {
+		$(`#factcheck_${topicId}`).action("blog_check_for_truth", async function (e) {
 			e.preventDefault();
 
 			showError(undefined);
@@ -170,7 +185,7 @@ function initFactCheck() {
 			};
 
 			toggleLoading(true);
-			const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: params.topicId, CK: null });
+			const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: topicId, CK: null });
 			toggleLoading(false);
 
 			if (response.code != 0) {
@@ -180,18 +195,29 @@ function initFactCheck() {
 
 			replaceWidget(response.widget);
 		});
-	};
 
-	const destroy = () => {
-		requestPopper.destroy();
-		resultPopper.destroy();
-		historyPopper.destroy();
-		pushstream.off('message', 'diary_fact_check');
+		factCheckWidget.data('inited', true);
 	};
 
 	init();
-
-	return () => destroy();
 }
 
-module.on('componentpage', initFactCheck);
+module.on('componentpage', () => {
+	pushstream.on('message', 'diary_fact_check', async (message) => {
+		if (message.act == pushstream.TYPES.DIARY_TOPIC_FACT_CHECK) {
+			if (instances[message.topic_id])
+				instances[message.topic_id].handleMessage(message);
+		}
+	});
+});
+
+module.on('component', () => {
+	for (const factcheckWidget of document.querySelectorAll('.js-factcheck:not([data-inited])'))
+		initFactCheck(factcheckWidget.dataset.topicId);
+});
+
+module.on('componentpagedone', () => {
+	pushstream.off('message', 'diary_fact_check');
+	for (const instance of Object.values(instances))
+		instance.destroy();
+});
