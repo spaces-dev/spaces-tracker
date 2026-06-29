@@ -1,14 +1,10 @@
 import $ from '../jquery';
-import { debounce, L } from '../utils';
+import { L } from '../utils';
 import { getCurrentTheme, getEffectiveTheme, switchTheme, onThemeChange } from '../core/theme';
 import { Spaces } from '../spacesLib';
 import './swiper';
 
 const THEME2TITLE = {system: L('Системная'), light: L('Светлая'), dark: L('Тёмная')};
-const searchSidebarCategories = debounce(function () {
-	updateSidebarCategoriesList(this);
-}, 150);
-
 let steps_to_system = 1;
 
 onThemeChange(() => syncCurrentTheme());
@@ -34,42 +30,10 @@ $('#page_sidebar').on('click', '.js-site-theme', function (e) {
 	this.title = L("Тема: {0}", THEME2TITLE[getCurrentTheme()]);
 });
 
-$(document).on('input clearSearchForm', '#main_content .js-sidebar-categories-search .js-search__input', function () {
-	searchSidebarCategories.call(this);
-});
-
 function syncCurrentTheme() {
 	const currentTheme = getCurrentTheme();
 	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-title'))
 		block.textContent = THEME2TITLE[currentTheme];
 	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-state'))
 		block.classList.toggle('hide', block.dataset.theme !== currentTheme);
-}
-
-function updateSidebarCategoriesList(input) {
-	const categoriesList = document.querySelector('#main .js-sidebar-categories-list');
-
-	if (!categoriesList)
-		return;
-
-	const searchQueryRegExp = getSearchQueryRegExp(input.value);
-	const items = categoriesList.querySelectorAll('.js-sidebar-categories-item');
-	let found = 0;
-
-	for (const item of items) {
-		const isVisible = !searchQueryRegExp || searchQueryRegExp.test(item.textContent);
-		item.classList.toggle('hide', !isVisible);
-		if (isVisible)
-			found++;
-	}
-
-	const notFoundBlock = categoriesList.querySelector('.js-sidebar-categories-not-found');
-	notFoundBlock.classList.toggle('hide', !searchQueryRegExp || found > 0);
-}
-
-function getSearchQueryRegExp(query) {
-	const normalizedQuery = query.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '').toLowerCase();
-	if (!normalizedQuery.length)
-		return undefined;
-	return new RegExp("([\\s,._()-]|^)" + normalizedQuery.replace(/[^\wа-яёЁ]+/gi, '|').replace(/^\||\|$/, ''), 'i');
 }
