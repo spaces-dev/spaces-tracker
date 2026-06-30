@@ -171,14 +171,13 @@ $('body').on('click', '.js-replace_link', function (e) {
 	toggle_replace_link(widget, false);
 }).action('spoiler', function (e) {
 	e.preventDefault();
-
-	if ($(this).data('selector')) {
-		$($(this).data('selector')).toggleClass('hide');
-	} else if ($(this).data('id')) {
-		$('#' + $(this).data('id')).toggleClass('hide');
-		$(this).toggleClass('js-clicked');
+	const el = $(this);
+	if (el.data('selector')) {
+		$(el.data('selector')).toggleClass('hide');
+	} else if (el.data('id')) {
+		$('#' + el.data('id')).toggleClass('hide');
+		el.toggleClass('js-clicked');
 	} else {
-		let el = $(this);
 		el.find('.ico_arr_down, .ico_arr_up').toggleClass('ico_arr_down ico_arr_up');
 		el.parents('.js-spoiler_wrap').find('.js-spoiler_content').toggleClass('hide');
 	}

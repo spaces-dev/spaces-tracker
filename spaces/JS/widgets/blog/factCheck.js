@@ -1,6 +1,6 @@
 import module from 'module';
 import $ from '../../jquery';
-import { getPopperById } from '../popper';
+import { getNearestPopper, getPopperById } from '../popper';
 import { L } from '../../utils';
 import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
@@ -65,6 +65,7 @@ const tpl = {
 	},
 	errorInline(err) {
 		return `
+			Достоверность:
 			<span class="red">${err}</span>
 			<a href="#" class="js-action_link" data-action="blog_check_for_truth">(повторить)</a>
 		`;
@@ -110,6 +111,12 @@ function initFactCheck(topicId) {
 		init();
 	};
 
+	const collapseStatements = () => {
+		const factCheckWidget = $(`#factcheck_${topicId}`);
+		factCheckWidget.find('.js-action_link[data-action="factcheck_show_all"]').removeClass('hide');
+		factCheckWidget.find('.js-factcheck_statement[data-is-top="false"]').addClass('hide');
+	};
+
 	const init = () => {
 		const factCheckWidget = $(`#factcheck_${topicId}`);
 		params = factCheckWidget.data();
@@ -149,6 +156,10 @@ function initFactCheck(topicId) {
 			renderHistory();
 		});
 
+		historyPopper.on('afterClose', () => {
+			collapseStatements();
+		});
+
 		historyPopper.$content().on('click', '.js-simple_pagination', async function (e) {
 			e.preventDefault();
 			const link = $(this);
@@ -169,6 +180,10 @@ function initFactCheck(topicId) {
 				cost: params.cost,
 				wallet
 			}));
+		});
+
+		requestPopper.on('afterClose', () => {
+			collapseStatements();
 		});
 
 		$(`#factcheck_${topicId}`).action("blog_check_for_truth", async function (e) {
@@ -194,6 +209,13 @@ function initFactCheck(topicId) {
 			}
 
 			replaceWidget(response.widget);
+		});
+
+		factCheckWidget.action("factcheck_show_all", function (e) {
+			e.preventDefault();
+			const content = getNearestPopper(this).$content();
+			content.find('.js-factcheck_statement').removeClass('hide');
+			$(this).addClass('hide');
 		});
 
 		factCheckWidget.data('inited', true);

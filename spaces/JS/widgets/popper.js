@@ -6,7 +6,7 @@ import popperPreventOverflow from '@popperjs/core/lib/modifiers/preventOverflow'
 import popperComputeStyles from '@popperjs/core/lib/modifiers/computeStyles';
 import popperOffset from '@popperjs/core/lib/modifiers/offset';
 import popperEventListeners from '@popperjs/core/lib/modifiers/eventListeners';
-import { parseDataset, waitTransitionEnd } from "../utils/dom";
+import { isVisibleOnScreen, parseDataset, waitTransitionEnd } from "../utils/dom";
 import { throttleRaf } from "../utils";
 import fixPageHeight from "../min_height";
 import pageLoader from '../ajaxify';
@@ -70,6 +70,7 @@ export class Popper {
 	openerOptions = {};
 	options;
 	ignoreBodyClick = false;
+	scrollTopBeforeOpen;
 
 	constructor(popperElement, options = {}) {
 		this.popperElement = popperElement;
@@ -94,6 +95,7 @@ export class Popper {
 			exclusive: false,
 			group: undefined,
 			closeOnBodyClick: true,
+			restoreScrollAfterClose: false,
 			...popperTypes[popperType],
 			...parsePopperOptions(this.element()),
 			...options,
@@ -180,6 +182,7 @@ export class Popper {
 			...openerOptions
 		};
 		this.options = { ...this.defaultOptions, ...this.openerOptions };
+		this.scrollTopBeforeOpen = window.scrollY;
 
 		this.popperElement.dataset.popperOpen = "true";
 		this.referenceElement.dataset.popperOpen = "true";
@@ -336,13 +339,19 @@ export class Popper {
 		}
 	}
 
-	close() {
+	close(closeOptions = {}) {
+		closeOptions = {
+			closedByUser: false,
+			...closeOptions
+		};
+
 		if (!this.isOpen())
 			return;
 
 		if (!this._triggerEvent("beforeClose"))
 			return;
 
+		const lastReferenceElement = this.referenceElement;
 		if (this.options.clickedClass)
 			this.referenceElement.classList.remove(this.options.clickedClass);
 
@@ -363,6 +372,12 @@ export class Popper {
 
 		if (resizeObserver)
 			resizeObserver.unobserve(this.popperElement);
+
+		if (closeOptions.closedByUser && this.options.restoreScrollAfterClose) {
+			if (!isVisibleOnScreen(lastReferenceElement))
+				window.scrollTo({ top: this.scrollTopBeforeOpen, behavior: "smooth" });
+		}
+		this.scrollTopBeforeOpen = undefined;
 	}
 
 	closeWithAnimation(timeout = 300) {
@@ -382,7 +397,7 @@ export class Popper {
 		const clickedPopper = getNearestPopper(e.target);
 		if (clickedPopper?.options.group && clickedPopper.options.group === this.options.group)
 			return;
-		this.close();
+		this.close({ closedByUser: true });
 	}
 
 	handleResize() {
@@ -568,6 +583,7 @@ function parsePopperOptions(element) {
 		exclusive: "bool",
 		closeOnBodyClick: "bool",
 		appendTo: "string",
+		restoreScrollAfterClose: "bool",
 	}, 'popper');
 }
 
@@ -626,10 +642,10 @@ function initPopperWidget() {
 			if (this.dataset.popperId) {
 				const popper = getPopperById(this.dataset.popperId);
 				if (popper)
-					popper.close();
+					popper.close({ closedByUser: true });
 			} else {
 				const popper = getNearestPopper(this);
-				popper?.close();
+				popper?.close({ closedByUser: true });
 			}
 		});
 
