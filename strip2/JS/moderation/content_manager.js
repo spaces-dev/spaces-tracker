@@ -85,7 +85,7 @@ function syncItemState(wrap, done, callback) {
 	
 	toggleLoading(wrap, true);
 	
-	Spaces.api('xxx.content_manager_item', api_data, (res) => {
+	Spaces.api('xxx.moderation.contentManagerItem', api_data, (res) => {
 		toggleLoading(wrap, false);
 		
 		if (res.label)

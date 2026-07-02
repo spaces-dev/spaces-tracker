@@ -33,7 +33,7 @@ function renderKeyphraseEditor(data, parentEl, keyphraseData) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Kpid: data.kpid, text: text.value}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Kpid: data.kpid, text: text.value}, function (res) {
 			data.text = text.value;
 			text.disabled = false;
 			delBtn.disabled = false;
@@ -49,7 +49,7 @@ function renderKeyphraseEditor(data, parentEl, keyphraseData) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Kpid: data.kpid, Delete: 1}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Kpid: data.kpid, Delete: 1}, function (res) {
 			let i;
 			for(let q = 0; q < keyphraseData.length; q++) {
 				if(keyphraseData[q].kpid == data.kpid)
@@ -86,7 +86,7 @@ function renderTitleEditor(data, parentEl, langData) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Ctid: data.ctid, title: title.value}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Ctid: data.ctid, title: title.value}, function (res) {
 			data.title = title.value;
 			title.disabled = false;
 			setMainBtn.disabled = false;
@@ -108,7 +108,7 @@ function renderTitleEditor(data, parentEl, langData) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Ctid: data.ctid, Main: 1}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Ctid: data.ctid, Main: 1}, function (res) {
 			// Сначала меняем данные
 			let unmainedTitleData;
 			for(let q = 0; q < langData.length; q++) {
@@ -136,7 +136,7 @@ function renderTitleEditor(data, parentEl, langData) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Ctid: data.ctid, Delete: 1}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Ctid: data.ctid, Delete: 1}, function (res) {
 			let i;
 			for(let q = 0; q < langData.length; q++) {
 				if(langData[q].ctid == data.ctid)
@@ -185,7 +185,7 @@ function renderCatEditor(data) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, Orient: v}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, Orient: v}, function (res) {
 			for(let q = 0; q < orient.options.length; q++) {
 				orient.options.selected = false;
 			}
@@ -213,7 +213,7 @@ function renderCatEditor(data) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, Orients_hide: orients_hide_bits}, function (res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, Orients_hide: orients_hide_bits}, function (res) {
 			data.orients_hide = orients_hide_bits;
 			
 			e.target.disabled = false;
@@ -242,7 +242,7 @@ function renderCatEditor(data) {
 					let titleData = cat.titles[lang].filter(v => {return v.is_main})[0];
 					cat.saving++;
 					renderCatSaving(data.cid);
-					Spaces.api("xxx.cat_editor", {CK: null, Ctid: titleData.ctid, title: title.value}, function (res) {
+					Spaces.api("xxx.moderation.catEditor", {CK: null, Ctid: titleData.ctid, title: title.value}, function (res) {
 						titleData.title = title.value;
 						title.disabled = false;
 						cat.saving--;
@@ -264,7 +264,7 @@ function renderCatEditor(data) {
 			cat.saving++;
 			renderCatSaving(data.cid);
 			
-			Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, title: createText.value}, function(res) {
+			Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, title: createText.value}, function(res) {
 				let titleData = {ctid: res.Ctid, title: createText.value, is_main: false, lang: lang};
 				data.titles[lang].push(titleData);
 				renderTitleEditor(titleData, langContainer, data.titles[lang]);
@@ -288,7 +288,7 @@ function renderCatEditor(data) {
 				let cat = cats.filter(v => {return +v.cid === +data.cid})[0];
 				cat.saving++;
 				renderCatSaving(data.cid);
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_title: pageTitleEditor.value}, function (res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_title: pageTitleEditor.value}, function (res) {
 					if(! cat.page_title)
 						cat.page_title = {};
 					if(! cat.page_title[lang])
@@ -310,7 +310,7 @@ function renderCatEditor(data) {
 				let cat = cats.filter(v => {return +v.cid === +data.cid})[0];
 				cat.saving++;
 				renderCatSaving(data.cid);
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_h1: pageH1Editor.value}, function (res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_h1: pageH1Editor.value}, function (res) {
 					if(! cat.page_h1)
 						cat.page_h1 = {};
 					if(! cat.page_h1[lang])
@@ -332,7 +332,7 @@ function renderCatEditor(data) {
 				let cat = cats.filter(v => {return +v.cid === +data.cid})[0];
 				cat.saving++;
 				renderCatSaving(data.cid);
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_location: pageLocationEditor.value}, function (res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, page_location: pageLocationEditor.value}, function (res) {
 					if(! cat.page_location)
 						cat.page_location = {};
 					if(! cat.page_location[lang])
@@ -354,7 +354,7 @@ function renderCatEditor(data) {
 				let cat = cats.filter(v => {return +v.cid === +data.cid})[0];
 				cat.saving++;
 				renderCatSaving(data.cid);
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, file_page_location: filePageLocationEditor.value}, function (res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, file_page_location: filePageLocationEditor.value}, function (res) {
 					if(! cat.file_page_location)
 						cat.file_page_location = {};
 					if(! cat.file_page_location[lang])
@@ -379,7 +379,7 @@ function renderCatEditor(data) {
 				let cat = cats.filter(v => {return +v.cid === +data.cid})[0];
 				cat.saving++;
 				renderCatSaving(data.cid);
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, descr: descrEditor.value}, function (res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, descr: descrEditor.value}, function (res) {
 					if(! cat.descr)
 						cat.descr = {};
 					if(! cat.descr[lang])
@@ -411,7 +411,7 @@ function renderCatEditor(data) {
 				cat.saving++;
 				renderCatSaving(data.cid);
 				
-				Spaces.api("xxx.cat_editor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, keyphrase: createText.value}, function(res) {
+				Spaces.api("xxx.moderation.catEditor", {CK: null, Cid: data.cid, lang: lang, ftype: ftype, keyphrase: createText.value}, function(res) {
 					let keyphraseData = {kpid: res.Kpid, text: createText.value, lang: lang, ftype: ftype, cid: data.cid};
 					data.keyphrases[lang][ftype].push(keyphraseData);
 					renderKeyphraseEditor(keyphraseData, keyphrasesContainer, data.keyphrases[lang][ftype]);
@@ -440,7 +440,7 @@ function renderCatEditor(data) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Move: 1, From: data.cid, To: +moveInput.value}, function(res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Move: 1, From: data.cid, To: +moveInput.value}, function(res) {
 			let targetCat = cats.filter(v => {return +v.cid === +moveInput.value})[0];
 			
 			data.files_cnt = 0;
@@ -468,7 +468,7 @@ function renderCatEditor(data) {
 		cat.saving++;
 		renderCatSaving(data.cid);
 		
-		Spaces.api("xxx.cat_editor", {CK: null, Delete: 1, Cid: data.cid}, function(res) {
+		Spaces.api("xxx.moderation.catEditor", {CK: null, Delete: 1, Cid: data.cid}, function(res) {
 			gebi('cat_editor').removeChild(gebi(`cat_editor_${data.cid}`));
 		});
 	});
@@ -544,7 +544,7 @@ export function init(new_cats, new_langs) {
 			newCatLangTitles[langs[q]].disabled = true;
 			params[langs[q]] = newCatLangTitles[langs[q]].value;
 		}
-		Spaces.api("xxx.cat_editor", params, function (res) {
+		Spaces.api("xxx.moderation.catEditor", params, function (res) {
 			cats.push(res.cat);
 			renderCatEditor(res.cat);
 			
