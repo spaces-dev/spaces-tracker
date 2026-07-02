@@ -296,6 +296,7 @@ $body.on('click', '.js-switcher', function (e) {
 			method: data.method,
 			data: data.params,
 			param: data.stateParam,
+			invert: data.invert,
 		};
 	}
 	var update_state = function (flag) {
