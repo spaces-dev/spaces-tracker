@@ -38,8 +38,6 @@ export const Config: TrackerConfig = {
     'nvidia/nemotron-3-ultra-550b-a55b:free',
     'openai/gpt-oss-120b:free',
     'openai/gpt-oss-20b:free',
-    'nex-agi/nex-n2-pro:free',
-    'poolside/laguna-m.1:free',
   ],
   IconsPath: 'icons.json',
   LinksPath: 'links.json',
