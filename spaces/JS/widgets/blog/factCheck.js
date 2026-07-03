@@ -63,6 +63,19 @@ const tpl = {
 			</div>
 		`;
 	},
+	message({ message, isError }) {
+		return `
+			<div class="dropdown-content">
+				<div class="content-item3 wbg ${isError ? 'red' : 'grey'} content-bl__sep">
+					${message}
+				</div>
+				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+					<span class="ico ico_remove"></span>
+					${L("Закрыть")}
+				</div>
+			</div>
+		`;
+	},
 	errorInline(err) {
 		return `
 			Достоверность:
@@ -81,6 +94,8 @@ function initFactCheck(topicId) {
 
 	const getWallet = async () => {
 		const response = await Spaces.asyncApi("services.ai.wallet.get", { Mode: WALLET_RENDER_MODE.INLINE });
+		if (response.code != 0)
+			throw new Error(Spaces.apiError(response));
 		return response.widget;
 	};
 
@@ -172,14 +187,29 @@ function initFactCheck(topicId) {
 		});
 
 		requestPopper.on('beforeOpen', async () => {
+			if (!Spaces.params.nid) {
+				requestPopper.$content().html(tpl.message({
+					message: [
+						L("Проверка достоверности доступна только авторизированным пользователям."),
+						`<a href="/registration/loginform/">${L("Войти")}</a> или <a href="/registration/new/">${L("зарегистрироваться")}</a>.`,
+					].join('<br />')
+				}));
+				return;
+			}
+
 			requestPopper.$content().html(tpl.loader());
-
-			const wallet = await getWallet();
-
-			requestPopper.$content().html(tpl.checkForm({
-				cost: params.cost,
-				wallet
-			}));
+			try {
+				const wallet = await getWallet();
+				requestPopper.$content().html(tpl.checkForm({
+					cost: params.cost,
+					wallet
+				}));
+			} catch (e) {
+				requestPopper.$content().html(tpl.message({
+					message: e.message,
+					isError: e
+				}));
+			}
 		});
 
 		requestPopper.on('afterClose', () => {
