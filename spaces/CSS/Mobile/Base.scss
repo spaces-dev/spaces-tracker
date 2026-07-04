@@ -2505,7 +2505,7 @@ a.selected{
 	border-bottom: 1px solid $separator-color !important;
 }
 
-.lbl,
+.label,
 .grey,
 .block.grey{
 	color: $secondary-text-color;
@@ -2623,7 +2623,7 @@ a.selected{
 	border-top: 1px solid $default-border-color;
 }
 
-.lbl{
+.label{
 	margin-bottom: if($LITE, 6px, 2px);
 	display: block;
 }
