@@ -323,8 +323,8 @@ API_ERRORS = {
 	[Codes.AUTH.ERR_EMPTY_LOGIN_OR_PASSWORD]: L("Пустой логин или пароль"),
 	[Codes.AUTH.ERR_WRONG_LOGIN_OR_PASSWORD]: L("Неверный логин или пароль"),
 	[Codes.AUTH.ERR_AUTH_REQUIRED]: [
-		L("Функция доступна только авторизированным пользователям."),
-		`<a href="/registration/loginform/">${L("Войти")}</a> или <a href="/registration/new/">${L("зарегистрироваться")}</a>.`,
+		L('Функция доступна только авторизированным пользователям.'),
+		L('<a href="{0}">Войти</a> или <a href="{1}">зарегистрироваться</a>.', '/registration/loginform/', '/registration/new/'),
 	].join('<br />'),
 
 	// MAIL

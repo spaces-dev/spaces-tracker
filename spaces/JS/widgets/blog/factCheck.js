@@ -191,7 +191,7 @@ function initFactCheck(topicId) {
 				requestPopper.$content().html(tpl.message({
 					message: [
 						L("Проверка достоверности доступна только авторизированным пользователям."),
-						`<a href="/registration/loginform/">${L("Войти")}</a> или <a href="/registration/new/">${L("зарегистрироваться")}</a>.`,
+						L('<a href="{0}">Войти</a> или <a href="{1}">зарегистрироваться</a>.', '/registration/loginform/', '/registration/new/'),
 					].join('<br />')
 				}));
 				return;
