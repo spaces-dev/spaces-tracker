@@ -190,7 +190,7 @@ var tpl = {
 					
 					(data.linkDownload ? 
 						'<div class="content-item3 wbg content-bl__sep js-qsel_link_upload">' + 
-							'<label class="label text">' + L('Загрузить по ссылке:') + '</label>' + 
+							'<label class="label">' + L('Загрузить по ссылке:') + '</label>' + 
 							'<table class="table__wrap table__wrap-layout">' + 
 								'<tr>' + 
 									'<td style="width: 100%" class="table__cell">' +
