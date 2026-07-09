@@ -851,6 +851,25 @@ a.btn-tools {
 	cursor: pointer;
 }
 
+.content-side-button {
+	background: $content-bg;
+	padding: 15px;
+	margin: -15px;
+	float: right;
+
+	@if ($PC) {
+		&:hover {
+			background: $default-hover-bg;
+		}
+	}
+
+	&:active {
+		background: $default-clicked-bg;
+		box-shadow: $default-clicked-shadow;
+		transform: translateY(1px);
+	}
+}
+
 .switch{
 	background: $switch-unselected-bg;
 }

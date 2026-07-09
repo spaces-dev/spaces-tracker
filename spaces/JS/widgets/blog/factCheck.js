@@ -241,13 +241,6 @@ function initFactCheck(topicId) {
 			replaceWidget(response.widget);
 		});
 
-		factCheckWidget.action("factcheck_show_all", function (e) {
-			e.preventDefault();
-			const content = getNearestPopper(this).$content();
-			content.find('.js-factcheck_statement').removeClass('hide');
-			$(this).addClass('hide');
-		});
-
 		factCheckWidget.data('inited', true);
 	};
 
@@ -255,6 +248,13 @@ function initFactCheck(topicId) {
 }
 
 module.on('componentpage', () => {
+	$('#main').action("factcheck_show_all", function (e) {
+		e.preventDefault();
+		const content = $(this).parents('.js-factcheck_statements');
+		content.find('.js-factcheck_statement').removeClass('hide');
+		$(this).addClass('hide');
+	});
+
 	pushstream.on('message', 'diary_fact_check', async (message) => {
 		if (message.act == pushstream.TYPES.DIARY_TOPIC_FACT_CHECK) {
 			if (instances[message.topic_id])

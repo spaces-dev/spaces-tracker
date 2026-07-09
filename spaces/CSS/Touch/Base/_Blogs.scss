@@ -17,6 +17,7 @@
 
 .blog-item_short_shared {
 	padding: 10px;
+	color: $default-text-color;
 	background: $bubble-bg;
 	overflow: hidden;
 	word-wrap: break-word;
@@ -79,4 +80,13 @@
 
 .blog-item_short_shared .blog-toolbar{
 	margin-top: -2px;
+}
+
+.blog-item-info {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 15px;
+	background: $content-bg;
+	color: $secondary-text-color;
 }

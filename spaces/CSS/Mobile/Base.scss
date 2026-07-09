@@ -2996,6 +2996,22 @@ button.btn-transp:hover,
 }
 
 /*
+ * Blog
+ */
+.blog-item-info {
+	padding: 10px;
+	background: $content-bg;
+	color: $secondary-text-color;
+
+	&__item {
+		margin-bottom: 10px;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+/*
 	######################
 	### NEW font fixes ###
 	######################
