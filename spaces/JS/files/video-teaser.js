@@ -1,4 +1,5 @@
 import module from 'module';
+import { updateServerURL } from '../metrics/htz-checker';
 
 const currentTeasers = new Map();
 let observer;
@@ -120,7 +121,7 @@ function toggleAnimation(preview, flag) {
 
 function renderVideoTeaser(preview, source) {
 	const video = document.createElement('video');
-	video.src = source.src;
+	video.src = updateServerURL(source.src);
 	video.muted = true;
 	video.autoplay = true;
 	video.loop = true;

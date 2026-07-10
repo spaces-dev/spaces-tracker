@@ -4,7 +4,22 @@ import { TRANSPARENT_PIXEL } from '../utils';
 
 const TIMEOUT = 5000;
 
+let runtimeReplaceConfig;
+
 serversChecker();
+
+export function updateServerURL(url) {
+	if (!runtimeReplaceConfig)
+		return url;
+	for (const replaceConfig of runtimeReplaceConfig) {
+		for (const replaceFrom of replaceConfig.from) {
+			const index = url.indexOf(replaceFrom);
+			if (index === 0)
+				return replaceConfig.to + url.substring(replaceFrom.length);
+		}
+	}
+	return url;
+}
 
 function serversChecker() {
 	const checkServersList = SPACES_PARAMS.checkServers;
@@ -24,9 +39,12 @@ function serversChecker() {
 
 			if (checkQueueCount == 0) {
 				setTimeout(serversChecker, 60 * 1000);
-				Spaces.api("files.servers.stat", {
+				Spaces.asyncApi("files.servers.stat", {
 					seRver: stat.map(row => row[0]),
 					AvAilable: stat.map(row => row[1])
+				}).then((response) => {
+					if (response.code == 0 && response.replace)
+						runtimeReplaceConfig = JSON.parse(atob(response.replace));
 				});
 				stat = [];
 			}
