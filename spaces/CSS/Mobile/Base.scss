@@ -170,7 +170,6 @@ hr {
 }
 
 .relative,
-.fdw,
 .busi_switcher table td,
 .busi_switcher table a{
 	position: relative
@@ -664,7 +663,7 @@ a.top_menu_link,
 	text-align:left
 }
 
-.preview_block .fdw{
+.preview_block .preview-wrap{
 	display: inline-block;
 	font-size: 0;
 	max-width: 100%;
@@ -1432,17 +1431,17 @@ body,
 	padding: 0
 }
 
-.short_attach .fdw {
+.short_attach .preview-wrap {
 	position: relative;
 	overflow: hidden;
 	float: left;
 	margin-right: 10px
 }
 
-.spoiler .fdw,
-.gview_link .fdw,
-.extSubject .fdw,
-.AttachRender .fdw{
+.spoiler .preview-wrap,
+.gview_link .preview-wrap,
+.extSubject .preview-wrap,
+.AttachRender .preview-wrap{
 	position: relative;
 	display: inline-block;
 	max-width: 100%;
@@ -1771,7 +1770,7 @@ body input.search__btn {
 		position:  absolute;
 		top: 0; left: 0; bottom: 0; right: 0;
 	}
-	.player-dummy .fdw {
+	.player-dummy .preview-wrap {
 		height: 100%;
 		display: inline;
 	}
@@ -1948,12 +1947,15 @@ td.break-word {
 	background: $preview-stub-bg;
 }
 
-.fdw {
+.preview-wrap {
+	display: inline-block;
+	font-size: 0;
+	max-width: 100%;
 	position: relative;
-}
 
-.fdw .preview {
-	display: block;
+	.preview {
+		display: block;
+	}
 }
 
 .form-link-wrap a{

@@ -160,7 +160,7 @@ a.top_menu_link,
 	text-align:left
 }
 
-.preview_block .fdw{
+.preview_block .preview-wrap{
 	display: inline-block;
 	font-size: 0;
 	max-width: 100%;
@@ -508,18 +508,18 @@ body {
 	position: static
 }
 
-.short_attach .fdw,
-.blog-item_short_shared .fdw {
+.short_attach .preview-wrap,
+.blog-item_short_shared .preview-wrap {
 	position: relative;
 	overflow: hidden;
 	float: left;
 	margin-right: 10px
 }
 
-.spoiler .fdw,
-.gview_link .fdw,
-.extSubject .fdw,
-.AttachRender .fdw{
+.spoiler .preview-wrap,
+.gview_link .preview-wrap,
+.extSubject .preview-wrap,
+.AttachRender .preview-wrap{
 	position: relative;
 	display: inline-block;
 	max-width: 100%;
@@ -1290,7 +1290,6 @@ a.link-blue:active {
 }
 
 .link-normal:hover, .gl a:hover,
-.change_avatar_sublink.gl.js-clicked a,
 .link-normal.js-clicked {
 	color: $inline-link-default-hover-color;
 }
@@ -1556,8 +1555,15 @@ td.break-word {
 }
 /* UPLOAD */
 
-.fdw{
+.preview-wrap {
+	display: inline-block;
+	font-size: 0;
+	max-width: 100%;
 	position: relative;
+
+	.preview {
+		display: block;
+	}
 }
 
 /* CSS from templates */

@@ -32,10 +32,6 @@ function initForm() {
 	$('#upload_spinner').addClass('hide');
 	$('#upload_select_btn').removeClass('hide');
 	
-	// Для кривых устройств
-	if (FilesUploader.needStaticUpload())
-		return;
-	
 	form.submit((e) => {
 		e.preventDefault();
 		FileUploader.submit();

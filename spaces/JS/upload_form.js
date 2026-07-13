@@ -48,13 +48,6 @@ function initForm() {
 		formPostfixes:	[],
 	}, form.data());
 	
-	// Для кривых устройств
-	if (FilesUploader.needStaticUpload()) {
-		$('#upload_ajax_form').hide();
-		$('#upload_fallback_form').show();
-		return;
-	}
-	
 	form.on('blur change', '.js-upload_file textarea, .js-upload_file input', function () {
 		let file_id = $(this).parents('.js-upload_file').data("id");
 		tick(() => syncFileFields(current_files[file_id]));
@@ -126,11 +119,7 @@ function initForm() {
 }
 
 function initUploader() {
-	let use_native_button = FilesUploader.needNtiveControls();
-	
 	let files_place = $('#upload_files_list');
-	let files_place_wrap = $('#upload_files_wrap');sync_queue
-	let native_select_btn = $('#upload_native_btn');
 	let select_btn = $('#upload_select_btn');
 	let save_btn = $('#upload_save_btn');
 	let last_redirect;
@@ -237,8 +226,8 @@ function initUploader() {
 	});
 	
 	FileUploader.setup({
-		selectButton:	use_native_button ? false : select_btn,
-		uploadWidget:	use_native_button ? native_select_btn : false,
+		selectButton:	select_btn,
+		uploadWidget:	false,
 		uploadDrag:		$('#upload_form_draggable'),
 		noDragClass:	true,
 		denyUpload:		options.denyUpload,
@@ -266,11 +255,7 @@ function initUploader() {
 	// Скрываем спиннер
 	select_btn.find('.js-spinner').remove();
 	
-	if (use_native_button) {
-		form.find('.js-upload_native_btn').removeClass('hide');
-	} else {
-		form.find('.js-upload_btn').removeClass('hide');
-	}
+	form.find('.js-upload_btn').removeClass('hide');
 }
 
 function updateFileNumbers() {
@@ -542,11 +527,6 @@ function updateFormState() {
 	
 	// Блокируем кнопку выбора файла
 	select_btn.toggleClass('disabled', disable_select_btn);
-	
-	if (FilesUploader.needNtiveControls()) {
-		select_btn.find('.js-upload_btn').toggleClass('hide', !disable_select_btn);
-		select_btn.find('.js-upload_native_btn').toggleClass('hide', disable_select_btn);
-	}
 	
 	// Блокируем кнопку загрузки
 	let can_upload = selected_files > 0 && selected_files > invalid_files;

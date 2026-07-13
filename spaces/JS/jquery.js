@@ -4,6 +4,12 @@ import $ from './vendor/jquery';
 // For debug
 window.$ = $;
 
+$.fn.dispatch = function (evt) {
+	return this.each(function () {
+		this.dispatchEvent(evt);
+	});
+};
+
 $.each2 = function (val, func) {
 	var last, first = true;
 	if (val instanceof Array) {

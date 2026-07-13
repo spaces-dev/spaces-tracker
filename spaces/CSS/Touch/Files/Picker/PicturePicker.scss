@@ -1,0 +1,14 @@
+.picture-picker {
+	display: inline-flex;
+	flex-direction: column;
+	gap: 5px;
+
+	&__preview {
+		font-size: 0;
+		cursor: pointer;
+
+		img {
+			border-radius: 4px;
+		}
+	}
+}

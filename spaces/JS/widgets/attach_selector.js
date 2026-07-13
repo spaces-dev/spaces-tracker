@@ -16,7 +16,6 @@ import '../draggable';
 import '../anim';
 import {L, tick, numeral, ge} from '../utils';
 
-import "Anketa/AvatarSelector.css";
 import "Files/Tile.css";
 import "Files/Gallery.css";
 import "Common/Attaches.css";
@@ -426,6 +425,9 @@ AttachSelector = {
 		var self = MAttachSelector.active();
 		if (self)
 			self.close();
+	},
+	setup(link, options = {}) {
+		return MAttachSelector.setup(link, options);
 	}
 };
 
@@ -834,10 +836,10 @@ MAttachSelector = Class({
 			for (var i = 0; i < links.length; ++i)
 				self.setup(links[i]);
 		},
-		setup: function (el) {
+		setup: function (el, options = {}) {
 			var link = $(el);
 			if (!link.data('AttachSelector')) {
-				// Создаём инстанс
+				link.data(options);
 				link.data('AttachSelector', new MAttachSelector(link));
 			}
 			return link.data('AttachSelector');
@@ -860,14 +862,14 @@ MAttachSelector = Class({
 		form.addClass('js-attaches_form')
 			.data("AttachSelector", self);
 		
-		if (!data.fallback)
-			data.fallback = link.prop("href");
-		
 		let links = form.find('.js-attach');
 		let enabled_types = link.data("enabledTypes") ?? [];
 		
 		if (!links.length)
 			links = link;
+
+		if (link.data('links'))
+			links.push(...link.data('links'));
 
 		self.state = {
 			id:					'',
@@ -890,7 +892,6 @@ MAttachSelector = Class({
 			attaches:			data.attaches === undefined ? true : !!data.attaches,
 			attachesList:		list,
 			proxyUpload:		data.proxyUpload,
-			fallbackUrl:		data.fallback,
 			upload:				data.upload,
 			spoiler:			(data.spoiler ? (data.spoiler[0] == '#' ? $(data.spoiler) : form.find(data.spoiler).first()) : ''),
 			noAutoSelect:		data.noAutoSelect,
@@ -947,8 +948,11 @@ MAttachSelector = Class({
 		menuElement.append(tpl.popper({ flat: !menuElement.data('wrap') }));
 
 		for (const link of self.link) {
-			link.classList.add('js-popper_open');
-			link.dataset.popperId = menuId;
+			const $link = $(link);
+			$link.removeData('action');
+			$link.removeClass('js-action_link');
+			$link.addClass('js-attach js-popper_open');
+			$link.data('popperId', menuId);
 		}
 
 		self.menu = getPopperById(menuId);
@@ -1028,46 +1032,6 @@ MAttachSelector = Class({
 				e.preventDefault();
 				e.stopPropagation();
 				self.showError(self.state.uploadError);
-			}
-			
-			if (FilesUploader.needStaticUpload()) {
-				if ((self.state.fallbackUrl instanceof $)) {
-					self.state.fallbackUrl.one('click', function (e) {
-						e.stopPropagation();
-						e.stopImmediatePropagation();
-					}).click();
-					return false;
-				} else if (self.state.fallbackUrl) {
-					location.assign(self.state.fallbackUrl);
-					return false;
-				} else {
-					var btn = self.link;
-					if (!/^input|button$/i.test(btn[0].tagName))
-						btn = btn.find('button, input[type="submit"]').first();
-					var form = btn.parents('form');
-					if (btn.length && form.length) {
-						closeAllPoppers();
-						self.link.data('disabled', true);
-						setTimeout(function () {
-							form.on('submit._att_select', function (e) {
-								e.stopPropagation();
-								e.stopImmediatePropagation();
-							});
-							form.addClass('no_ajax');
-							form.data('preventSubmit', true);
-							btn.trigger('click', {
-								ignoreEvent: true
-							});
-							tick(function () {
-								form.data('preventSubmit', false);
-								form.off('submit._att_select');
-							});
-						}, 0);
-						return false;
-					}
-				}
-				// Если не найден механизм fallback'а
-				self.showQSelError(L("Загрузка файла не реализована."));
 			}
 		}).on('click', '.js-attach_source', function (e) {
 			e.preventDefault(); e.stopPropagation();
@@ -1621,11 +1585,6 @@ MAttachSelector = Class({
 				upload_btn.removeClass('disabled');
  			}
  			
-			if (FilesUploader.needStaticUpload()) {
-				callback_upload && callback_upload();
-				return;
-			}
-			
  			var by_duration = info.maxFileWeightByDuration;
 			FileUploader.setup({
 				name: "myFile",

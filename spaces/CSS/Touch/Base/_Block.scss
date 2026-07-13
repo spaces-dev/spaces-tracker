@@ -13,6 +13,11 @@
 	flex-shrink: 0;
 }
 
+.b-title_in-window {
+	background: $content-bg;
+	padding: 15px 15px 0 15px;
+}
+
 .b-title_center{
 	text-align: center;
 }
@@ -298,6 +303,10 @@ a:active .b-title__all{
 
 .block-item_single{
 	border-bottom: 0;
+}
+
+.user__ava {
+	position: relative;
 }
 
 .avatar_wrap a,

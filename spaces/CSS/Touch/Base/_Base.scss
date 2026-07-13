@@ -408,7 +408,6 @@ hr {
 .relative,
 .menu_wrap,
 .oh relative,
-.fdw,
 .busi_switcher table td,
 .busi_switcher table a{
 	position: relative
@@ -440,6 +439,17 @@ hr {
 
 .font0 {
 	font-size:0
+}
+
+.preview-wrap {
+	display: inline-block;
+	font-size: 0;
+	max-width: 100%;
+	position: relative;
+
+	.preview {
+		display: block;
+	}
 }
 
 .font_small {

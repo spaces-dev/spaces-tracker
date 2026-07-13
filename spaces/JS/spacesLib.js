@@ -1088,19 +1088,25 @@ Spaces.view = {
 		return null;
 
 	},
-	updateAvatars: function (new_src) {
-		let [src, src_2x] = ($.isArray(new_src) ? new_src : [new_src, false]);
+	updateAvatars: function (newAvatar) {
+		const [src, src2x] = (Array.isArray(newAvatar) ? newAvatar : [newAvatar, undefined])
+			.map((src) => src ? updateUrlScheme(src) : undefined);
 
-		src = updateUrlScheme(src);
-		if (src_2x)
-			src_2x = updateUrlScheme(src_2x);
+		const evt = new CustomEvent('ownAvatarUpdate', {
+			detail: {
+				src, src2x
+			}
+		});
+		$('#main').dispatch(evt);
 
-		let srcset = src_2x ? `${src}, ${src_2x} 1.5x` : '';
+		if (evt.defaultPrevented)
+			return;
 
-		$('.js-my_avatar img')
-			.prop("src", src)
-			.prop("srcset", srcset)
-			.addClass('preview--stub');
+		for (const img of document.querySelectorAll('.js-my_avatar .js-preview')) {
+			img.src = src;
+			img.srcset = src2x ? `${src}, ${src2x} 1.5x` : '';
+			img.classList.toggle('preview--stub', src.indexOf('.fq.') >= 0);
+		}
 	},
 	pageNav: {
 		'get': function () {

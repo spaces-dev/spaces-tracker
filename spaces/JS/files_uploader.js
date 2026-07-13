@@ -167,27 +167,13 @@ var tpl = {
 		return html;
 	},
 	uploadBtn: function (data) {
-		var unsupported = "";
-		if (FilesUploader.maybeUnsupported())
-			unsupported = '<div class="red">' + L('Скорее всего, ваше устройство не поддерживает выгрузку файлов.') + '</div>';
-		
-		if (!show_native_btn) {
-			if (data.mode == FileUploader.MODES.WIDGET) {
-				return unsupported + '<span id="upload_file_btn"><input type="submit" id="upload_file_label" value="' + L('Выберите файл') + '" /></span> ';
-			} else {
-				return '<div id="upload_file_btn" class="t_center">' + 
-						'<img src="' + ICONS_BASEURL + 'icon_add_file.gif" alt="" class="m" /> ' + 
-							'<small class="m" style="font-weight:bold;">' + L('Загрузить новый файл') + '</small>' + 
-							unsupported + 
-					'</div>';
-			}
+		if (data.mode == FileUploader.MODES.WIDGET) {
+			return '<span id="upload_file_btn"><input type="submit" id="upload_file_label" value="' + L('Выберите файл') + '" /></span> ';
 		} else {
-			if (data.mode == FileUploader.MODES.WIDGET) {
-				return '<div class="js-upload_btn_wrap"><span id="upload_file_btn"></span> ' + unsupported + '</div>';
-			} else {
-				return '<div class="t_center stnd_padd js-upload_btn_wrap"><span id="upload_file_btn"></span> ' + 
-						'<input type="submit" value="OK" id="upload_submit_btn" />' + unsupported + '</div>';
-			}
+			return '<div id="upload_file_btn" class="t_center">' +
+					'<img src="' + ICONS_BASEURL + 'icon_add_file.gif" alt="" class="m" /> ' +
+						'<small class="m" style="font-weight:bold;">' + L('Загрузить новый файл') + '</small>' +
+				'</div>';
 		}
 	},
 	spinner: function (full) {
@@ -214,8 +200,7 @@ var params, state_params,
 	upload_button,
 	files_uploaded = [],
 	has_error = false,
-	initialized = false,
-	show_native_btn = FilesUploader.needNtiveControls();
+	initialized = false;
 
 const IMAGE_EXTS = ['gif','jpg','jpeg','png','bmp','webp','jp2','jps'];
 const AUDIO_EXTS = ['mp3','aac','wav','ogg','3ga','wma','flac','m4a','wave','amr','snd','au','aif','aiff','aifc'];
@@ -312,17 +297,11 @@ var FileUploader = new (Class({
 		});
 		
 		var reset_state = function (is_reset) {
-			if (show_native_btn) {
-				upload_view.button.show();
-				upload_view.file.empty();
-				upload_view.fallback_btn_wrap.show();
-			} else {
-				upload_view.label.val(L("Выберите файл"));
-				if (!params.multiple) {
-					upload_view.file.html(tpl.fileItemInline({
-						empty: true
-					})).show();
-				}
+			upload_view.label.val(L("Выберите файл"));
+			if (!params.multiple) {
+				upload_view.file.html(tpl.fileItemInline({
+					empty: true
+				})).show();
 			}
 			
 			upload_view.pb.hide();
@@ -340,8 +319,7 @@ var FileUploader = new (Class({
 				current_progress[0].style.width = pct + '%';
 			if (current_progress_pct[0])
 				current_progress_pct[0].innerHTML = Math.round(pct) + '%';
-			if (!show_native_btn)
-				upload_view.label.val(L('Выгружаем... {0}%', Math.round(pct)));
+			upload_view.label.val(L('Выгружаем... {0}%', Math.round(pct)));
 		};
 		
 		var current_progress,
@@ -365,11 +343,6 @@ var FileUploader = new (Class({
 			}).on('remove', function (file) {
 				if (params.multiple)
 					self.removeTmpFile(file.id);
-			}).on('input', function (input) {
-				if (show_native_btn) {
-					upload_button.empty();
-					upload_button.append(input);
-				}
 			})
 			.on('limitError', function () {
 				self.error(L('Невозможно добавить файл, вы выбрали максимальное количество файлов. '));
@@ -401,12 +374,8 @@ var FileUploader = new (Class({
 					return self.addFile(file);
 				} else {
 					upload_view.file
-						.html(tpl.fileItemInline(extend({}, file, {deleteBtn: show_native_btn})))
+						.html(tpl.fileItemInline(extend({}, file, {deleteBtn: false})))
 						.show();
-					if (show_native_btn) {
-						upload_view.button.hide();
-						upload_view.fallback_btn_wrap.hide();
-					}
 					
 					if (state_params.mode == MODES.BUTTON)
 						upload_view.button.hide();
@@ -443,9 +412,6 @@ var FileUploader = new (Class({
 					upload_view.label.val(L('Выгружаем...'));
 					upload_view.file.find('img')
 						.replaceWith(tpl.spinner());
-					
-					if (show_native_btn)
-						upload_view.wrap.find('.js-upload_remove').hide();
 				}
 				
 				current_progress = $('#upload_pb_' + file.id);
@@ -642,13 +608,6 @@ var FileUploader = new (Class({
 		// Кнопка начала выбора файла
 		if (state_params.selectButton) {
 			upload_button = $(state_params.selectButton);
-			if (show_native_btn) {
-				upload_button.click(function (e) {
-					e.preventDefault(); e.stopPropagation();
-					self._trigger('showNative');
-				});
-				upload_button = $('#upload_file_btn');
-			}
 		} else {
 			upload_button = $('#upload_file_btn');
 		}
@@ -679,8 +638,7 @@ var FileUploader = new (Class({
 			}
 		});
 		uploader.clearButton();
-		if (!show_native_btn)
-			uploader.setButton(upload_button, state_params.buttonClass);
+		uploader.setButton(upload_button, state_params.buttonClass);
 		
 		// Место для Drag'n'Drop
 		uploader.resetDragPlaces().resetPastePlaces();

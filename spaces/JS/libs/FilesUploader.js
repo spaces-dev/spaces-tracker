@@ -40,22 +40,11 @@ $.extend(FilesUploader, {
 	isAjaxSupport: function () {
 		return FilesUploader.isAjaxApiSupport() || FilesUploader.inAppUpload();
 	},
-	needNtiveControls: function () {
-		return false;
-	},
 	inAppUpload: function () {
 //		if (Device.android_app && !FilesUploader.isAjaxApiSupport())
 //			return true;
 		return Device.android_app && navigator.userAgent.toLowerCase().indexOf('android 4.4') >= 0;
 	},
-	maybeUnsupported: function () {
-		// На этом телефоне скорее всего не будет работать загрузка файлов
-		return false;
-	},
-	needStaticUpload: function () {
-		// На ucweb под WP шлётся нулевой файл, если его слать из iframe или через AJAX
-		return false;
-	}
 });
 $.extend(FilesUploader.prototype, {
 	setup: function (params) {

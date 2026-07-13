@@ -123,11 +123,7 @@ function initForm() {
 		});
 	}, 250);
 
-	// FIXME: При чём тут аватар?????? Аттач????
-	$('#change_avatar-form').on('onNewAttach', () => {
-		// Селектор чуть позже обновляем параметры формы....
-		setTimeout(() => checkNSFW(), 0);
-	});
+	form.on('picturePicker:select', () => checkNSFW());
 	checkNSFW();
 
 	form.on('change input', 'input, textarea, select', () => updateCost());
