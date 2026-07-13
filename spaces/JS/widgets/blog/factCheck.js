@@ -9,29 +9,6 @@ import { WALLET_RENDER_MODE } from '../../pages/ai/wallet';
 let instances = {};
 
 const tpl = {
-	checkForm({ cost, wallet }) {
-		return `
-			<div class="dropdown-content">
-				${wallet}
-			</div>
-
-			<div class="dropdown-content">
-				<div class="content-item3 wbg content-bl__sep grey">
-					${L('ИИ проверит достоверность информации в публикации и подготовит краткое обоснование вывода.')}
-					${L('Результат проверки будет отображаться в публикации и доступен всем пользователям.')}
-					<div class="js-error system-message system-message_alert no-shadow hide mt"></div>
-				</div>
-
-				<div
-					class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
-					data-action="blog_check_for_truth"
-				>
-					<span class="ico ico_ok_blue js-ico"></span>
-					${L("Проверить достоверность ({0})", cost)}
-				</div>
-			</div>
-		`;
-	},
 	loader() {
 		return `
 			<div class="dropdown-content">
@@ -42,12 +19,20 @@ const tpl = {
 			</div>
 		`;
 	},
+	detailsNoReady() {
+		return `
+			<div class="grey">
+				<span class="ico ico_spinner"></span>
+				Проверяем<span class="skeleton-dots"><span>.</span><span>.</span><span>.</span></span>
+			</div>
+		`;
+	},
 	history({ topicId, pagination, details, checked }) {
 		return `
 			<div class="dropdown-content">
 				<div class="content-item3 wbg">
 					<div class="sub-title">${L('История проверок')}</div>
-					${details}
+					${details ?? tpl.detailsNoReady()}
 				</div>
 				${pagination}
 			</div>
@@ -59,19 +44,6 @@ const tpl = {
 				>
 					<span class="ico ico_history"></span>
 					${L("Показать текущую проверку")}
-				</div>
-			</div>
-		`;
-	},
-	message({ message, isError }) {
-		return `
-			<div class="dropdown-content">
-				<div class="content-item3 wbg ${isError ? 'red' : 'grey'} content-bl__sep">
-					${message}
-				</div>
-				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
-					<span class="ico ico_remove"></span>
-					${L("Закрыть")}
 				</div>
 			</div>
 		`;
@@ -187,28 +159,16 @@ function initFactCheck(topicId) {
 		});
 
 		requestPopper.on('beforeOpen', async () => {
-			if (!Spaces.params.nid) {
-				requestPopper.$content().html(tpl.message({
-					message: [
-						L("Проверка достоверности доступна только авторизированным пользователям."),
-						L('<a href="{0}">Войти</a> или <a href="{1}">зарегистрироваться</a>.', '/registration/loginform/', '/registration/new/'),
-					].join('<br />')
-				}));
+			if (!Spaces.params.nid)
 				return;
-			}
-
-			requestPopper.$content().html(tpl.loader());
+			const walletWidget = requestPopper.$content().find('.js-wallet_widget');
+			walletWidget.html(tpl.loader());
 			try {
 				const wallet = await getWallet();
-				requestPopper.$content().html(tpl.checkForm({
-					cost: params.cost,
-					wallet
-				}));
+				walletWidget.html(wallet);
 			} catch (e) {
-				requestPopper.$content().html(tpl.message({
-					message: e.message,
-					isError: e
-				}));
+				walletWidget.html('');
+				showError(e.message);
 			}
 		});
 
@@ -230,7 +190,12 @@ function initFactCheck(topicId) {
 			};
 
 			toggleLoading(true);
-			const response = await Spaces.asyncApi("diary.topic.factCheck", { Id: topicId, CK: null });
+			const showAuthor = requestPopper.$content().find('input[name="Show_author"]').prop("checked");
+			const response = await Spaces.asyncApi("diary.topic.factCheck", {
+				Id: topicId,
+				Show_author: showAuthor,
+				CK: null
+			});
 			toggleLoading(false);
 
 			if (response.code != 0) {
