@@ -1,4 +1,5 @@
 import module from 'module';
+import require from 'require';
 import $ from '../jquery';
 import Device from '../device';
 import {Class} from '../class';
@@ -427,6 +428,7 @@ AttachSelector = {
 			self.close();
 	},
 	setup(link, options = {}) {
+		require.component(import.meta.id('./attach_selector'));
 		return MAttachSelector.setup(link, options);
 	}
 };
@@ -657,20 +659,18 @@ MAttachSelector = Class({
 				});
 			};
 			
-			if (pushstream) {
-				pushstream.on('message', 'media_urls', function (data) {
-					if (data.act == pushstream.TYPES.LOADED_FILE && media_url_current) {
-						var time = ((Date.now() - media_url_current.time) / 1000).toFixed(2);
-						if (data.code != 0 || !data.data) {
-							console.log('[getImage] ' + media_url_current.url + ' - server error (' + time + 's): ' + Spaces.apiError(data));
-							media_url_current.callback(false, false, Spaces.apiError(data));
-						} else {
-							console.log('[getImage] ' + media_url_current.url + ' - OK (' + time + 's)');
-							media_url_current.callback(data);
-						}
+			pushstream.on('message', 'media_urls', function (data) {
+				if (data.act == pushstream.TYPES.LOADED_FILE && media_url_current) {
+					var time = ((Date.now() - media_url_current.time) / 1000).toFixed(2);
+					if (data.code != 0 || !data.data) {
+						console.log('[getImage] ' + media_url_current.url + ' - server error (' + time + 's): ' + Spaces.apiError(data));
+						media_url_current.callback(false, false, Spaces.apiError(data));
+					} else {
+						console.log('[getImage] ' + media_url_current.url + ' - OK (' + time + 's)');
+						media_url_current.callback(data);
 					}
-				});
-			}
+				}
+			});
 			
 			page_loader.on('formsubmit', 'media_urls', function (e) {
 				var form = $(e.form),
