@@ -54,6 +54,7 @@ export class Dialog {
 	y;
 	w;
 	h;
+	collapsible = true;
 
 	constructor(dialogElement, options = {}) {
 		this.dialogElement = dialogElement;
@@ -81,6 +82,11 @@ export class Dialog {
 
 	isCollapsed() {
 		return this.dialogElement.dataset.dialogCollapsed === "true";
+	}
+
+	setCollapsible(flag) {
+		this.collapsible = flag;
+		this.dialogElement.querySelector('.js-dialog_expand_collapse').classList.toggle('hide', !flag);
 	}
 
 	isMoved() {
@@ -196,6 +202,10 @@ export class Dialog {
 
 	async collapse() {
 		if (this.isCollapsed())
+			return;
+		if (!this.collapsible)
+			return;
+		if (!this._triggerEvent("beforeCollapse"))
 			return;
 
 		this.dialogElement.classList.add('dialog--transition-in');

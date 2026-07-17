@@ -90,3 +90,9 @@
 	background: $content-bg;
 	color: $secondary-text-color;
 }
+
+.factcheck-status {
+	display: inline-flex;
+	color: $secondary-accent-text-color;
+	font-weight: 500;
+}

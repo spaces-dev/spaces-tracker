@@ -116,6 +116,10 @@ const port = useIframePort((payload) => {
 			break;
 		}
 
+		case "LOCK_COLLAPSE":
+			miniGamesDialog.setCollapsible(!payload.shouldLock);
+			break;
+
 		default: {
 			console.error("[mini-games] unknown message:", payload);
 			break;
@@ -178,7 +182,9 @@ function handleDialogBeforeClose(e) {
 function handleDialogClose() {
 	port.unbind();
 	$(miniGamesDialog.content()).html('');
+	miniGamesDialog.setCollapsible(false);
 	miniGamesDialog = undefined;
+	allowCloseDialog = false;
 }
 
 function handlePaymentDone(success) {

@@ -1504,6 +1504,12 @@ body #wrap_all .horiz-menu__link_no_hover{
 	margin: 0 4px -1px 0;
 }
 
+svg {
+	&.ico_m {
+		vertical-align: top;
+	}
+}
+
 .break-word,
 #{mangle(".break_word")} {
 	word-break: break-word !important;

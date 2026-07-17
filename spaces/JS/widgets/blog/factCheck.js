@@ -2,11 +2,16 @@ import module from 'module';
 import $ from '../../jquery';
 import { getNearestPopper, getPopperById } from '../popper';
 import { L } from '../../utils';
+import { isVisibleOnScreen } from '../../utils/dom';
 import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
 import { WALLET_RENDER_MODE } from '../../pages/ai/wallet';
+import FACT_CHECK_STATUSES from './factCheck/statuses';
 
 let instances = {};
+let statusRotationTimer;
+
+const STATUS_ROTATION_INTERVAL = 1000;
 
 const tpl = {
 	loader() {
@@ -22,8 +27,9 @@ const tpl = {
 	detailsNoReady() {
 		return `
 			<div class="grey">
-				<span class="ico ico_spinner"></span>
-				Проверяем<span class="skeleton-dots"><span>.</span><span>.</span><span>.</span></span>
+				<span class="factcheck-status">
+					<span class="js-factcheck_status">${L('Проверяем')}</span><span class="skeleton-dots"><span>.</span><span>.</span><span>.</span></span>
+				</span>
 			</div>
 		`;
 	},
@@ -90,11 +96,13 @@ function initFactCheck(topicId) {
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
 			checked: params.checked,
 		}));
+		startFactCheckStatusRotation();
 	};
 
 	const replaceWidget = (widget) => {
 		instances[topicId].destroy();
 		$(`#factcheck_${topicId}`).replaceWith(widget);
+		startFactCheckStatusRotation();
 		init();
 	};
 
@@ -111,6 +119,7 @@ function initFactCheck(topicId) {
 		resultPopper = getPopperById(`factcheck_result_dropdown_${topicId}`);
 		historyPopper = getPopperById(`factcheck_history_dropdown_${topicId}`);
 		requestPopper = getPopperById(`factcheck_dropdown_${topicId}`);
+		startFactCheckStatusRotation();
 
 		currentPage = 0;
 		totalPages = 0;
@@ -237,4 +246,36 @@ module.on('componentpagedone', () => {
 	pushstream.off('message', 'diary_fact_check');
 	for (const instance of Object.values(instances))
 		instance.destroy();
+	stopFactCheckStatusRotation();
 });
+
+function stopFactCheckStatusRotation() {
+	clearInterval(statusRotationTimer);
+	statusRotationTimer = undefined;
+}
+
+function switchFactCheckStatuses() {
+	const statusElements = document.querySelectorAll('.js-factcheck_status');
+	if (!statusElements.length) {
+		stopFactCheckStatusRotation();
+		return;
+	}
+
+	for (const statusElement of statusElements) {
+		if (!isVisibleOnScreen(statusElement))
+			continue;
+
+		let nextStatus;
+		do {
+			nextStatus = FACT_CHECK_STATUSES[Math.floor(Math.random() * FACT_CHECK_STATUSES.length)];
+		} while (nextStatus == statusElement.textContent);
+		statusElement.textContent = nextStatus;
+	}
+}
+
+function startFactCheckStatusRotation() {
+	if (statusRotationTimer || !document.querySelector('.js-factcheck_status'))
+		return;
+	switchFactCheckStatuses();
+	statusRotationTimer = setInterval(switchFactCheckStatuses, STATUS_ROTATION_INTERVAL);
+}

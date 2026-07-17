@@ -688,6 +688,12 @@ a.top_menu_link,
 	margin-right: $icon-right-margin;
 }
 
+svg {
+	&.ico_m {
+		vertical-align: top;
+	}
+}
+
 .ico_m2 {
 	margin: 0 4px -3px 0;
 }
@@ -2905,6 +2911,12 @@ input[type="submit"].transpar{
 
 .red {
 	color: $red-text-color
+}
+
+.factcheck-status {
+	display: inline-flex;
+	color: $secondary-accent-text-color;
+	font-weight: 500;
 }
 
 .link.red {
