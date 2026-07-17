@@ -15,7 +15,7 @@ let FilesUploader;
 
 import '../draggable';
 import '../anim';
-import {L, tick, numeral, ge} from '../utils';
+import {L, tick, numeral, ge, updateUrlScheme} from '../utils';
 
 import "Files/Tile.css";
 import "Files/Gallery.css";
@@ -667,6 +667,12 @@ MAttachSelector = Class({
 						media_url_current.callback(false, false, Spaces.apiError(data));
 					} else {
 						console.log('[getImage] ' + media_url_current.url + ' - OK (' + time + 's)');
+						if (data.data.preview) {
+							if (data.data.preview.previewURL)
+								data.data.preview.previewURL = updateUrlScheme(data.data.preview.previewURL);
+							if (data.data.preview.previewURL_2x)
+								data.data.preview.previewURL_2x = updateUrlScheme(data.data.preview.previewURL_2x);
+						}
 						media_url_current.callback(data);
 					}
 				}
