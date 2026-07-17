@@ -2,24 +2,43 @@ import module from 'module';
 import $ from './jquery';
 import { L } from './utils';
 
-var global_trigger = true;
-
-function checkAll(e) {
-	var el = this,
-		parent = document.getElementById(el.getAttribute('data-parent')) || document.body;
-	var inputs = parent.getElementsByTagName('input');
-	for (var i = 0; i < inputs.length; ++i) {
-		if (inputs[i].type == 'checkbox')
-			inputs[i].checked = global_trigger;
+module.on("componentpage", () => {
+	let checkAllList = document.querySelectorAll('.js-checkall');
+	for (let el of checkAllList) {
+		let parent = document.getElementById(el.getAttribute('data-parent')) || document.body;
+		let inputs = parent.querySelectorAll(el.dataset.js ? '.js-checkbox input[type="checkbox"]' : 'input[type="checkbox"]');
+		let checkedCnt = 0;
+		let uncheckedCnt = 0;
+		for (let input of inputs) {
+			if (input.checked) {
+				checkedCnt++;
+			} else {
+				uncheckedCnt++;
+			}
+		}
+		el.dataset.trigger = checkedCnt == 0 || uncheckedCnt != 0;
+		el.innerHTML = el.dataset.trigger == "false" ? L('Снять все') : L('Отметить все');
 	}
 
-	el.innerHTML = global_trigger ? L('Снять все') : L('Отметить все');
+	$('#main').on('click', '.js-checkall', function (e) {
+		let el = this;
+		let parent = document.getElementById(el.getAttribute('data-parent')) || document.body;
 
-	global_trigger = !global_trigger;
-	return false;
-}
+		let trigger = el.dataset.trigger != "false";
+		if (el.dataset.js) {
+			for (let chb of parent.querySelectorAll(`.js-checkbox`)) {
+				if (chb.classList.contains('form-checkbox_checked') != trigger)
+					chb.click();
+			}
+		} else {
+			let inputs = parent.querySelectorAll('input[type="checkbox"]');
+			for (let input of inputs)
+				input.checked = trigger;
+		}
 
-module.on("componentpage", function () {
-	$('#main').on('click', '.js-checkall', checkAll);
-	global_trigger = true;
+		el.innerHTML = trigger ? L('Снять все') : L('Отметить все');
+		el.dataset.trigger = !trigger;
+
+		return false;
+	});
 });
