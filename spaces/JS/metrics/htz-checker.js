@@ -6,8 +6,6 @@ const TIMEOUT = 5000;
 
 let runtimeReplaceConfig;
 
-serversChecker();
-
 export function updateServerURL(url) {
 	if (!runtimeReplaceConfig)
 		return url;
@@ -21,7 +19,7 @@ export function updateServerURL(url) {
 	return url;
 }
 
-function serversChecker() {
+export function startServersChecker() {
 	const checkServersList = SPACES_PARAMS.checkServers;
 
 	if (cookie.get("Htzct"))
@@ -38,7 +36,7 @@ function serversChecker() {
 			stat.push([serverName, success]);
 
 			if (checkQueueCount == 0) {
-				setTimeout(serversChecker, 60 * 1000);
+				setTimeout(startServersChecker, 60 * 1000);
 				Spaces.asyncApi("files.servers.stat", {
 					seRver: stat.map(row => row[0]),
 					AvAilable: stat.map(row => row[1])

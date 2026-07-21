@@ -47,4 +47,4 @@ if (window.devicePixelRatio)
 	cookie.set("dpr", window.devicePixelRatio);
 
 if (SPACES_PARAMS.checkServers)
-	windowReady(() => import("./metrics/htz-checker"));
+	windowReady(() => import("./metrics/htz-checker").then(({ startServersChecker }) => startServersChecker()));
