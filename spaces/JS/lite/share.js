@@ -15,7 +15,7 @@ var SOCIAL_LINKS = {
 	},
 	vk: {
 		title:	"VK",
-		url:	"https://vk.com/share.php?url={link}&title={title}",
+		url:	"https://vk.ru/share.php?url={link}&title={title}",
 		icon:	'soc/vk.png'
 	},
 	ok: {
