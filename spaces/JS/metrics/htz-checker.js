@@ -3,6 +3,8 @@ import { Spaces } from '../spacesLib';
 import { TRANSPARENT_PIXEL } from '../utils';
 
 const TIMEOUT = 5000;
+const CHECK_INTERVAL = 15 * 60 * 1000;
+const RETRY_INTERVAL = 60 * 1000;
 
 let runtimeReplaceConfig;
 
@@ -22,8 +24,11 @@ export function updateServerURL(url) {
 export function startServersChecker() {
 	const checkServersList = SPACES_PARAMS.checkServers;
 
-	if (cookie.get("Htzct"))
+	if (cookie.get("Htzct")) {
+		setTimeout(startServersChecker, RETRY_INTERVAL);
 		return;
+	}
+	cookie.set("Htzct", 1, { expires: CHECK_INTERVAL / 1000 });
 
 	let checkQueueCount = 0;
 	let stat = [];
@@ -36,7 +41,7 @@ export function startServersChecker() {
 			stat.push([serverName, success]);
 
 			if (checkQueueCount == 0) {
-				setTimeout(startServersChecker, 60 * 1000);
+				setTimeout(startServersChecker, CHECK_INTERVAL);
 				Spaces.asyncApi("files.servers.stat", {
 					seRver: stat.map(row => row[0]),
 					AvAilable: stat.map(row => row[1])
@@ -61,8 +66,6 @@ export function startServersChecker() {
 		console.log("Cleaning old bits, mask=" + mask + ", flags=" + flags);
 		cookie.set("Htzna1", flags & mask, { expires: 3600 });
 	}
-
-	cookie.set("Htzct", 1, { expires: 15 * 60 });
 }
 
 function setCookie(success, serverName, bit) {
