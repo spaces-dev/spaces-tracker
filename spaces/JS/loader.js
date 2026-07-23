@@ -145,7 +145,7 @@ __require_config		|	Конфиг загрузчика
 						callback();
 					});
 				}
-				finalizeComponent(module.name);
+				finalizeComponent(module.id);
 			});
 		};
 		
