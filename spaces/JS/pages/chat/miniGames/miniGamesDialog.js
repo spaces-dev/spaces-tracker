@@ -182,7 +182,7 @@ function handleDialogBeforeClose(e) {
 function handleDialogClose() {
 	port.unbind();
 	$(miniGamesDialog.content()).html('');
-	miniGamesDialog.setCollapsible(false);
+	miniGamesDialog.setCollapsible(true);
 	miniGamesDialog = undefined;
 	allowCloseDialog = false;
 }
