@@ -26,6 +26,7 @@ function initPicturePicker(pickerWidget) {
 			return;
 		formWidget.find('.js-file_select_fw__type').val(fileType);
 		formWidget.find('.js-file_select_fw__id').val(fileId);
+		formWidget.find('.js-file_select_fw__error').html('').addClass('hide');
 	};
 
 	const selectFile = async (file) => {

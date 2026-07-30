@@ -158,7 +158,26 @@ function init() {
 			
 			var el = $(this).parents('.js-file_item'),
 				file = el.data();
-			file.previewURL = el.find('.preview').first().prop("src"); // FIXME: КОСТЫЛЬ
+
+			///////////// FIXME: КОСТЫЛЬ /////////////
+			const preview = el.find('.preview').first();
+			const src = preview.prop("src");
+			const srcset = preview.prop("srcset");
+
+			let previewURL;
+			let previewURL_2x;
+
+			if (srcset) {
+				[previewURL, previewURL_2x] = srcset.split(/\s*,\s*/).map((v) => v.replace(/\s+.*?$/, ''));
+			} else {
+				previewURL = src;
+			}
+
+			file.previewURL = previewURL;
+			file.previewURL_2x = previewURL_2x;
+			file.preview = { previewURL, previewURL_2x };
+			////////////////////////////////////////////
+
 			onSelectFile(file);
 			tick(function () {
 				el.find('input[type="checkbox"]').prop("checked", !!selected[file.nid]);
