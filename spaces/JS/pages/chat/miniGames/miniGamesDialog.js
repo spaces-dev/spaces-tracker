@@ -118,6 +118,8 @@ const port = useIframePort((payload) => {
 
 		case "LOCK_COLLAPSE":
 			miniGamesDialog.setCollapsible(!payload.shouldLock);
+			if (payload.shouldLock && miniGamesDialog.isCollapsed())
+				miniGamesDialog.expand();
 			break;
 
 		default: {

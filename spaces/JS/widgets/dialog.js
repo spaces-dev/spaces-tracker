@@ -10,9 +10,9 @@ const dialogInstances = new Map();
 let dialogOpenInstances = [];
 
 const tpl = {
-	header({ title, isCollapsed }) {
+	header({ title, isCollapsed, collapsible }) {
 		return `
-			<div class="dialog__header-button js-dialog_expand_collapse">
+			<div class="dialog__header-button js-dialog_expand_collapse${collapsible ? '' : ' hide'}">
 				${isCollapsed ? tpl.iconExpand() : tpl.iconCollapse()}
 			</div>
 
@@ -141,15 +141,15 @@ export class Dialog {
 
 		this.referenceElement = referenceElement;
 
-		this.w = this.options.width;
-		this.h = this.options.height;
+		if (!this.isResized()) {
+			this.w = this.options.width;
+			this.h = this.options.height;
+		}
 		this.updateMode();
 		this.calcWindowSizeAndLocation();
 
 		this.dialogElement.dataset.dialogOpen = "false";
 		this.dialogElement.dataset.dialogCollapsed = "false";
-		this.dialogElement.dataset.dialogIsMoved = "false";
-		this.dialogElement.dataset.dialogIsResized = "false";
 		this.dialogElement.getBoundingClientRect();
 		this.dialogElement.classList.add('dialog--transition-out');
 		this.dialogElement.dataset.dialogOpen = "true";
@@ -239,6 +239,7 @@ export class Dialog {
 		dialogHeader.innerHTML = tpl.header({
 			title: this.options.title,
 			isCollapsed: this.isCollapsed(),
+			collapsible: this.collapsible,
 		});
 	}
 
@@ -317,6 +318,7 @@ export class Dialog {
 				start: () => {
 					this.dialogElement.classList.add('dialog--is-interacting');
 					document.body.style.userSelect = 'none';
+					this.dialogElement.dataset.dialogIsMoved = "true";
 					this.dialogElement.dataset.dialogIsResized = "true";
 				},
 				end: () => {
