@@ -232,18 +232,24 @@ function init() {
 		lockUI(false);
 	};
 
-	const handleFreeRequestsBalance = (freeRequestsCnt) => {
-		const freeRequestsCount = document.querySelector('#ai_chat_free_requests');
-		const freeRequestsInfo = document.querySelector('#ai_chat_cost_info_free');
-		const paidRequestsInfo = document.querySelector('#ai_chat_cost_info_paid');
+	const handleRequestsBalance = (freeRequestsCnt, paidRequestsCnt) => {
+		const constInfo = document.querySelector('#ai_chat_cost_info');
+		const freeRequestsInfo = document.querySelector('#ai_chat_free_requests');
+		const paidRequestsInfo = document.querySelector('#ai_chat_paid_requests');
 
 		if (freeRequestsInfo) {
-			freeRequestsCount.textContent = freeRequestsCnt.toLocaleString("ru-RU");
-			freeRequestsInfo.classList.toggle('hide', freeRequestsCnt <= 0);
+			freeRequestsInfo.querySelector('.js-cnt').textContent = freeRequestsCnt.toLocaleString("ru-RU");
+			freeRequestsInfo.classList.toggle('hide', !freeRequestsCnt);
 		}
 
-		if (paidRequestsInfo)
-			paidRequestsInfo.classList.toggle('hide', freeRequestsCnt > 0);
+		if (paidRequestsInfo) {
+			paidRequestsInfo.querySelector('.js-cnt').textContent = paidRequestsCnt.toLocaleString("ru-RU");
+			paidRequestsInfo.classList.toggle('hide', !paidRequestsCnt || freeRequestsCnt > 0);
+		}
+
+		if (constInfo) {
+			constInfo.classList.toggle('hide', freeRequestsCnt > 0 || paidRequestsCnt > 0);
+		}
 	};
 
 	pushstream.on('message', 'ai_chat', (message) => {
@@ -259,9 +265,9 @@ function init() {
 			}
 		}
 
-		if (message.act == pushstream.TYPES.BALANCE_UPDATE) {
-			if (message.ai_free_chat_messages != null)
-				handleFreeRequestsBalance(message.ai_free_chat_messages);
+		if (message.act == pushstream.TYPES.USER_BALANCE_CHANGE) {
+			if (message.ai_free_chat_messages != null || message.ai_paid_chat_messages != null)
+				handleRequestsBalance(message.ai_free_chat_messages ?? 0, message.ai_paid_chat_messages ?? 0);
 
 			if (balanceError && message.ai_tokens != null) {
 				setFormError(false);

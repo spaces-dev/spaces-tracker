@@ -335,7 +335,7 @@ function initForm(callback) {
 
 		render();
 		container.find('.js-pic_gen_form').html(res.form);
-		container.find('.js-pic_gen_balance_widget').html(res.wallet);
+		container.find('.js-pic_gen_balance_widget').html(res.cashW);
 	}, {
 		onError(err) {
 			callback();

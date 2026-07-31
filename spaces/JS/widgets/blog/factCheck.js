@@ -1,12 +1,12 @@
 import module from 'module';
 import $ from '../../jquery';
-import { getNearestPopper, getPopperById } from '../popper';
+import { getPopperById } from '../popper';
 import { L } from '../../utils';
 import { isVisibleOnScreen } from '../../utils/dom';
 import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
-import { WALLET_RENDER_MODE } from '../../pages/ai/wallet';
 import FACT_CHECK_STATUSES from './factCheck/statuses';
+import { CASH_RENDER_MODE } from '../../pages/services/cash';
 
 let instances = {};
 let statusRotationTimer;
@@ -71,7 +71,7 @@ function initFactCheck(topicId) {
 	let totalPages = 0;
 
 	const getWallet = async () => {
-		const response = await Spaces.asyncApi("services.ai.wallet.get", { Mode: WALLET_RENDER_MODE.INLINE });
+		const response = await Spaces.asyncApi("user.cash.widget", { Mode: CASH_RENDER_MODE.INLINE });
 		if (response.code != 0)
 			throw new Error(Spaces.apiError(response));
 		return response.widget;
