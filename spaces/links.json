@@ -684,6 +684,7 @@
   "/js/touch/pages/chat/miniGames/iframePort.js",
   "/js/touch/pages/chat/miniGames/miniGamesDialog.js",
   "/js/touch/pages/chat/miniGames/miniGamesSelector.js",
+  "/js/touch/pages/chat/miniGames/payment.js",
   "/js/touch/pages/gifts/list.js",
   "/js/touch/pages/services/cash.js",
   "/js/touch/photos_slider.js",

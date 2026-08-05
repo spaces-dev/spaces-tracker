@@ -105,12 +105,24 @@ export class Dialog {
 		return this.dialogElement;
 	}
 
+	$element() {
+		return $(this.element());
+	}
+
 	content() {
 		return this.dialogElement.querySelector('.js-dialog_content') ?? this.dialogElement;
 	}
 
+	$content() {
+		return $(this.content());
+	}
+
 	opener() {
 		return this.referenceElement;
+	}
+
+	$opener() {
+		return $(this.opener());
 	}
 
 	setOptions(options) {

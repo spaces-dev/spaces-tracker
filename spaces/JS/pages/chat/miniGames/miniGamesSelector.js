@@ -1,6 +1,7 @@
 import module from "module";
 import { getPopperById } from "../../../widgets/popper";
 import { useIframePort } from "./iframePort";
+import { useMiniGamesPayment } from "./payment";
 
 const DEFAULT_MENU_HEIGHT = 360;
 
@@ -33,6 +34,11 @@ module.on("componentpage", async () => {
 				break;
 			}
 
+			case "PAYMENT_REQUEST": {
+				paymentForm.request(payload);
+				break;
+			}
+
 			case "MG_ERROR": {
 				console.error('[mini-games-selector] error:', payload.code, payload.message)
 				break;
@@ -44,6 +50,8 @@ module.on("componentpage", async () => {
 			}
 		}
 	}, "MINI_GAMES_WIDGET");
+
+	const paymentForm = useMiniGamesPayment(port, popper.$content());
 
 	const updateMenuHeight = () => {
 		const iframe = popper.content().querySelector('iframe');
@@ -76,6 +84,7 @@ module.on("componentpage", async () => {
 		window.addEventListener('resize', updateMenuHeight);
 	});
 	popper.on("afterClose", () => {
+		paymentForm.cancel();
 		port.unbind();
 		popper.content().innerHTML = '';
 		window.removeEventListener('resize', updateMenuHeight);

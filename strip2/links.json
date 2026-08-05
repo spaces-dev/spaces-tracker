@@ -702,6 +702,7 @@
   "/js/ru/touch/pages/chat/miniGames/iframePort.js",
   "/js/ru/touch/pages/chat/miniGames/miniGamesDialog.js",
   "/js/ru/touch/pages/chat/miniGames/miniGamesSelector.js",
+  "/js/ru/touch/pages/chat/miniGames/payment.js",
   "/js/ru/touch/pages/gifts/list.js",
   "/js/ru/touch/pages/services/cash.js",
   "/js/ru/touch/photos_slider.js",
