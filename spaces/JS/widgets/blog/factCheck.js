@@ -5,13 +5,20 @@ import { L } from '../../utils';
 import { isVisibleOnScreen } from '../../utils/dom';
 import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
-import FACT_CHECK_STATUSES from './factCheck/statuses';
 import { CASH_RENDER_MODE } from '../../pages/services/cash';
 
 let instances = {};
 let statusRotationTimer;
 
 const STATUS_ROTATION_INTERVAL = 1000;
+const FACT_CHECK_STATUSES = [
+	L('Проверяем факты'),
+	L('Сверяем факты'),
+	L('Уточняем факты'),
+	L('Проверяем источники'),
+	L('Изучаем контекст'),
+	L('Ищем подтверждения'),
+];
 
 const tpl = {
 	loader() {
