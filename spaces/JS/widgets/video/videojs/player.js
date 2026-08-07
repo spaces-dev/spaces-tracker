@@ -34,16 +34,19 @@ videojs.hook('beforesetup', (video, options) => {
 	console.log("[videojs] ready!", Date.now() - SPACES_LOAD_START);
 
 	if (options.altSources) {
+		const altProxyServers = options.altProxyDomains?.servers ?? [];
 		const getLastVideoServer = () => {
-			for (const server of options.altProxyDomains) {
-				if (cookie.get(server.id))
+			const proxyId = Number(cookie.get(options.altProxyDomains.cookieName, -1));
+
+			for (const server of altProxyServers) {
+				if (proxyId === server.id)
 					return server.domain;
 			}
 			return undefined;
 		};
 
 		const isValidProxyServer = (domain) => {
-			return !!options.altProxyDomains.find((server) => server.domain === domain);
+			return !!altProxyServers.find((server) => server.domain === domain);
 		};
 
 		const lastVideoServer = getLastVideoServer();

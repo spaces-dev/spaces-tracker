@@ -2,21 +2,29 @@ import cookie from './cookie';
 import { Spaces } from './core';
 import { TRANSPARENT_PIXEL } from './utils';
 
-const TIMEOUT = 5000;
-const CHECK_INTERVAL = 15 * 60 * 1000;
-const RETRY_INTERVAL = 60 * 1000;
+let checkerConfig = SPACES_PARAMS.checkServers;
 
 serversChecker();
 
 function serversChecker() {
-	const checkServersList = SPACES_PARAMS.checkServers;
-
-	if (cookie.get("Htzct")) {
-		setTimeout(serversChecker, RETRY_INTERVAL);
+	if (cookie.get(checkerConfig.timeoutCookie)) {
+		setTimeout(serversChecker, 60 * 1000);
 		return;
 	}
-	cookie.set("Htzct", 1, { expires: CHECK_INTERVAL / 1000 });
+	cookie.set(checkerConfig.timeoutCookie, 1, { expires: checkerConfig.checkInterval });
+	updateServerCheckerConfig();
+	checkServers();
+}
 
+function updateServerCheckerConfig() {
+	Spaces.api("common.getServerCheckerConfig", {}, (response) => {
+		if (response.code != 0 || !response.checkerConfig)
+			return;
+		checkerConfig = response.checkerConfig;
+	});
+}
+
+function checkServers() {
 	let checkQueueCount = 0;
 	let stat = [];
 	const checkServer = (url, serverName, checkDataBit) => {
@@ -28,7 +36,7 @@ function serversChecker() {
 			stat.push([serverName, success]);
 
 			if (checkQueueCount == 0) {
-				setTimeout(serversChecker, CHECK_INTERVAL);
+				setTimeout(serversChecker, checkerConfig.checkInterval * 1000);
 				Spaces.api("files.servers.stat", {
 					seRver: stat.map(row => row[0]),
 					AvAilable: stat.map(row => row[1])
@@ -39,21 +47,21 @@ function serversChecker() {
 	};
 
 	let mask = 0;
-	for (const server in checkServersList) {
-		const check = checkServersList[server];
+	for (const server in checkerConfig.servers) {
+		const check = checkerConfig.servers[server];
 		mask |= 1 << check.bit;
 		checkServer(check.url, server, check.bit);
 	}
 
-	const flags = Number(cookie.get("Htzna1") || 0);
+	const flags = Number(cookie.get(checkerConfig.resultCookie) || 0);
 	if (flags != (flags & mask)) {
 		console.log("Cleaning old bits, mask=" + mask + ", flags=" + flags);
-		cookie.set("Htzna1", flags & mask, { expires: 3600 });
+		cookie.set(checkerConfig.resultCookie, flags & mask, { expires: 3600 });
 	}
 }
 
 function setCookie(success, serverName, bit) {
-	let flags = Number(cookie.get("Htzna1") || 0);
+	let flags = Number(cookie.get(checkerConfig.resultCookie) || 0);
 	if (success) {
 		flags &= ~(1 << bit);
 		console.log(`server ${serverName} (#${bit}) is available`);
@@ -61,7 +69,7 @@ function setCookie(success, serverName, bit) {
 		flags |= (1 << bit);
 		console.log(`server ${serverName} (#${bit}) is NOT available`);
 	}
-	cookie.set("Htzna1", flags, { expires: 3600 });
+	cookie.set(checkerConfig.resultCookie, flags, { expires: 3600 });
 }
 
 function checkUrl(url, callback) {
@@ -74,7 +82,7 @@ function checkUrl(url, callback) {
 	const timeout = setTimeout(() => {
 		check.src = TRANSPARENT_PIXEL;
 		onCheckDone(false);
-	}, TIMEOUT);
+	}, checkerConfig.requestTimeout * 1000);
 
 	const onCheckDone = (success) => {
 		callback(success);

@@ -88,7 +88,8 @@ class VideoJsQualitySelector extends MenuButton {
 		this.initHealthCheck(this.player().options_.altProxyDomains);
 	}
 
-	initHealthCheck(availableServers) {
+	initHealthCheck(altProxyDomains) {
+		const availableServers = altProxyDomains?.servers ?? [];
 		const getVideoServer = () => {
 			return (new URL(player.currentSource().src)).hostname;
 		};
@@ -101,8 +102,8 @@ class VideoJsQualitySelector extends MenuButton {
 			});
 		};
 
-		const getServerId = (domain) => {
-			return availableServers.find((proxy) => proxy.domain === domain)?.id;
+		const getServer = (domain) => {
+			return availableServers.find((proxy) => proxy.domain === domain);
 		};
 
 		const isValidServer = (domain) => {
@@ -115,7 +116,7 @@ class VideoJsQualitySelector extends MenuButton {
 				console.log("[fp] video timeout");
 				healthCheckTimer = undefined;
 				player.error(L("Ошибка загрузки видео (timeout)"));
-			}, 10000);
+			}, altProxyDomains.playbackTimeout * 1000);
 		};
 
 		const stopHealthMonitor = () => {
@@ -143,10 +144,8 @@ class VideoJsQualitySelector extends MenuButton {
 			stopHealthMonitor();
 
 			// Сохряем только при успехе
-			const currentServerId = getServerId(getVideoServer());
-			for (const server of availableServers)
-				cookie.remove(server.id);
-			cookie.set(currentServerId, 1, { expires: 3600 });
+			const currentServer = getServer(getVideoServer());
+			cookie.set(altProxyDomains.cookieName, currentServer.id, { expires: 3600 });
 		});
 		player.on("dispose", () => {
 			stopHealthMonitor();
