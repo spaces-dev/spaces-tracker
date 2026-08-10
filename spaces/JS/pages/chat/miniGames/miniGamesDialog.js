@@ -45,6 +45,7 @@ const port = useIframePort((payload) => {
 				context: 'spaces',
 				lang: Spaces.params.lang,
 			});
+			handleGamePayload();
 			handleInviteCode();
 			break;
 		}
@@ -163,6 +164,12 @@ function handleDialogClose() {
 function hasInviteCode() {
 	const currentURL = new URL(location.href);
 	return currentURL.searchParams.has("mini_game");
+}
+
+function handleGamePayload() {
+	const gamePayload = miniGamesDialog.opener().dataset.gamePayload;
+	if (gamePayload)
+		port.send(JSON.parse(gamePayload));
 }
 
 function handleInviteCode() {

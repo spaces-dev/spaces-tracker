@@ -62,6 +62,7 @@ module.on("componentpage", async () => {
 	popper.on('beforeOpen', () => {
 		const excludeGames = JSON.parse(popper.opener().dataset.excludeGames ?? `[]`);
 		const includeGames = JSON.parse(popper.opener().dataset.includeGames ?? `[]`);
+		const hideOffline = JSON.parse(popper.opener().dataset.hideOffline ?? `[]`);
 
 		const iframeUrl = new URL(`${popper.element().dataset.url}/activity-starter-widget.html`);
 		iframeUrl.searchParams.set("lang", Spaces.params.lang);
@@ -70,6 +71,8 @@ module.on("componentpage", async () => {
 			iframeUrl.searchParams.append("excludeGames", game);
 		for (const game of includeGames)
 			iframeUrl.searchParams.append("includeGames", game);
+		for (const game of hideOffline)
+			iframeUrl.searchParams.append("hideOffline", game);
 
 		popper.element().classList.add('mini-games-selector--is-loading');
 		const iframe = document.createElement('iframe');
