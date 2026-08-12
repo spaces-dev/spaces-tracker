@@ -130,7 +130,11 @@ function renderVideoTeaser(preview, source) {
 	video.preload = 'auto';
 	video.className = 'video-teaser video-teaser--is-loading';
 	video.setAttribute('webkit-playsinline', '');
-	video.addEventListener("click", () => preview.click(), false);
+	video.addEventListener("click", (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		preview.click();
+	}, false);
 
 	const previewRect = preview.getBoundingClientRect();
 	const isSquareTile = Math.round(previewRect.width) == Math.round(previewRect.height);
