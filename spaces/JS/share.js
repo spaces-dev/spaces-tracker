@@ -58,7 +58,7 @@ var tpl = {
 		var html =
 			'<div class="soc-link__wrapper pad_b_a">' + 
 				'<div class="pad_t_a t_center">' + 
-					'<label class="grey">Поделиться:</label>' + 
+					'<label class="grey">' + L('Поделиться') + ':</label>' + 
 				'</div>' + 
 				data + 
 			'</div>';
