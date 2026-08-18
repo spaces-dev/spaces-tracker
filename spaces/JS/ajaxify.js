@@ -956,7 +956,11 @@ var PageLoader = Class({
 			self._trigger('requestend');
 			if (!e.manual) {
 				self.scrollDocument();
-				self.showLoadingError(e.error, params);
+				if (e.xhr.status == 200) {
+					window.open(history_location_url, '_blank', 'noopener,noreferrer');
+				} else {
+					self.showLoadingError(e.error, params);
+				}
 			}
 		}, {multipart: is_multipart});
 		return true;
