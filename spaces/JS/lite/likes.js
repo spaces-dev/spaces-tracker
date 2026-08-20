@@ -1,7 +1,7 @@
 import require from 'require';
 import {Spaces, Codes} from './core';
 import {Events} from './events';
-import {ge, dattr, find_parents, addClass, removeClass, L, toggleClass} from './utils';
+import {ge, dattr, find_parents, addClass, removeClass, hasClass, L, toggleClass} from './utils';
 
 /*
 	Лёгкие лайки для Lite версии
@@ -9,6 +9,15 @@ import {ge, dattr, find_parents, addClass, removeClass, L, toggleClass} from './
 var cache = {},
 	LIKE_UP_IMG		= [['vote/up_on', 'vote/up'], ['abar/vote_up_on', 'abar/vote_up']],
 	LIKE_DOWN_IMG	= [['vote/down_on', 'vote/down'], ['abar/vote_down_on', 'abar/vote_down']];
+
+const tpl = {
+	subscribeOffer({ author, subscribeLink }) {
+		return `
+			<span class="js-subscribe_offer_object m inl_bl padd_right">${author}</span>
+			<span class="js-subscribe_offer_button m inl_bl">${subscribeLink}</span>
+		`;
+	}
+};
 
 export function initLikes(id) {
 	const prefix = '#like_';
@@ -33,10 +42,24 @@ export function initLikes(id) {
 		// Счётчики
 		up_counters = [ge(prefix + 'up_cnt' + id), ge('#vote_up_cnt_' + id)], 	
 		down_counters = [ge(prefix + 'down_cnt' + id), ge('#vote_down_cnt_' + id)],
-		subscr_offer = ge('#subscribe_offer_' + ot + '_' + oid),
-		share_offer = ge('#share_offer_' + ot + '_' + oid),
 		wait = false,
 		hide_error_timeout;
+
+	const likeOffer = ge('#like_offer_' + ot + '_' + oid);
+	const updateOffer = () => {
+		const shareOffer = likeOffer && ge('.js-share_buttons', likeOffer)[0];
+		const subscribeOffer = likeOffer && ge('.js-subscribe_offer', likeOffer)[0];
+		const isVisible = !!shareOffer || (subscribeOffer && !hasClass(subscribeOffer, 'hide'));
+		if (likeOffer)
+			toggleClass(likeOffer, 'hide', !isVisible);
+
+		// Костыль!
+		if (isVisible) {
+			const wrap = find_parents(likeOffer, '.wrapper', 1);
+			if (wrap)
+				wrap.parentNode.insertBefore(likeOffer, wrap.nextSibling);
+		}
+	};
 	
 	if (up.getAttribute('data-not-auth'))
 		return;
@@ -191,8 +214,8 @@ export function initLikes(id) {
 			});
 		});
 		
-		if (share_offer)
-			toggleClass(share_offer, 'hide', !up_pressed);
+		if (!up_pressed && likeOffer)
+			addClass(likeOffer, 'hide');
 		
 		if (!evt)
 			return;
@@ -202,7 +225,7 @@ export function initLikes(id) {
 				CK: null,
 				Oid: oid,
 				Ot: ot,
-				Widgets: show_subscr && !!subscr_offer,
+				Widgets: show_subscr && !!likeOffer,
 				Link_id: Spaces.params.link_id
 			};
 		if (!is_delete)
@@ -226,13 +249,15 @@ export function initLikes(id) {
 					onclick.call(is_plus ? up : down);
 				}
 			}
-			if (subscr_offer) {
-				if (res.widgets && res.widgets.author) {
-					subscr_offer.style.display = '';
-					ge('.js-subscribe_offer_object', subscr_offer)[0].innerHTML = res.widgets.author;
-					ge('.js-subscribe_offer_button', subscr_offer)[0].innerHTML = res.widgets.subscr_link;
-				} else {
-					subscr_offer.style.display = 'none';
+			if (up_pressed && res.widgets && res.widgets.author) {
+				const subscribeOffer = likeOffer && ge('.js-subscribe_offer', likeOffer)[0];
+				if (subscribeOffer) {
+					subscribeOffer.innerHTML = tpl.subscribeOffer({
+						author: res.widgets.author,
+						subscribeLink: res.widgets.subscr_link,
+					});
+					removeClass(subscribeOffer, 'hide');
+					updateOffer();
 				}
 			}
 			

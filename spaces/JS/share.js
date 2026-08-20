@@ -98,7 +98,7 @@ module.on("componentpage", function () {
 			});
 		});
 		
-		el.html(tpl.wrap(html));
+		el.html(el.data('mode') == 'inline' ? html : tpl.wrap(html));
 	})
 	.on('click', '.js-sps', function (e) {
 		var el = $(this),

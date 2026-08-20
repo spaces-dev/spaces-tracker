@@ -45,6 +45,12 @@ let tpl = {
 	},
 	arrow() {
 		return `<span class="ico ico_arr_right ico_centered"></span>`;
+	},
+	subscribeOffer({ author, subscribeLink }) {
+		return `
+			<span class="js-subscribe_offer_object m inl_bl padd_right">${author}</span>
+			<span class="js-subscribe_offer_button m inl_bl">${subscribeLink}</span>
+		`;
 	}
 };
 
@@ -67,10 +73,22 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		like_down_data = like_down_btn.data(),
 		
 		opposite_btn = type < 0 ? like_up_btn : like_down_btn,
-		opposite_data = type < 0 ? like_up_data : like_down_data,
+		opposite_data = type < 0 ? like_up_data : like_down_data;
+
+	const likeOffer = $('#like_offer_' + current_data.ot + '_' + current_data.oid);
+	const updateOffer = () => {
+		const shareOffer = likeOffer.find('.js-share_buttons');
+		const subscribeOffer = likeOffer.find('.js-subscribe_offer');
+		const isVisible = shareOffer.length > 0 || !subscribeOffer.hasClass('hide');
+		likeOffer.toggleClass('hide', !isVisible);
 		
-		subscr_offer = $('#subscribe_offer_' + current_data.ot + '_' + current_data.oid),
-		share_offer = $('#share_offer_' + current_data.ot + '_' + current_data.oid);
+		// Костыль!
+		if (isVisible) {
+			const wrap = likeOffer.parents('.widgets-group');
+			if (wrap.length > 0)
+				likeOffer.insertAfter(wrap);
+		}
+	};
 	
 	let clearError = function () {
 		$('#vote_err_' + vid).addClass('hide');
@@ -134,7 +152,7 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		Ot: current_data.ot,
 		from: current_data.from,
 		Visit: current_data.visit,
-		Widgets: subscr_offer.length > 0 && current_data.subscr,
+		Widgets: likeOffer.length > 0 && current_data.subscr,
 		Link_id: Spaces.params.link_id
 	};
 	
@@ -186,13 +204,10 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	
 	like_up_btn.attr("title", "За " + like_up_data.cnt);
 	like_down_btn.attr("title", "Против " + like_down_data.cnt);
-	
-	if (subscr_offer.length)
-		subscr_offer.addClass('hide');
-	
-	if (share_offer.length)
-		share_offer.toggleClass('hide', !like_up_data.clicked);
-	
+
+	if (!like_up_data.clicked)
+		likeOffer.addClass('hide');
+
 	if (current_data.mode == 'old_button') {
 		like_up_btn.children().toggleClass('on', !!like_up_data.clicked);
 		like_down_btn.children().toggleClass('on', !!like_down_data.clicked);
@@ -216,12 +231,6 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		plus: like_up_data.cnt,
 		minus: like_down_data.cnt
 	});
-	
-	if (like_up_data.clicked) {
-		let wrap = share_offer.parents('.widgets-group');
-		if (wrap.length)
-			share_offer.insertAfter(wrap);
-	}
 	
 	if (extra && extra.ignore)
 		return;
@@ -251,14 +260,15 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 			}
 		}
 		
-		if (subscr_offer.length) {
-			if (res.widgets && res.widgets.author) {
-				let wrap = subscr_offer.parents('.widgets-group');
-				if (wrap.length)
-					subscr_offer.insertAfter(wrap);
-				subscr_offer.find('.js-subscribe_offer_object').html(res.widgets.author);
-				subscr_offer.find('.js-subscribe_offer_button').html(res.widgets.subscr_link);
-				subscr_offer.removeClass('hide');
+		if (like_up_data.clicked && res.widgets && res.widgets.author) {
+			const subscribeOffer = likeOffer.find('.js-subscribe_offer');
+			if (subscribeOffer.length > 0) {
+				subscribeOffer.html(tpl.subscribeOffer({
+					author: res.widgets.author,
+					subscribeLink: res.widgets.subscr_link,
+				}));
+				subscribeOffer.removeClass('hide');
+				updateOffer();
 			}
 		}
 	});
@@ -308,4 +318,3 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		}
 	});
 });
-

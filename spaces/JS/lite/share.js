@@ -86,5 +86,5 @@ for (var i = 0, l = elements.length; i < l; ++i) {
 			blank:	!link.direct
 		});
 	});
-	el.innerHTML = tpl.wrap(html);
+	el.innerHTML = el.getAttribute('data-mode') == 'inline' ? html : tpl.wrap(html);
 }
