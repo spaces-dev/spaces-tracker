@@ -281,6 +281,34 @@ var Chat = {
 			usersListMenu.open({}, messageMenu.opener());
 		});
 
+		$('#main').action('chat_minigames_action', async function (e) {
+			e.preventDefault();
+
+			const link = $(this);
+			if (link.data('busy'))
+				return;
+
+			const toggleLoading = (flag) => {
+				link.data('busy', flag);
+				link.find('.js-ico').toggleClass('ico_spinner', flag);
+			};
+
+			toggleLoading(true);
+			const response = await Spaces.asyncApi(link.data('method'), {
+				...link.data('params'),
+				CK: null,
+			});
+			toggleLoading(false);
+			closeAllPoppers();
+
+			if (response.code != 0) {
+				showToast({
+					severity: "error",
+					text: Spaces.apiError(response),
+				});
+			}
+		});
+
 		this.initInviteForm();
 
 		if (!messages_list.length)
