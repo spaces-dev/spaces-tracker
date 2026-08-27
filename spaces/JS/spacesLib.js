@@ -1505,27 +1505,21 @@ Url = Class({
 				return str ? 1 : 0;
 			return encodeURIComponent(str).replace(/%2F/g, '/');
 		},
-		buildQuery: function (query, sep, begin) {
-			var first = true;
-			var url = "";
-			sep = sep || "&";
-			begin = begin || "";
-			for (var key in query) {
-				if (query[key] === undefined)
-					continue;
-				if (query[key] instanceof Array) {
-					for (var i = 0; i < query[key].length; ++i) {
-						url += (first ? begin : sep) + encodeURIComponent(key) + "=" +
-							Url.encode(query[key][i]);
-						if (first) first = false;
-					}
-				} else {
-					url += (first ? begin : sep) + encodeURIComponent(key) + "=" +
-						Url.encode(query[key]);
-					if (first) first = false;
+		buildQuery(query, sep = "&", begin = "") {
+			if (!query)
+				return "";
+
+			const parts = [];
+			for (const [key, value] of Object.entries(query)) {
+				const encodedKey = encodeURIComponent(key);
+				const values = Array.isArray(value) ? value : [value];
+				for (const item of values) {
+					if (item === undefined)
+						continue;
+					parts.push(item === null ? encodedKey : encodedKey + "=" + Url.encode(item));
 				}
 			}
-			return url;
+			return parts.length ? begin + parts.join(sep) : "";
 		},
 		serializeForm: function (form, own_object) {
 			var form_data = "", object = own_object || {};

@@ -423,7 +423,7 @@ var GeoSelector = Class({
 		
 		if (self.opts.region != MODE_NOT_ASK) {
 			api_method = 'services.searchRegion';
-			api_data.С = self.country_id.val();
+			api_data.C = self.country_id.val();
 			if (self.opts.country != MODE_NOT_ASK) {
 				api_data.M = 1;
 			}
