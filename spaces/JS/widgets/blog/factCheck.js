@@ -63,9 +63,9 @@ const tpl = {
 	},
 	errorInline(err) {
 		return `
-			Достоверность:
+			${L("Достоверность:")}
 			<span class="red">${err}</span>
-			<a href="#" class="js-action_link" data-action="blog_check_for_truth">(повторить)</a>
+			<a href="#" class="js-action_link" data-action="blog_check_for_truth" data-retry="true">${L("(повторить)")}</a>
 		`;
 	}
 };
@@ -73,6 +73,7 @@ const tpl = {
 function initFactCheck(topicId) {
 	let params;
 	let resultPopper, historyPopper, requestPopper;
+	let factCheckParams = {};
 
 	let currentPage = 0;
 	let totalPages = 0;
@@ -92,7 +93,8 @@ function initFactCheck(topicId) {
 	};
 
 	const showInlineError = (error) => {
-		$(`#factcheck_${topicId}`).html(tpl.errorInline(error));
+		const factCheckWidget = $(`#factcheck_${topicId}`);
+		factCheckWidget.find('.js-factcheck_content').html(tpl.errorInline(error));
 	};
 
 	const renderHistory = () => {
@@ -205,12 +207,18 @@ function initFactCheck(topicId) {
 				}
 			};
 
+			if (!link.data('retry')) {
+				const showAuthor = requestPopper.$content().find('input[name="Show_author"]').prop("checked");
+				factCheckParams = {
+					Show_author: showAuthor
+				};
+			}
+
 			toggleLoading(true);
-			const showAuthor = requestPopper.$content().find('input[name="Show_author"]').prop("checked");
 			const response = await Spaces.asyncApi("diary.topic.factCheck", {
 				Id: topicId,
-				Show_author: showAuthor,
-				CK: null
+				CK: null,
+				...factCheckParams
 			});
 			toggleLoading(false);
 
