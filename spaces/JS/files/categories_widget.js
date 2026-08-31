@@ -90,7 +90,7 @@ function initModule(parent) {
 		if (!checkForConflicts()) {
 			e.preventDefault();
 			const orientationName = this.parentNode.textContent.trim();
-			setError(L(`Одна или несколько категорий не соответствуют категории "{0}"`, orientationName));
+			setError(L('Одна или несколько категорий не соответствуют категории "{0}"', orientationName));
 			return;
 		}
 
@@ -278,7 +278,7 @@ function initModule(parent) {
 		if (checkbox.dataset.orientsHide) {
 			const disallowedOrientations = JSON.parse(checkbox.dataset.orientsHide);
 			if (disallowedOrientations.includes(selectedOrientation))
-				error = L(`Недоступна для ориентации "{0}"`, selectedOrientationName);
+				error = L('Недоступна для ориентации "{0}"', selectedOrientationName);
 		}
 		return error;
 	}
