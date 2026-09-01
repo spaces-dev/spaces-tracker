@@ -281,14 +281,26 @@ export function get_caret_pos(e) {
 }
 
 export function L(text, strings) {
-	if ((typeof strings == "object")) {
+	var vars = strings;
+	var posOff = 0;
+	if (text && typeof text == "object" && typeof strings == "string") {
+		for (var k in text) {
+			if (text.hasOwnProperty(k) && k !== 'context' && k !== 'comment')
+				throw new Error("L(): неизвестный ключ меты: " + k);
+		}
+		text = strings;
+		vars = arguments[2];
+		posOff = 1;
+	}
+	if (vars && typeof vars == "object") {
 		return text.replace(/\{([\w\d-_]+)\}/gim, function (m, s) {
-			return strings[s] !== undefined ? strings[s] : m;
+			return vars[s] !== undefined ? vars[s] : m;
 		});
-	} else if (arguments.length > 1) {
+	} else if (arguments.length > 1 + posOff) {
 		var str = arguments;
+		var base = 1 + posOff;
 		return text.replace(/\{(\d+)\}/gim, function (m, s) {
-			return s < str.length - 1 ? str[+s + 1] : m;
+			return +s < str.length - base ? str[+s + base] : m;
 		});
 	}
 	return text;
