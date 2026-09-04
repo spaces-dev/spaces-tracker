@@ -1,3 +1,5 @@
+import cookie from "../../../cookie";
+
 export function useIframePort(handlePortMessage, channelName = undefined) {
 	const DEBUG = !!cookie.get('mini_games_debug');
 	let currentIframe;
