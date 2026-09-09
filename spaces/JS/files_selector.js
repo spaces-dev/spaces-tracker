@@ -205,7 +205,7 @@ function onSelectFile(file) {
 	// fix file
 	if (!Spaces.core.fixFile(file, params.type)) {
 		console.error(file);
-		return showErrors(L("Ошибка разбора файла!"));
+		return showErrors(L("Ошибка разбора файла."));
 	}
 	
 	showErrors(false);

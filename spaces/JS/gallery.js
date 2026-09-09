@@ -512,7 +512,7 @@ Gallery = {
 
 				setTimeout(() => {
 					if (!items_list[motionGroupId]) {
-						self.showNotif(L("Видео не найдено!"));
+						self.showNotif(L("Видео не найдено."));
 						return;
 					}
 
