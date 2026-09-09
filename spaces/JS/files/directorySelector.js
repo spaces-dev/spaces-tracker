@@ -39,7 +39,6 @@ const tpl = {
 						<span class="js-ico ico-alone ico ico_arr_left"></span>
 					</button>
 					<div class="dir-selector__location-title">
-						<span class="ico_files ico_files_dir"></span>
 						${curDir.name}
 					</div>
 					<button

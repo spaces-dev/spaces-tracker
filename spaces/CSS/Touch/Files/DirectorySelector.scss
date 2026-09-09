@@ -4,7 +4,7 @@
 .dir-selector {
 	&__location {
 		display: flex;
-		height: 40px;
+		height: 46px;
 		gap: 10px;
 		align-items: center;
 		background: $content-bg;
@@ -28,7 +28,7 @@
 
 	&__location-space {
 		width: 40px;
-		height: 40px;
+		height: 46px;
 	}
 
 	&__location-button {
@@ -36,7 +36,7 @@
 		justify-content: center;
 		align-items: center;
 		width: 40px;
-		height: 40px;
+		height: 46px;
 		cursor: pointer;
 		border: none;
 		border-radius: 0;
@@ -58,6 +58,11 @@
 
 	&__list {
 		border-bottom: 1px solid $separator-color;
+	}
+
+	&__empty,
+	&__message {
+		overflow-wrap: break-word;
 	}
 
 	&__empty {

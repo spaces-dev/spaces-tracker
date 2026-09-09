@@ -40,8 +40,8 @@ export function initLikes(id) {
 		down_img = down && down.getElementsByTagName('img')[0],
 		up_img = up.getElementsByTagName('img')[0],
 		// Счётчики
-		up_counters = [ge(prefix + 'up_cnt' + id), ge('#vote_up_cnt_' + id)], 	
-		down_counters = [ge(prefix + 'down_cnt' + id), ge('#vote_down_cnt_' + id)],
+		up_counter = ge(prefix + 'up_cnt' + id),
+		down_counter = ge(prefix + 'down_cnt' + id),
 		wait = false,
 		hide_error_timeout;
 
@@ -162,15 +162,12 @@ export function initLikes(id) {
 			cnt_el.innerHTML = cnt;
 		}
 		
-		var update_cnt = function (counters, cnt) {
-			for (var i = 0; i < counters.length; ++i) {
-				var el = counters[i];
-				if (el) {
-					if (dattr(el, 'hideable'))
-						toggleClass(el, 'hide', !cnt);
-					el.innerHTML = cnt;
-				}
-			}
+		var update_cnt = function (counter, cnt) {
+			if (!counter)
+				return;
+			if (dattr(counter, 'hideable'))
+				toggleClass(counter, 'hide', !cnt);
+			counter.innerHTML = cnt;
 		};
 		
 		// Обновляем кнопку За
@@ -180,7 +177,7 @@ export function initLikes(id) {
 					LIKE_UP_IMG[i][up_pressed ? 0 : 1]);
 			}
 		}
-		update_cnt(up_counters, total_up);
+		update_cnt(up_counter, total_up);
 		
 		// Обновляем кнопку Против
 		if (down) {
@@ -190,7 +187,7 @@ export function initLikes(id) {
 						LIKE_DOWN_IMG[i][down_pressed ? 0 : 1]);
 				}
 			}
-			update_cnt(down_counters, total_down);
+			update_cnt(down_counter, total_down);
 		}
 		
 		up.setAttribute('data-clicked', +up_pressed);

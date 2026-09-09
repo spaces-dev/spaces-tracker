@@ -1,0 +1,34 @@
+@use "spacepack/build/variables" as *;
+
+$attach-list-gap: if($LITE, 8px, 4px);
+
+.attach-list {
+	&__items {
+		& + & {
+			margin-top: $attach-list-gap;
+		}
+
+		&--direction-horizontal {
+			.attach-list__item {
+				display: inline-block;
+				vertical-align: top;
+
+				& + .attach-list__item {
+					margin-top: 0;
+				}
+			}
+		}
+	}
+
+	&__item {
+		max-width: 100%;
+
+		& + & {
+			margin-top: $attach-list-gap;
+		}
+	}
+
+	&__meta {
+		margin-top: $attach-list-gap;
+	}
+}

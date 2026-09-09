@@ -1,0 +1,120 @@
+@use "Common/Theme" as *;
+@use "spacepack/build/variables" as *;
+
+$topic-gap: if($LITE, 8px, 4px);
+
+.topic {
+	background: $content-bg;
+	color: $default-text-color;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+
+	&__main {
+		padding: if($LITE, 10px, 5px);
+	}
+
+	&__header {
+		display: table;
+		width: 100%;
+		margin-bottom: $topic-gap;
+	}
+
+	&__avatar,
+	&__meta,
+	&__toolbar {
+		display: table-cell;
+		vertical-align: top;
+	}
+
+	&__avatar {
+		width: 1%;
+		padding-right: $topic-gap;
+		font-size: 0;
+		white-space: nowrap;
+	}
+
+	&__meta {
+		color: $secondary-text-color;
+	}
+
+	&__author {
+		margin-bottom: 3px;
+	}
+
+	&__toolbar {
+		text-align: right;
+	}
+
+	&__toolbar-item {
+		display: inline-block;
+		margin-left: $topic-gap;
+		vertical-align: top;
+	}
+
+	&__title {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: bold;
+		color: $darkblue-text-color;
+	}
+
+	&__content--with-main-attach {
+		.topic__title {
+			margin-bottom: 8px;
+		}
+	}
+
+	&__body {
+		> * + * {
+			margin-top: $topic-gap;
+		}
+	}
+
+	#hiddenAttaches {
+		margin-bottom: $topic-gap;
+	}
+
+	&__notice {
+		padding: 6px 10px;
+		background: $system-message-warning-bg;
+		color: $system-message-warning-text;
+	}
+
+	&__attaches {
+		.att_wrap {
+			margin: 0;
+		}
+	}
+
+	&__poll {
+		border: 1px solid $default-border-color;
+	}
+
+	&__footer {
+		margin-top: $topic-gap;
+		text-align: right;
+	}
+
+	&__footer-item {
+		display: inline-block;
+		margin-left: $topic-gap;
+	}
+
+	&__links {
+		margin-top: $topic-gap;
+		color: $secondary-text-color;
+	}
+
+	&__edit-info,
+	&__details {
+		padding: if($LITE, 10px, 5px);
+		border-top: 1px solid $default-border-color;
+		color: $secondary-text-color;
+	}
+
+	&__details {
+		.topic__detail + .topic__detail {
+			margin-top: $topic-gap;
+		}
+	}
+}

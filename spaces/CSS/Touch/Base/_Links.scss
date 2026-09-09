@@ -354,6 +354,13 @@ a:active .list-link__cnt {
 	border-bottom: 0
 }
 
+.links-group {
+	&--rounded {
+		border-radius: 3px;
+		overflow: hidden;
+	}
+}
+
 .list-link_arrow,
 .stnd-link_arr {
 	padding-right: 38px !important;

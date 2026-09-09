@@ -83,5 +83,19 @@
 		}
 	}
 
+	&--compact {
+		.directory {
+			&__content {
+				align-items: center;
+			}
 
+			&__info {
+				padding-top: 0;
+			}
+
+			&__name {
+				font-weight: normal;
+			}
+		}
+	}
 }

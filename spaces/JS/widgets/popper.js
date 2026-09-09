@@ -188,7 +188,7 @@ export class Popper {
 		this.referenceElement.dataset.popperOpen = "true";
 
 		if (this.options.clickedClass)
-			this.referenceElement.classList.add(this.options.clickedClass);
+			this.referenceElement.classList.add(...this.options.clickedClass.trim().split(/\s+/));
 
 		if (this.options.floating)
 			this._initPopperJs();
@@ -353,7 +353,7 @@ export class Popper {
 
 		const lastReferenceElement = this.referenceElement;
 		if (this.options.clickedClass)
-			this.referenceElement.classList.remove(this.options.clickedClass);
+			this.referenceElement.classList.remove(...this.options.clickedClass.trim().split(/\s+/));
 
 		this.popperElement.dataset.popperOpen = "false";
 		delete this.referenceElement.dataset.popperOpen;

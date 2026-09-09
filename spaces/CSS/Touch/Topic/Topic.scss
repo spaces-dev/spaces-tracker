@@ -1,0 +1,126 @@
+@use "Common/Theme" as *;
+
+.topic {
+	background: $content-bg;
+	color: $default-text-color;
+	overflow-wrap: break-word;
+
+	&__main {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 12px 15px;
+	}
+
+	&__header {
+		display: flex;
+		gap: 8px;
+		align-items: flex-start;
+	}
+
+	&__avatar {
+		flex-shrink: 0;
+		font-size: 0;
+	}
+
+	&__meta {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		min-width: 0;
+		flex-grow: 1;
+		color: $secondary-text-color;
+	}
+
+	&__author {
+		display: flex;
+		gap: 5px;
+		align-items: center;
+	}
+
+	&__toolbar {
+		display: flex;
+		flex-shrink: 0;
+		gap: 16px;
+		align-items: flex-start;
+		margin-left: auto;
+
+		a {
+			position: relative;
+
+			&::before {
+				position: absolute;
+				top: -8px;
+				right: -8px;
+				bottom: -16px;
+				left: -8px;
+				content: "";
+			}
+		}
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+
+		&--with-main-attach {
+			gap: 8px;
+		}
+	}
+
+	&__title {
+		font-weight: bold;
+		color: $darkblue-text-color;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__notice {
+		padding: 6px 10px;
+		background: $system-message-warning-bg;
+		color: $system-message-warning-text;
+	}
+
+	&__attaches {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+
+		// FIXME: костыль
+		.att_wrap {
+			margin: 0;
+		}
+	}
+
+	&__poll {
+		border: 1px solid $default-border-color;
+	}
+
+	&__footer {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__edit-info {
+		padding: 15px;
+		border-top: 1px solid $default-border-color;
+		color: $secondary-text-color;
+	}
+
+	&__details {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 15px;
+		border-top: 1px solid $default-border-color;
+		color: $secondary-text-color;
+	}
+
+}

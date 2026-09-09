@@ -2,17 +2,21 @@ import module from 'module';
 import { closeAllPoppers, getPopperById } from '../widgets/popper';
 import { Spaces } from '../spacesLib';
 import $ from '../jquery';
-import { L } from '../utils';
+import { html_wrap, L } from '../utils';
 import { simplePagination } from '../widgets/fragments/simplePagination';
 import { showToast } from '../widgets/toaster';
 
 const PER_PAGE = 5;
 
 const tpl = {
-	list({ parentDirs, dirs, pagination }) {
+	list({ parentDirs, dirs, pagination, selectedDir, deleteUrl, apiParams }) {
 		const curDir = parentDirs[parentDirs.length - 1];
 		const prevDir = parentDirs.length > 1 ? parentDirs[parentDirs.length - 2] : 0;
 		const isRoot = curDir.shared_dir === 0;
+		const deleteTag = deleteUrl ? 'a' : 'div';
+		const deleteAttrs = deleteUrl ?
+			`href="${html_wrap(deleteUrl)}"` :
+			`data-action="sz_file_delete" data-params="${html_wrap(JSON.stringify(apiParams))}"`;
 
 		return `
 			<div class="dir-selector dropdown-content">
@@ -29,7 +33,6 @@ const tpl = {
 						<span class="js-ico ico-alone ico ico_arr_left"></span>
 					</button>
 					<div class="dir-selector__location-title">
-						<span class="ico_files ico_files_dir"></span>
 						${curDir.name}
 					</div>
 					<div class="dir-selector__location-space"></div>
@@ -38,6 +41,16 @@ const tpl = {
 					${dirs.join("")}
 				</div>
 				${pagination}
+			</div>
+
+			<div class="dropdown-content ${selectedDir ? '' : 'hide'}">
+				<${deleteTag}
+					class="${deleteUrl ? '' : 'js-action_link '}list-link list-link-red list-link--short list-link_last t_center"
+					${deleteAttrs}
+				>
+					<span class="ico ico_garbage_red js-ico"></span>
+					${L("Убрать файл из Зоны Обмена")}
+				</${deleteTag}>
 			</div>
 		`;
 	},
@@ -61,7 +74,6 @@ const tpl = {
 						<span class="js-ico ico-alone ico ico_arr_left"></span>
 					</button>
 					<div class="dir-selector__location-title">
-						<span class="ico_files ico_files_dir"></span>
 						${curDir.name}
 					</div>
 					<div class="dir-selector__location-space"></div>
@@ -92,16 +104,21 @@ const tpl = {
 			</div>
 		`;
 	},
-	sharedZoneInfo({ addShZDirLink, changeShZDirLink, unshareLink, shZDirs }) {
+	sharedZoneInfo({ addShZDirLink, changeShZDirLink, shZDirs }) {
 		return `
-			${changeShZDirLink ? `
-				<span class="right" style="margin-left: 25px">
-					${changeShZDirLink}
-				</span>
-			` : ``}
+			<div class="info-table__title">
+				${L("Зона обмена:")}
+			</div>
 
-			${L("Зона обмена:")} ${shZDirs || addShZDirLink}
-			${unshareLink ?? ''}
+			<div class="info-table__value">
+				${shZDirs || addShZDirLink}
+			</div>
+
+			${changeShZDirLink ? `
+				<div class="info-table__actions">
+					${changeShZDirLink}
+				</div>
+			` : ``}
 		`;
 	},
 	loader() {
@@ -196,6 +213,9 @@ function initDirSelector(selectorWidget) {
 			parentDirs: directoryListing.parentDirs,
 			dirs: directoryListing.dirs.slice(offset, offset + PER_PAGE),
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
+			selectedDir: selectorWidget.data('value'),
+			deleteUrl: selectorWidget.data('deleteUrl'),
+			apiParams: selectorWidget.data('params'),
 		}));
 	};
 

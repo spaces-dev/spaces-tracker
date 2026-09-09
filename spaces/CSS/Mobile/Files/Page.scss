@@ -1,0 +1,134 @@
+@use "Common/Theme" as *;
+@use "spacepack/build/variables" as *;
+
+$file-card-gap: if($LITE, 8px, 4px);
+$file-card-padding: if($LITE, 10px, 5px);
+
+.file-card {
+	margin: if($LITE, 10px 5px, 5px 0);
+	border: 1px solid $default-border-color;
+	background: $content-bg;
+	color: $default-text-color;
+	word-wrap: break-word;
+
+	@if not $LITE {
+		border-right: 0;
+		border-left: 0;
+	}
+
+	&__header {
+		display: table;
+		width: 100%;
+		background: $block-title-bg;
+		font-weight: bold;
+	}
+
+	&__header-icon,
+	&__header-title,
+	&__header-buttons {
+		display: table-cell;
+		vertical-align: middle;
+	}
+
+	&__header-icon {
+		width: 1%;
+		padding-left: $file-card-padding;
+		font-size: 0;
+		white-space: nowrap;
+	}
+
+	&__header-title {
+		padding: $file-card-padding $file-card-gap;
+		word-wrap: break-word;
+	}
+
+	&__header-buttons {
+		width: 1%;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	&__header-button {
+		display: inline-block;
+		padding: $file-card-padding;
+		vertical-align: middle;
+	}
+
+	&__content {
+		padding: $file-card-padding;
+
+		> * + * {
+			margin-top: $file-card-gap;
+		}
+	}
+
+	&__moderation {
+		padding: $file-card-padding;
+		border-top: 1px solid $default-border-color;
+		background: $legacy-blue-block-bg;
+		color: $default-text-color;
+	}
+
+	&__footer {
+		display: table;
+		width: 100%;
+		color: $secondary-text-color;
+	}
+
+	&__footer-time,
+	&__footer-views {
+		display: table-cell;
+		vertical-align: middle;
+	}
+
+	&__footer-time {
+		font-size: 0.86em;
+	}
+
+	&__footer-views {
+		text-align: right;
+	}
+}
+
+.file-owner {
+	display: table;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+	padding: $file-card-padding;
+	border-bottom: 1px solid $separator-color;
+	background: $content-bg;
+
+	&__avatar,
+	&__info,
+	&__subscribe {
+		display: table-cell;
+		vertical-align: middle;
+	}
+
+	&__avatar {
+		width: 1%;
+		padding-right: $file-card-gap;
+		font-size: 0;
+		white-space: nowrap;
+	}
+
+	&__info {
+		word-wrap: break-word;
+	}
+
+	&__name {
+		font-weight: bold;
+	}
+
+	&__stats {
+		margin-top: if($LITE, 2px, 1px);
+		color: $secondary-text-color;
+	}
+
+	&__subscribe {
+		width: 1%;
+		padding-left: $file-card-gap;
+		text-align: right;
+	}
+}

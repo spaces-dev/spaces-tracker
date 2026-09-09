@@ -2537,6 +2537,22 @@ a.selected{
 	}
 }
 
+.info-table {
+	&__row + &__row {
+		margin-top: if($LITE, 8px, 4px);
+	}
+
+	&__title {
+		color: $secondary-text-color;
+	}
+
+	&__title,
+	&__value,
+	&__actions {
+		display: inline;
+	}
+}
+
 .block,
 .bubble,
 #{mangle(".ads_block")},

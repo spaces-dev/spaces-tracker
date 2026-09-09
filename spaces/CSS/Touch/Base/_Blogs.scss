@@ -2,13 +2,34 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
-.blog-item__icon-btn {
-	display: inline-block;
-	margin-right: 8px;
-}
+.blog-item {
+	&__content-footer {
+		margin-top: 8px;
+		display: flex;
+		gap: 10px;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
 
-.blog-item__icon-btn:last-child {
-	margin-right: 0;
+	&__toolbar {
+		float: right;
+		display: flex;
+		gap: 16px;
+
+		a {
+			position: relative;
+
+			&::before {
+				position: absolute;
+				top: -8px;
+				right: -8px;
+				bottom: -16px;
+				left: -8px;
+				content: "";
+			}
+		}
+	}
 }
 
 .blog-item_short{

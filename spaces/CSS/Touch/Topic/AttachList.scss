@@ -1,0 +1,32 @@
+.attach-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+
+	&__items {
+		&--type-pictures {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 5px;
+		}
+
+		&--type-attaches {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		&--direction-horizontal {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: flex-start;
+		}
+	}
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-width: 100%;
+	}
+}

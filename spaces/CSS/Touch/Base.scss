@@ -1080,13 +1080,45 @@ body a.disabled .bordered .t {
 	text-overflow: ellipsis;
 }
 
+.info-table {
+	display: grid;
+	gap: 8px;
+
+	&__row {
+		display: grid;
+		grid-template-columns: 30% minmax(0, auto) 1fr;
+		gap: 8px;
+		align-items: start;
+
+		@media (min-width: 600px) {
+			grid-template-columns: 25% minmax(0, auto) 1fr;
+		}
+	}
+
+	&__title {
+		color: $secondary-text-color;
+		overflow-wrap: break-word;
+	}
+
+	&__value {
+		min-width: 0;
+		overflow-wrap: break-word;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+
 .nl_wn a{
 	font-weight: normal;
 }
 
 .nl a:hover,
 body a.link-darkblue:hover,
-.info-item__descr a:hover,
 .anketa__rate-link:hover,
 .info-item__descr-link:hover{
 	color: $inline-link-default-hover-color;
