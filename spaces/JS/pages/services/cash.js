@@ -1,6 +1,6 @@
 import module from 'module';
 import * as pushstream from '../../core/lp';
-import { L, numeral } from '../../utils';
+import { plural } from '../../core/l10n';
 
 export const CASH_RENDER_MODE = {
 	DEFAULT: 0,
@@ -9,12 +9,19 @@ export const CASH_RENDER_MODE = {
 
 const tpl = {
 	money(amount) {
-		const moneyNoun = numeral(amount, [L("монета"), L("монеты"), L("монет")]);
-		return `<span class="${amount > 0 ? 'green' : 'red'}">${Number(amount).toLocaleString("ru-RU")} ${moneyNoun}</span>`;
+		const text = plural(amount, {
+			one: '# монета',
+			many: '# монет',
+			other: '# монеты'
+		});
+		return `<span class="${amount > 0 ? 'green' : 'red'}">${text}</span>`;
 	},
 	bonus(amount) {
-		const bonusNoun = numeral(amount, [L("бонусная"), L("бонусных"), L("бонусных")]);
-		return `<span class="darkblue">${Number(amount).toLocaleString("ru-RU")} ${bonusNoun}</span>`;
+		const text = plural(amount, {
+			one: '# бонусная',
+			other: '# бонусных'
+		});
+		return `<span class="darkblue">${text}</span>`;
 	}
 };
 

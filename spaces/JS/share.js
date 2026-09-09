@@ -1,8 +1,10 @@
 import module from 'module';
 import $ from './jquery';
 import Device from './device';
-import {L, html_wrap} from './utils';
+import { html_wrap } from './utils';
+import { L } from './core/l10n';
 
+var RUSSIAN_SOCIAL_LOCALES = { ru: true, uk: true };
 var SOCIAL_LINKS = {
 	tg: {
 		title:	"Telegram",
@@ -22,14 +24,16 @@ var SOCIAL_LINKS = {
 		url:	"https://vk.ru/share.php?url={link}&title={title}",
 		icon:	'ico_soc ico_soc_vk',
 		w:		626,
-		h:		278
+		h:		278,
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	odnk: {
-		title:	L("Одноклассники"),
+		title:	"Одноклассники",
 		url:	"https://connect.ok.ru/offer?url={link}&title={title}&imageUrl={logo}",
 		icon:	'ico_soc ico_soc_odnk',
 		w:		830,
-		h:		650
+		h:		650,
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	fb: {
 		title:	"Facebook",
@@ -39,11 +43,12 @@ var SOCIAL_LINKS = {
 		h:		436
 	},
 	mymir: {
-		title:	L("Мой Мир@Mail.Ru"),
+		title:	"Мой Мир@Mail.Ru",
 		url:	"https://connect.mail.ru/share?url={link}&title={title}&imageurl={logo}",
 		icon:	'ico_soc ico_soc_mymir',
 		w:		626,
-		h:		436
+		h:		436,
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	email: {
 		title:	L("Отправить на email"),
@@ -58,7 +63,7 @@ var tpl = {
 		var html =
 			'<div class="soc-link__wrapper pad_b_a">' + 
 				'<div class="pad_t_a t_center">' + 
-					'<label class="grey">' + L('Поделиться') + ':</label>' + 
+					'<label class="grey">' + L('Поделиться:') + '</label>' +
 				'</div>' + 
 				data + 
 			'</div>';
@@ -85,6 +90,8 @@ module.on("componentpage", function () {
 			html = "";
 		
 		$.each(SOCIAL_LINKS, function (id, link) {
+			if (link.locales && !link.locales[document.documentElement.lang])
+				return;
 			var url = link.url
 				.replace(/\{link\}/g, encodeURIComponent(el.data('url') || share_link))
 				.replace(/\{title\}/g, encodeURIComponent(el.data('title') || share_title))
@@ -112,5 +119,3 @@ module.on("componentpage", function () {
 		}
 	});
 });
-
-

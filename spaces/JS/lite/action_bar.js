@@ -1,5 +1,6 @@
 import {Events} from './events';
-import {toggleClass, addClass, removeClass, find_parents, copyToClipboard, L} from './utils';
+import { toggleClass, addClass, removeClass, find_parents, copyToClipboard } from './utils';
+import { L } from './core/l10n';
 import {Spaces} from './core';
 import Device from './device';
 

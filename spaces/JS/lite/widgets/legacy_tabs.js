@@ -1,6 +1,7 @@
 import module from 'module';
 import {Events} from '../events';
-import {L, find_parents, ge, addClass, removeClass} from '../utils';
+import { find_parents, ge, addClass, removeClass } from '../utils';
+import { L } from '../core/l10n';
 
 Events.bulk(ge('.js-legacy_tab'), {
 	click: function (e) {

@@ -1,4 +1,4 @@
-import { L } from "../../utils";
+import { L } from "../../core/l10n";
 
 export function simplePagination({ current, total }) { // FIXME: табличная вёрстка 😍
 	if (total <= 1)
@@ -6,6 +6,7 @@ export function simplePagination({ current, total }) { // FIXME: табличн�
 
 	return `
 		<div class="pgn-wrapper">
+			<!-- l10n-set context="pagination" -->
 			<div class="pgn">
 				<table class="table__wrap pgn__table">
 					<tr>
@@ -26,7 +27,7 @@ export function simplePagination({ current, total }) { // FIXME: табличн�
 						</td>
 						<td class="table__cell">
 							<div class="pgn__counter pgn__range">
-								${L("{0} из {1}", current, total)}
+								${L('{current} из {total}', { current, total })}
 							</div>
 						</td>
 						<td class="table__cell table__cell_last" width="35%">
@@ -47,6 +48,7 @@ export function simplePagination({ current, total }) { // FIXME: табличн�
 					</tr>
 				</table>
 			</div>
+			<!-- l10n-reset -->
 		</div>
 	`;
 };

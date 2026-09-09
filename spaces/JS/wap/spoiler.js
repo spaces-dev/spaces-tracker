@@ -1,4 +1,5 @@
-import {addClass, removeClass, hasClass, toggleClass, ge, each, find_parents, L} from './utils';
+import { addClass, removeClass, hasClass, toggleClass, ge, each, find_parents } from './utils';
+import { L } from './core/l10n';
 
 var Spoilers = {
 	/*

@@ -6,7 +6,8 @@ import {Class, TSimpleEvents} from './class';
 import {Spaces, Url, Codes} from './spacesLib';
 import SpacesApp from './android/api';
 import page_loader from './ajaxify';
-import {L, tick, extend} from './utils';
+import { tick, extend } from './utils';
+import { L, select } from './core/l10n';
 
 import './draggable';
 import './anim';
@@ -101,6 +102,7 @@ var tpl = {
 	gallery: function (data) {
 		var arrow_class = data.arrowSmall ? ' js-gallery_arrow' : '',
 			arrow_wrap_class = !data.arrowSmall ? ' js-gallery_arrow' : '';
+		// l10n-set context="gallery-controls"
 		var html = 
 		'<div id="Gallery" class="gallery js-action_bar">' + 
 			'<div class="gallery__page_shadow"></div>' + 
@@ -218,6 +220,7 @@ var tpl = {
 				'<div class="widgets-group dropdown-menu js-ddmenu_content"></div>' +
 			'</div>' +
 		'</div>';
+		// l10n-reset
 		return html;
 	},
 	error: function (msg) {
@@ -231,6 +234,7 @@ var tpl = {
 					'<br />' + 
 					'<a href="#g-adult-show" class="gallery__button js-gallery_repeat" data-action="' + data.action + '">' +
 						'<span class="ico_gallery ico_gallery_reload m"></span> ' + 
+						// l10n context="retry-action"
 						'<span class="m">' + L("Повторить") + '</span>' + 
 					'</a>' : '') + 
 			'</div>';
@@ -239,6 +243,7 @@ var tpl = {
 	retry: function () {
 		return '<div><a href="#g_retry" class="gallery__button">' + 
 			'<span class="ico_gallery ico_gallery_reload m"></span> ' + 
+			// l10n context="retry-action"
 			'<span class="m">' + L("Повторить") + '</span>' + 
 		'</a></div>';
 	},
@@ -250,9 +255,10 @@ var tpl = {
 		
 		var html = 
 			'<div class="gallery__error_inner">' + 
-				L('Внимание! Эти материалы только для взрослых! ') + 
-				L('Нажимая &quot;{0}&quot;, вы подтверждаете, ', item) + 
-				L('что вам 18 или более лет.')+ '<br />' + 
+				L('Внимание! Эти материалы только для взрослых! ' +
+					'Нажимая «{content, select, video {Показать видео} other {Показать фото}}», ' +
+					'вы подтверждаете, что вам 18 или более лет.', { content: data.content }) +
+				'<br />' +
 				'<a href="#g-adult-show" class="gallery__button js-adult">' + 
 					'<span class="ico_gallery ico_gallery_eye m"></span> ' + 
 					'<span class="m">' + item + '</span>' + 
@@ -280,10 +286,12 @@ var tpl = {
 		`;
 	},
 	collectionsMotivator: function () {
-		var html = 
-			'<div class="t_center">' + 
-				'Сохраните этот файл в свою коллекцию. Нажмите кнопку ' + 
-					'<span class="ico ico_plus_white ico_no-mrg m pointer js-gallery_collection"></span>' + 
+		var html =
+			'<div class="t_center">' +
+				// l10n comment="{button}: кнопка только с иконкой добавления в коллекцию, без текста."
+				L('Сохраните этот файл в свою коллекцию. Нажмите кнопку {button}', {
+					button: '<span class="ico ico_plus_white ico_no-mrg m pointer js-gallery_collection"></span>'
+				}) +
 			'</div>';
 		return html;
 	},
@@ -457,12 +465,21 @@ Gallery = {
 				e.stopImmediatePropagation();
 				
 				var link = $(this).find('a').attr("id") || $(this).attr("id"),
-					object = current.item.content == 'video' ? L('видео') : L('фото'),
+					content = current.item.content,
 					errors = {
-						g_advancepage: L('У этого {0} нет комментариев.', object),
-						g_share: L("Этим {0} нельзя делиться.", object),
+						g_advancepage: select(content, {
+							video: 'У этого видео нет комментариев.',
+							other: 'У этого фото нет комментариев.'
+						}),
+						g_share: select(content, {
+							video: 'Этим видео нельзя делиться.',
+							other: 'Этим фото нельзя делиться.'
+						}),
 						g_collections: Spaces.params.nid ? 
-							L("Это {0} нельзя сохранять в коллекции.", object) : 
+							select(content, {
+								video: 'Это видео нельзя сохранять в коллекции.',
+								other: 'Это фото нельзя сохранять в коллекции.'
+							}) :
 							Spaces.view.onlyAuthMotivator()
 					};
 				
@@ -1380,8 +1397,11 @@ Gallery = {
 		$('.js-gallery_arrow[data-dir="-1"]').toggleClass('hide', !current.prev || is_video);
 		$('.js-gallery_arrow[data-dir="1"]').toggleClass('hide', !current.next || is_video);
 		
-		gallery.find('.js-gallery_cnt').text(L('{0} из {1}',
-			loader_offset + current.n + 1, Math.max(group_items.length, override_count[current.gid] || 0)));
+		// l10n context="gallery-position"
+		gallery.find('.js-gallery_cnt').text(L('{current} из {total}', {
+			current: loader_offset + current.n + 1,
+			total: Math.max(group_items.length, override_count[current.gid] || 0)
+		}));
 		
 		if (force) {
 			self.fixSiblings();
@@ -1667,7 +1687,7 @@ Gallery = {
 			} else {
 				console.error('[loadExtraInfo] ' + Spaces.apiError(res));
 				if (current && !current.item.loaded)
-					Spaces.showMsg(L('Ошибка загрузки: {0}', Spaces.apiError(res)), {gallery: true, type: 'alert'});
+					Spaces.showMsg(L('Ошибка загрузки: {error}', { error: Spaces.apiError(res) }), {gallery: true, type: 'alert'});
 				on_fail();
 			}
 			
@@ -1677,7 +1697,7 @@ Gallery = {
 				console.error('[loadExtraInfo] ' + err)
 				
 				if (current && !current.item.loaded)
-					Spaces.showMsg(L('Ошибка загрузки: {0}', err), {gallery: true, type: 'alert'});
+					Spaces.showMsg(L('Ошибка загрузки: {error}', { error: err }), {gallery: true, type: 'alert'});
 				
 				on_fail();
 				on_load_done();
@@ -1848,7 +1868,9 @@ Gallery = {
 			
 			btn.attr({
 				id: vote_id + (vote_type < 0 ? '_voteDown' : '_voteUp'),
-				title: (vote_type < 0 ? L('Против {0}', cnt) : L('За {0}', cnt))
+				// l10n-set context="vote-count"
+				title: vote_type < 0 ? L('Против {count}', { count: cnt }) : L('За {count}', { count: cnt })
+				// l10n-reset
 			}).data({
 				cnt:			cnt,
 				oid:			item.nid,
@@ -1931,7 +1953,9 @@ Gallery = {
 		current.zoomed = state;
 		gallery.toggleClass('gallery__zoom gallery__nav_hide', current.zoomed);
 		
+		// l10n-set context="gallery-controls"
 		$('#gallery__zoom').attr("title", current.zoomed ? L("Уменьшить") : L("Увеличить"));
+		// l10n-reset
 		
 		var session_id = 'session_id:' + Date.now(),
 			max_zoom = self.getMaxZoom(),

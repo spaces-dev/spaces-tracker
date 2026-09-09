@@ -1,7 +1,7 @@
 import module from 'module';
 import $ from './jquery';
 import UniversalSearch from './search';
-import {L} from './utils';
+import { L } from './core/l10n';
 import AttachSelector from './widgets/attach_selector';
 
 var tpl = {

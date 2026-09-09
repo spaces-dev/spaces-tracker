@@ -1,7 +1,8 @@
 import {Events} from './events';
 import Device from './device';
 import {Spaces} from './core';
-import {ge, find_parents, tick, insert_after, toggleClass, hasClass, copyToClipboard, L} from './utils';
+import { ge, find_parents, tick, insert_after, toggleClass, hasClass, copyToClipboard } from './utils';
+import { L } from './core/l10n';
 
 let last_open_link;
 

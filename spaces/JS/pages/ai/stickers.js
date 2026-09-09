@@ -1,5 +1,6 @@
 import module from 'module';
-import {L, tick, updateUrlScheme} from '../../utils';
+import { tick, updateUrlScheme } from '../../utils';
+import { L, plural } from '../../core/l10n';
 import * as pushstream from '../../core/lp';
 import $ from '../../jquery';
 
@@ -80,16 +81,17 @@ function updateStatus() {
 	}
 	let statusText;
 	if (completedAttempts >= totalAttemptsCount) {
-		statusText = totalAttemptsCount > 1 ?
-			L("Готово! Мы создали стикеры по вашему запросу:") :
-			L("Готово! Мы создали стикер по вашему запросу:");
+		statusText = plural(totalAttemptsCount, {
+			'=1': 'Готово! Мы создали стикер по вашему запросу:',
+			other: 'Готово! Мы создали стикеры по вашему запросу:'
+		});
 		onGenerationDone(true);
 	} else {
-		if (totalAttemptsCount > 1) {
-			statusText = L("Создаём стикеры по вашему запросу, выполнено: {0} из {1}", completedAttempts, totalAttemptsCount);
-		} else {
-			statusText = L("Создаём стикер по вашему запросу...");
-		}
+		statusText = L('{total, plural, =1 {Создаём стикер по вашему запросу...} ' +
+			'other {Создаём стикеры по вашему запросу, выполнено: {completed} из #}}', {
+			completed: completedAttempts,
+			total: totalAttemptsCount
+		});
 	}
 	setStatus(statusText);
 }

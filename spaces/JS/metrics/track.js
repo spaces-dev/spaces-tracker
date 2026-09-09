@@ -1,5 +1,6 @@
 import { loadScript } from 'loader';
-import { L, tick, windowReady } from '../utils';
+import { tick, windowReady } from '../utils';
+import { L } from '../core/l10n';
 import cookie from '../cookie';
 
 const GOOGLE_ANALYTICS		= SPACES_PARAMS.GA;

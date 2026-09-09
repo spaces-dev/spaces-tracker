@@ -1,6 +1,7 @@
 import $ from './jquery';
 import {Spaces, Codes} from './spacesLib';
-import {ge, L, html_wrap} from './utils';
+import { ge, html_wrap } from './utils';
+import { L, select } from './core/l10n';
 
 const MORE_LINK_WIDTH = 150;
 const MAX_LIKE_USERS = 5;
@@ -39,7 +40,8 @@ let tpl = {
 	moreLink(available, url) {
 		return `
 			<a href="${url}" class="padd_left m link-grey">
-				${L('и ещё {0}', available)}
+				<!-- l10n comment="{count}: количество других пользователей, поставивших оценку." -->
+				${L('и ещё {count}', { count: available })}
 			</a>
 		`;
 	},
@@ -131,8 +133,11 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	}
 	
 	if (current_data.ot == Spaces.TYPES.EXTERNAL_VIDEO) {
-		let action = type < 0 ? L("дислайкать") : L("лайкать");
-		showError(L("Это видео нельзя {0}.", action));
+		const action = type < 0 ? 'dislike' : 'like';
+		showError(select(action, {
+			dislike: 'Это видео нельзя дислайкать.',
+			other: 'Это видео нельзя лайкать.'
+		}));
 		return;
 	}
 	
@@ -202,8 +207,10 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		.toggleClass("red", full_cnt < 0)
 		.toggleClass("green", full_cnt > 0);
 	
-	like_up_btn.attr("title", "За " + like_up_data.cnt);
-	like_down_btn.attr("title", "Против " + like_down_data.cnt);
+	// l10n-set context="vote-count"
+	like_up_btn.attr('title', L('За {count}', { count: like_up_data.cnt }));
+	like_down_btn.attr('title', L('Против {count}', { count: like_down_data.cnt }));
+	// l10n-reset
 
 	if (!like_up_data.clicked)
 		likeOffer.addClass('hide');

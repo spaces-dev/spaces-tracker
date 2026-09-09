@@ -3,7 +3,8 @@ import $ from './jquery';
 import page_loader from './ajaxify';
 import UniversalSearch from './search';
 import {Url} from './spacesLib';
-import {L, extend, tick, ce} from './utils';
+import { extend, tick, ce } from './utils';
+import { L } from './core/l10n';
 
 import './form_controls';
 import './search_form';

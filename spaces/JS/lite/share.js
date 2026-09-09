@@ -1,7 +1,9 @@
-import {L, ge, each, html_wrap} from './utils';
+import { ge, each, html_wrap } from './utils';
+import { L } from './core/l10n';
 
 import 'Reg.css';
 
+var RUSSIAN_SOCIAL_LOCALES = { ru: true, uk: true };
 var SOCIAL_LINKS = {
 	tg: {
 		title:	"Telegram",
@@ -16,12 +18,14 @@ var SOCIAL_LINKS = {
 	vk: {
 		title:	"VK",
 		url:	"https://vk.ru/share.php?url={link}&title={title}",
-		icon:	'soc/vk.png'
+		icon:	'soc/vk.png',
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	ok: {
-		title:	L("Одноклассники"),
+		title:	"Одноклассники",
 		url:	"https://connect.ok.ru/offer?url={link}&title={title}&imageUrl={logo}",
-		icon:	'soc/odnk.png'
+		icon:	'soc/odnk.png',
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	fb: {
 		title:	"Facebook",
@@ -29,9 +33,10 @@ var SOCIAL_LINKS = {
 		icon:	'soc/fb.png'
 	},
 	mymir: {
-		title:	L("Мой Мир@Mail.Ru"),
+		title:	"Мой Мир@Mail.Ru",
 		url:	"https://connect.mail.ru/share?url={link}&title={title}&imageurl={logo}",
-		icon:	'soc/mymir.png'
+		icon:	'soc/mymir.png',
+		locales: RUSSIAN_SOCIAL_LOCALES
 	},
 	email: {
 		title:	L("Отправить на email"),
@@ -45,7 +50,7 @@ var tpl = {
 		var html = 
 			'<div class="soc-links__share pad_b_a">' + 
 				'<div class="pad_t_a t_center">' + 
-					'<label class="grey">' + L('Поделиться') + ':</label>' + 
+					'<label class="grey">' + L('Поделиться:') + '</label>' +
 				'</div>' + 
 				data + 
 			'</div>';
@@ -74,6 +79,8 @@ for (var i = 0, l = elements.length; i < l; ++i) {
 	var el = elements[i],
 		html = "";
 	each(SOCIAL_LINKS, function (link, id) {
+		if (link.locales && !link.locales[document.documentElement.lang])
+			return;
 		var url = link.url
 			.replace(/\{link\}/g, encodeURIComponent(el.getAttribute('data-url') || share_link))
 			.replace(/\{title\}/g, encodeURIComponent(el.getAttribute('data-title') || share_title))

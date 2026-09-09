@@ -2,7 +2,8 @@ import $ from '../jquery';
 import Device from '../device';
 import SpacesApp from '../android/api';
 import {Spaces, Url} from '../spacesLib';
-import {ce, extend, tick, L} from '../utils';
+import { ce, extend, tick } from '../utils';
+import { L } from '../core/l10n';
 
 /*
 	events

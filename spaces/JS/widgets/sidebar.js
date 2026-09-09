@@ -1,10 +1,12 @@
 import $ from '../jquery';
-import { L } from '../utils';
+import { L } from '../core/l10n';
 import { getCurrentTheme, getEffectiveTheme, switchTheme, onThemeChange } from '../core/theme';
 import { Spaces } from '../spacesLib';
 import './swiper';
 
+// l10n-set context="color-theme"
 const THEME2TITLE = {system: L('Системная'), light: L('Светлая'), dark: L('Тёмная')};
+// l10n-reset
 let steps_to_system = 1;
 
 onThemeChange(() => syncCurrentTheme());
@@ -27,7 +29,8 @@ $('#page_sidebar').on('click', '.js-site-theme', function (e) {
 	Spaces.api("settings.theme", {theme: new_theme, CK: null, Ti: Spaces.tabId()});
 	switchTheme(new_theme);
 	syncCurrentTheme();
-	this.title = L("Тема: {0}", THEME2TITLE[getCurrentTheme()]);
+	// l10n context="color-theme"
+	this.title = L('Тема: {theme}', { theme: THEME2TITLE[getCurrentTheme()] });
 });
 
 function syncCurrentTheme() {

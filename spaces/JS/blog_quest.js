@@ -2,7 +2,7 @@ import module from 'module';
 import $ from './jquery';
 import Spaces from './spacesLib';
 import './form_controls';
-import {L, numeral} from './utils';
+import { plural } from './core/l10n';
 
 module.on("componentpage", function () {
 	var form = $('#blog_quest')
@@ -13,8 +13,10 @@ module.on("componentpage", function () {
 			
 			var selected = form.find('.js-checkbox.form-checkbox_checked').length + (checked ? 0 : 1);
 			if (selected > limit) {
-				Spaces.view.setInputError(el, L('Нельзя выбрать более {0}',
-					numeral(limit, [L('$n категории'), L('$n категорий'), L('$n категорий')])));
+				Spaces.view.setInputError(el, plural(limit, {
+					one: 'Нельзя выбрать более # категории',
+					other: 'Нельзя выбрать более # категорий'
+				}));
 				if (!checked)
 					e.preventDefault();
 			} else {

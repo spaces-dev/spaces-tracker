@@ -1,5 +1,6 @@
 import cookie from './cookie';
-import {ge, ce, L, each, html_wrap} from './utils';
+import { ge, ce, each, html_wrap } from './utils';
+import { L } from './core/l10n';
 
 var cookies_menu, new_cookie_name, new_cookie_value, new_cookie_btn;
 

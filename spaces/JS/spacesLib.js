@@ -6,7 +6,8 @@ import Device from './device';
 import {Class} from './class';
 import * as pushstream from './core/lp';
 import SpacesApp from './android/api';
-import {L, tick, extend, ge, html_wrap, updateUrlScheme} from './utils';
+import { tick, extend, ge, html_wrap, updateUrlScheme } from './utils';
+import { L } from './core/l10n';
 
 var Spaces = {}, Url, Codes, FormState, API_ERRORS,	// extern
 	SPACES_ACTIVITY_TIMEOUT = 60 * 1000,							// Через 60 секунд считаем таб неактивным
@@ -303,11 +304,11 @@ API_ERRORS = {
 	[Codes.COMMON.ERR_FORBIDDEN]: L("Доступ запрещён"),
 	[Codes.COMMON.ERR_BAD_REQUEST]: L("Ошибка в параметрах API"),
 	[Codes.COMMON.ERR_NEED_CONFIRM_ACTION]: L("Нужно подтверждение регистрации"),
-	[Codes.COMMON.ERR_USER_IN_YOUR_BLACKLIST]: L("Пользователь находится в вашем чёрном списке"),
-	[Codes.COMMON.ERR_YOU_IN_USER_BLACKLIST]: L("Вы находитесь в чёрном списке обитателя"),
+	[Codes.COMMON.ERR_USER_IN_YOUR_BLACKLIST]: L("Пользователь находится в вашем Чёрном списке"),
+	[Codes.COMMON.ERR_YOU_IN_USER_BLACKLIST]: L("Вы находитесь в Чёрном списке пользователя"),
 	[Codes.COMMON.ERR_MESSAGE_TOO_LONG]: L("Слишком длинное сообщение"),
 	[Codes.COMMON.ERR_MESSAGE_WITH_UNPAID_STICKERS]: L("В сообщении использованы неоплаченные стикеры"),
-	[Codes.COMMON.ERR_USER_ACT_PHONE_NOT_FOUND]: L("Не найден телефон обитателя"),
+	[Codes.COMMON.ERR_USER_ACT_PHONE_NOT_FOUND]: L("Не найден телефон пользователя"),
 	[Codes.COMMON.ERR_OBJECT_NOT_FOUND]: L("Объект не найден"),
 	[Codes.COMMON.ERR_USER_IS_OWNER]: L("Пользователь - владелец объекта"), // и чо?
 	[Codes.COMMON.ERR_COMM_NOT_FOUND]: L("Сообщество не найдено"),
@@ -324,13 +325,20 @@ API_ERRORS = {
 	[Codes.AUTH.ERR_WRONG_LOGIN_OR_PASSWORD]: L("Неверный логин или пароль"),
 	[Codes.AUTH.ERR_AUTH_REQUIRED]: [
 		L('Функция доступна только авторизированным пользователям.'),
-		L('<a href="{0}">Войти</a> или <a href="{1}">зарегистрироваться</a>.', '/registration/loginform/', '/registration/new/'),
+		L('<login>Войти</login> или <registration>зарегистрироваться</registration>.', {
+			login(content) {
+				return `<a href="/registration/loginform/">${content}</a>`;
+			},
+			registration(content) {
+				return `<a href="/registration/new/">${content}</a>`;
+			}
+		}),
 	].join('<br />'),
 
 	// MAIL
 	[Codes.MAIL.ERR_CONTACT_NOT_FOUND]: L("Контакт не найден"),
 	[Codes.MAIL.ERR_SPAM_CONTROL]: L("Сработала защита от СПАМа"),
-	[Codes.MAIL.ERR_ADMIN_SEND_DENIED]: L("Извините, но у администрации нет возможности читать все письма обитателей. Мы просто не успеваем это делать."),
+	[Codes.MAIL.ERR_ADMIN_SEND_DENIED]: L("Извините, но у администрации нет возможности читать все письма пользователей. Мы просто не успеваем это делать."),
 	[Codes.MAIL.ERR_GARBAGE_IS_CLEARING]: L("Происходит очистка корзины"),
 	[Codes.MAIL.ERR_CONTACT_IS_SWAPPING]: L("Происходит перенос контакта"),
 	[Codes.MAIL.ERR_MESSAGE_NOT_FOUND]: L("Сообщение не найдено"),
@@ -366,8 +374,10 @@ API_ERRORS = {
 
 	// FORUM
 	[Codes.FORUM.ERR_COMMENT_NOT_FOUND]: L("Комментарий не найден"),
+	// l10n-set context="forum-topic"
 	[Codes.FORUM.ERR_TOPIC_NOT_FOUND]: L("Тема не найдена."),
 	[Codes.FORUM.ERR_FORUM_IN_GARBAGE]: L("Тема находится в корзине."),
+	// l10n-reset
 
 	// FRIENDS
 	[Codes.FRIENDS.ERR_FROM]: L("Подпись заполнена неверно"),
@@ -378,7 +388,7 @@ API_ERRORS = {
 	[Codes.TRASH.ERR_OBJ_RESTORED]: L("Объект уже восстановлен"),
 
 	// VOTING
-	[Codes.VOTING.ERR_VOTE_NOT_FOUND]: L("Голос не найден"),
+	[Codes.VOTING.ERR_VOTE_NOT_FOUND]: L("Голос не найден"), // l10n context="vote-error"
 
 	// FILES
 	[Codes.FILES.ERR_DIR_ACCESS_DENIED]: L("Доступ к папке запрещён"),
@@ -413,10 +423,14 @@ API_ERRORS = {
 	[Codes.SERVICES.ERR_UNIVERSITY_NOT_FOUND]: L("Университет не найден"),
 	[Codes.SERVICES.ERR_FACULTY_NOT_FOUND]: L("Факультет не найден"),
 	[Codes.SERVICES.ERR_MOBILE_BRAND_NOT_FOUND]: L("Бренд не найден"),
-	[Codes.SERVICES.ERR_NOT_ENOUGH_MONEY]: L('На вашем счёте недостаточно монет. <a href="/payment/" target="_blank" rel="noopener">Пополнить</a>.'),
+	[Codes.SERVICES.ERR_NOT_ENOUGH_MONEY]: L('На вашем счёте недостаточно монет. <link>Пополнить</link>.', {
+		link(content) {
+			return `<a href="/payment/" target="_blank" rel="noopener">${content}</a>`;
+		}
+	}),
 
 	// ATTACHES
-	[Codes.ATTACHES.ERR_ATTACH_NOT_FOUND]: L("Файл, который вы прикрепляете, не найден. "),
+	[Codes.ATTACHES.ERR_ATTACH_NOT_FOUND]: L('Файл, который вы прикрепляете, не найден.'),
 	[Codes.ATTACHES.ERR_PARENT_NOT_FOUND]: L("Топик, к комментарию которого вы прикрепляете файл, был удалён."),
 	[Codes.ATTACHES.ERR_WRONG_OWNER]: L("Объект, к которому вы прикрепляете файл, был удалён."),
 	[Codes.ATTACHES.ERR_MAX_COUNT]: L("Превышен лимит аттачей."),
@@ -443,7 +457,7 @@ extend(Spaces, {
 		3: L("Слишком быстрые запросы"),
 		4: L("Ваш аккаунт заблокирован"),
 		5: L("Ошибка XSRF"),
-		6: L("Дубль запроса. "),
+		6: L('Дубль запроса.'),
 		7: L("Нужны последние цифры номера"),
 		8: L("Нужна капча")
 	},
@@ -848,10 +862,19 @@ extend(Spaces, {
 			case Codes.COMMON.ERR_UNKNOWN_ERROR:
 				return data.message || L("Неизвестная ошибка");
 			case Codes.AUTH.ERR_AUTH_ERROR:
-				return Spaces.AUTH_ERRORS[data.auth_errror] || L("Ошибка авторизации #{0}", data.auth_errror);
-			case Codes.AUTH.ERR_ACTIVATION_REQUIRED:
-				return L('Извините, вы не можете {0}, пока не {1}подтвердите свой аккаунт{2}.',
-					data.action || L("это сделать"), '<a href="' + Spaces.getActivationLink() + '">', '</a>');
+				return Spaces.AUTH_ERRORS[data.auth_errror] || L('Ошибка авторизации #{code}', { code: data.auth_errror });
+			case Codes.AUTH.ERR_ACTIVATION_REQUIRED: {
+				const url = Spaces.getActivationLink();
+				const link = (content) => `<a href="${url}">${content}</a>`;
+				if (data.action) {
+					// l10n comment="{action}: готовый инфинитив действия с бэкенда."
+					return L('Извините, вы не можете {action}, пока не <link>подтвердите свой аккаунт</link>.', {
+						action: data.action,
+						link
+					});
+				}
+				return L('Извините, вы не можете это сделать, пока не <link>подтвердите свой аккаунт</link>.', { link });
+			}
 			case Codes.MAIL.ERR_MESSAGE_ERROR:
 				return data.message;
 			case Codes.MAIL.ERR_MESSAGE_SEND_DENIED:
@@ -870,19 +893,19 @@ extend(Spaces, {
 						}
 					}
 				}
-				return L("Неизвестная ошибка #{0}", (data.$code || data.code));
+				return L('Неизвестная ошибка #{code}', { code: data.$code || data.code });
 		}
 	},
 	getHttpError: function (code) {
 		code = parseInt(code);
 		switch (code) {
 			case 501: case 502: case 503: case 504:
-				return L('Внимание! На {0} в данный момент проводятся технические работы!<br />' +
-							'Подождите несколько секунд и повторите попытку. ', Spaces.params.Domain) +
+				return L('Внимание! На {domain} в данный момент проводятся технические работы!' +
+					'<br />Подождите несколько секунд и повторите попытку.', { domain: Spaces.params.Domain }) +
 					(code == 502 && !!ge('#sandbox_indicator') ?
 						"<br />(" + L("Возможно, перезагрузка песочницы") + ")<br />" : "");
 			case -666:
-				return L('Неверный ответ API. ');
+				return L('Неверный ответ API.');
 
 			case 500: case 525:
 				return L('При выполнении вашего запроса, произошла внутренняя ошибка сервера! Подождите немного и попробуйте снова.');
@@ -894,7 +917,7 @@ extend(Spaces, {
 				return L('Запрашиваемый URL не найден.');
 
 			case 0:
-				return L("Ошибка подключения. Проверьте ваше подключение к интернету. ");
+				return L('Ошибка подключения. Проверьте ваше подключение к интернету.');
 
 			default:
 				return L('При выполнении вашего запроса произошла ошибка HTTP {code}. Подождите немного и попробуйте снова.', {code: code});
@@ -960,21 +983,27 @@ extend(Spaces, {
 	},
 	getSupportMessage() {
 		if (Spaces.params.support?.comm_url) {
-			return L('Сообщите в {0}Службу поддержки пользователей{1}.', `<a href="${Spaces.params.support.comm_url}">`, `</a>`);
+			return L('Сообщите в <link>Службу поддержки пользователей</link>.', {
+				link: (content) => `<a href="${Spaces.params.support.comm_url}">${content}</a>`
+			});
 		} else if (Spaces.params.support?.email) {
-			return L('Сообщите в Службу поддержки пользователей ({0})', `<a href="mailto:${Spaces.params.support.email}">${Spaces.params.support.email}</a>`);
+			return L('Сообщите в Службу поддержки пользователей ({email})', {
+				email: `<a href="mailto:${Spaces.params.support.email}">${Spaces.params.support.email}</a>`
+			});
 		}
 		return "";
 	},
+	// l10n-set context="file-size-unit"
 	getHumanSize: function (size) {
 		if (size >= 1024 * 1024 * 1024)
-			return L("{0} Гб", +(size / 1024 / 1024 / 1024).toFixed(1));
+			return L('{size} Гб', { size: +(size / 1024 / 1024 / 1024).toFixed(1) });
 		else if (size >= 1024 * 1024)
-			return L("{0} Мб", +(size / 1024 / 1024).toFixed(1));
+			return L('{size} Мб', { size: +(size / 1024 / 1024).toFixed(1) });
 		else if (size >= 1024)
-			return L("{0} Кб", +(size / 1024).toFixed(1));
-		return L("{0} б", size);
+			return L('{size} Кб', { size: +(size / 1024).toFixed(1) });
+		return L('{size} б', { size });
 	},
+	// l10n-reset
 	getFileType: function (ext) {
 		ext = ext || '';
 		ext = (ext + "").toLowerCase();
@@ -1193,10 +1222,10 @@ Spaces.view = {
 		var html =
 			'<div class="t_center">' +
 				L('Извините, эта функция доступна только зарегистрированным пользователям.') + '<br />' +
-				L('Узнайте все преимущества') + ' ' +
-				'<a href="/registration/" class="inl-link link-blue">' +
-					L('регистрации') + ' <span class="ico ico_arr_right_blue"></span>' +
-				'</a>' +
+				L('Узнайте все преимущества <link>регистрации {icon}</link>', {
+					link: (content) => `<a href="/registration/" class="inl-link link-blue">${content}</a>`,
+					icon: '<span class="ico ico_arr_right_blue"></span>'
+				}) +
 			'</div>';
 		return html;
 	}
@@ -1210,6 +1239,7 @@ Spaces.templates = {
 				'</a>' : '') +
 				data.text +
 				(data.retry ? ' <a href="' + data.close + '" class="tdn nl js-retry">' +
+					// l10n context="retry-action"
 					L('Повторить') +
 				'</a>' : '') +
 			'</div>';

@@ -11,7 +11,8 @@ import page_loader from './ajaxify';
 import * as sidebar from './widgets/swiper';
 import notifications from './notifications';
 import DdMenu from './dd_menu';
-import {L, html_wrap, tick} from './utils';
+import { html_wrap, tick } from './utils';
+import { L } from './core/l10n';
 
 import "Files/Player.css";
 
@@ -134,6 +135,7 @@ var tpl = {
 							'<i class="ico_player p_i_t_pb_image"></i>' + 
 						'</div>' + 
 					'</td>' + 
+					// l10n-set context="music-player-controls"
 					'<td class="gp-nav_buttons gp-desktop_show">' + 
 						'<a href="#" class="js-music_prev m"><span class="ico_player ico_player_prev m" title="' + L('Предыдущая') + '"></span></a> ' +
 						'<a href="#" class="js-music_next m"><span class="ico_player ico_player_next m" title="' + L('Следующая') + '"></span></a>' +
@@ -167,7 +169,7 @@ var tpl = {
 									'</td>' + 
 									
 									'<td class="ico_td">' + 
-										'<a href="#" class="tdn js-music_add" title="' + L("Добавить к себе") + '">' + 
+										'<a href="#" class="tdn js-music_add" title="' + L("Добавить к себе") + '">' +
 											'<span class="ico ico_plus_darkblue js-ico"></span>' + 
 										'</a>' + 
 									'</td>' + 
@@ -177,6 +179,7 @@ var tpl = {
 											'<span class="ico js-ico"></span>' + 
 										'</a>' + 
 									'</td>' + 
+									// l10n-reset
 								'</tr></table>' + 
 							'</tr>' + 
 						'</table>' + 

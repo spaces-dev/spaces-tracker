@@ -15,7 +15,8 @@ let FilesUploader;
 
 import '../draggable';
 import '../anim';
-import {L, tick, numeral, ge, updateUrlScheme} from '../utils';
+import { tick, ge, updateUrlScheme } from '../utils';
+import { L, select } from '../core/l10n';
 
 import "Files/Tile.css";
 import "Files/Gallery.css";
@@ -71,34 +72,30 @@ var TYPES = {}, TYPES_ORDER = [
 TYPES[Spaces.TYPES.FILE] = {
 	name: L('Файлы'),
 	title: L('Файлы'),
-	title2: L('файлов'),
+	kind: 'file',
 	icon: 'ico_mail ico_mail_file',
-	type: Spaces.TYPES.FILE,
-	sex: 1
+	type: Spaces.TYPES.FILE
 };
 TYPES[Spaces.TYPES.VIDEO] = {
 	name: L('Видео'),
 	title: L('Видео'),
-	title2: L('видео'),
+	kind: 'video',
 	icon: 'ico_mail ico_mail_video',
-	type: Spaces.TYPES.VIDEO,
-	sex: 0
+	type: Spaces.TYPES.VIDEO
 };
 TYPES[Spaces.TYPES.MUSIC] = {
 	name: L('Музыка'),
 	title:L( 'Музыка'),
-	title2: L('треков'),
+	kind: 'music',
 	icon: 'ico_mail ico_mail_music',
-	type: Spaces.TYPES.MUSIC,
-	sex: 1
+	type: Spaces.TYPES.MUSIC
 };
 TYPES[Spaces.TYPES.PICTURE] = {
 	name: L('Фото'),
 	title: L('Фотографии'),
-	title2: L('фотографий'),
+	kind: 'picture',
 	icon: 'ico_mail ico_mail_picture',
-	type: Spaces.TYPES.PICTURE,
-	sex: 0
+	type: Spaces.TYPES.PICTURE
 };
 var section_names = {
 	0: 'comm',
@@ -126,6 +123,7 @@ var tpl = {
 		return html;
 	},
 	quickSelector: function (data) {
+		const type = TYPES[data.type].kind;
 		var html = 
 		'<div class="links-group links-group_grey hide" data-view="action" data-empty="1"></div>' + 
 		(data.upload ? 
@@ -135,7 +133,7 @@ var tpl = {
 		) + 
 		'<div class="hide" data-view="upload_progress">' + 
 			'<div class="content-item3 wbg content-bl__sep js-qsel_link_upload">' + 
-				'<div class="grey pad_b_a">Загрузка файла...</div>' + 
+				'<div class="grey pad_b_a">' + L('Загрузка файла...') + '</div>' +
 				tpl.spinner3() + 
 			'</div>' + 
 		'</div>' + 
@@ -163,7 +161,8 @@ var tpl = {
 					TYPES[data.type].title + ' <span class="js-qsel_cnt cnt" style="opacity:0">0</span>' + 
 					'<a href="#" class="link-imp right js-qsel_all">' + 
 						'<span class="js-qsel_all_spinner hide ico ico_spinner"></span> ' + 
-						L('ВСЕ') + 
+						// l10n context="all-attachments-action" comment="Короткая подпись ссылки для открытия всех вложений выбранного типа."
+						L('ВСЕ') +
 					' <span class="ico ico_arr_right_blue"></span></a>' + 
 				'</div>' + 
 				'<div class="js-qsel_carousel wbg ' + (!data.showSlider ? ' hide' : '') + '" ' +
@@ -184,7 +183,12 @@ var tpl = {
 							'<span class="js-content">' + 
 								'<span class="ico ico_upload js-upload_btn_ico hide"></span> ' + 
 								'<span class="ico ico_spinner js-upload_btn_spinner"></span> ' + 
-								(TYPES[data.type].sex ? L('Загрузить новый') : L('Загрузить новое')) + 
+								select(type, {
+									file: 'Загрузить новый файл',
+									video: 'Загрузить новое видео',
+									music: 'Загрузить новый трек',
+									other: 'Загрузить новую фотографию'
+								}) +
 							'</span>' + 
 						'</span>' : '') + 
 					
@@ -325,8 +329,9 @@ var tpl = {
 	},
 	disabledUploadError: function () {
 		return L('Добавление файлов в сообщество запрещено.') + '<br />' + 
-			L('Чтобы прикрепить новый файл, воспользуйтесь вкладкой {0} вверху страницы.',
-			'<a href="#" class="js-attach_source" data-source="user">' + L("Мои файлы") + '</a> ');
+			L('Чтобы прикрепить новый файл, воспользуйтесь вкладкой <link>Мои файлы</link> вверху страницы.', {
+				link: (content) => `<a href="#" class="js-attach_source" data-source="user">${content}</a>`
+			});
 	},
 	popper({ flat }) {
 		return `<div class="js-popper_content widgets-group ${flat ? 'dropdown-menu' : ''}"></div>`;
@@ -1215,8 +1220,9 @@ MAttachSelector = Class({
 		}
 		
 		if (self.state.mode == "attaches" && !self.getAvail()) {
-			show_error(L('Превышен лимит количества файлов. Максимально можно прикрепить {0}. ',
-				numeral(self.state.limit, [L('$n файл'), L('$n файла'), L('$n файлов')])));
+			show_error(L('Превышен лимит количества файлов. Максимально можно прикрепить ' +
+				'{limit, plural, one {# файл} many {# файлов} other {# файла}}.',
+				{ limit: self.state.limit }));
 			return;
 		}
 		
@@ -1362,7 +1368,9 @@ MAttachSelector = Class({
 				type:				type,
 				showSlider:			!self.state.onlyUpload,
 				upload:				self.state.upload,
+				// l10n-set context="attachment-action"
 				attachBtnName:		self.state.proxyUpload ? L("Вставить") : L("Добавить"),
+				// l10n-reset
 				sources:			self.state.commId && !self.state.onlyComm,
 				attaches:			self.state.mode == "attaches",
 				picGenerator:		self.state.picGenerator && type == Spaces.TYPES.PICTURE,
@@ -1503,7 +1511,14 @@ MAttachSelector = Class({
 							return;
 						
 						if (!slider.totalItems()) {
-							slider.insert($('<div>' + L('У вас ещё нет загруженных {0}. ', TYPES[type].title2) + '</div>'));
+							const kind = TYPES[type].kind;
+							const message = select(kind, {
+								file: 'У вас ещё нет загруженных файлов.',
+								video: 'У вас ещё нет загруженных видео.',
+								music: 'У вас ещё нет загруженных треков.',
+								other: 'У вас ещё нет загруженных фотографий.'
+							});
+							slider.insert($('<div>' + message + '</div>'));
 							slider.update();
 						}
 						
@@ -2064,8 +2079,8 @@ MAttachSelector = Class({
 	limitError: function (n) {
 		var self = this;
 		n = n || self.state.limit;
-		self.showQSelError(L('Превышен лимит количества файлов. Максимально можно прикрепить {0}. ',
-			numeral(n, [L('$n файл'), L('$n файла'), L('$n файлов')])));
+		self.showQSelError(L('Превышен лимит количества файлов. Максимально можно прикрепить ' +
+			'{limit, plural, one {# файл} many {# файлов} other {# файла}}.', { limit: n }));
 	},
 	checkParentLimit: function () {
 		var self = this;

@@ -2,7 +2,8 @@ import module from 'module';
 import $ from './jquery';
 import {Class} from './class';
 import Spaces from './spacesLib';
-import {L, html_wrap} from './utils';
+import { html_wrap } from './utils';
+import { L } from './core/l10n';
 import './select_item';
 import './search';
 import { closeAllPoppers } from './widgets/popper';
@@ -125,6 +126,7 @@ var tpl = {
 		
 		return `
 			<div class="pgn-wrapper js-objsel_pagenav">
+				<!-- l10n-set context="pagination" -->
 				<div class="pgn">
 					<table class="table__wrap pgn__table">
 						<tr>
@@ -138,7 +140,7 @@ var tpl = {
 							</td>
 							<td class="table__cell" style="cursor: pointer;">
 								<div class="js-objsel_pagenav_cnt pgn__counter pgn__range pgn__link_hover">
-									${L('{0} из {1}', data.page , data.total)}
+									${L('{current} из {total}', { current: data.page, total: data.total })}
 								</div>
 							</td>
 							<td class="table__cell table__cell_last" width="35%">
@@ -152,6 +154,7 @@ var tpl = {
 						</tr>
 					</table>
 				</div>
+				<!-- l10n-reset -->
 			</div>
 		`;
 	},
@@ -164,7 +167,7 @@ var tpl = {
 	createOffer: function (data) {
 		var html = 
 			'<a href="#" class="list-link stnd-link_arr stnd-link_profile js-objsel_item" data-id="0" data-title="' + html_wrap(data.word) + '">' + 
-				L('Создать ') + '&laquo;<b>' + html_wrap(data.word) + '</b>&raquo;' + 
+				L('Создать «{word}»', { word: `<b>${html_wrap(data.word)}</b>` }) +
 			'</a>';
 		return html;
 	}
@@ -559,5 +562,3 @@ module.on("component", function () {
 		$(this).objectSelector();
 	});
 });
-
-

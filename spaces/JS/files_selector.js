@@ -3,7 +3,8 @@ import cookie from './cookie';
 import Device from './device';
 import {Spaces, Url} from './spacesLib';
 import page_loader from './ajaxify';
-import {L, html_wrap, extend, tick, numeral} from './utils';
+import { html_wrap, extend, tick } from './utils';
+import { L, plural } from './core/l10n';
 
 import "Files/Gallery.css";
 
@@ -67,7 +68,7 @@ var tpl = {
 		var html = '', first = true;
 		if (selected_cnt > 0) {
 			html += '<div class="stnd_padd">' +
-			 L('Выбрано {0} из {1}:', selected_cnt, params.maxFiles) + '<br />';
+			 L('Выбрано {selected} из {total}:', { selected: selected_cnt, total: params.maxFiles }) + '<br />';
 			for (var nid in selected) {
 				var f = selected[nid];
 				html += (first ? '' : ', ') + '<span class="ico_files ico_files_' + Spaces.getFileIcon(f.fileext) + ' js-ico m"></span>' + 
@@ -306,9 +307,16 @@ function updateSelectedList() {
 		.toggleClass('ico_gallery_exit', !selected_cnt);
 	$('#files_selector-selected').html(tpl.selected());
 	
-	var title = params.maxFiles > 1 ? L('Выберите файлы') : L('Выберите файл')
+	var title = plural(params.maxFiles, {
+		'=1': 'Выберите файл',
+		other: 'Выберите файлы'
+	});
 	if (selected_cnt > 0)
-		title = numeral(selected_cnt, [L('Выбран $n файл'), L('Выбрано $n файла'), L('Выбрано $n файлов')]);
+		title = plural(selected_cnt, {
+			one: 'Выбран # файл',
+			many: 'Выбрано # файлов',
+			other: 'Выбрано # файла'
+		});
 	$('#files_selector-title').text(title);
 	
 	$('#files_selector-list input[type="checkbox"]').each(function () {

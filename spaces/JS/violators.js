@@ -1,11 +1,13 @@
 import module from 'module';
 import $ from './jquery';
 import Spaces from './spacesLib';
-import {L, tick} from './utils';
+import { tick } from './utils';
+import { L } from './core/l10n';
 
 var tpl = {
 	deleted: function (data) {
-		return '<div class="content-item3 wbg content-bl__sep js-violators_item_revert">' + data.text + 
+		// l10n context="undo-action"
+		return '<div class="content-item3 wbg content-bl__sep js-violators_item_revert">' + data.text + ' ' +
 			'<a href="#" data-action="' + data.action + '" data-revert="1" class="js-action_link">' + L('Отменить') + '</a>' + 
 		'</div>';
 	},
@@ -79,7 +81,7 @@ module.on("componentpage", function (e) {
 				} else {
 					parent.children().wrapAll(tpl.wrapper());
 					parent.append(tpl.deleted({
-						text:		e.linkAction == 'violator_skip' ? L('Нарушитель скрыт. ') : L('Нарушитель вернут в список. '),
+						text:		e.linkAction == 'violator_skip' ? L('Нарушитель скрыт.') : L('Нарушитель вернут в список.'),
 						action:		e.linkAction == 'violator_skip' ? 'violator_unskip' : 'violator_skip',
 					}));
 					parent.addClass('js-deleted');
@@ -138,4 +140,3 @@ module.on("componentpage", function (e) {
 		});
 	});
 });
-

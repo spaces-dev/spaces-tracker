@@ -1,7 +1,8 @@
 import module from 'module';
 import {Spaces, Url} from '../spacesLib';
 import $ from '../jquery';
-import {debounce, L, numeral, tick} from '../utils';
+import { debounce, tick } from '../utils';
+import { L, plural } from '../core/l10n';
 import '../select_item';
 import { createDataSelector } from '../utils/dom';
 import { scrollIntoViewIfNotVisible } from '../utils/scroll';
@@ -9,7 +10,9 @@ import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 const tpl = {
 	editLinkLabel({ selectedCatsCount, offersCount }) {
 		return `
+			<!-- l10n-set context="file-category-action" -->
 			${selectedCatsCount > 0 ? L('Изменить') : L('Добавить')}
+			<!-- l10n-reset -->
 			${offersCount > 0 ? `(<span class="red b">${offersCount}</span>)` : ``}
 		`;
 	}
@@ -90,7 +93,7 @@ function initModule(parent) {
 		if (!checkForConflicts()) {
 			e.preventDefault();
 			const orientationName = this.parentNode.textContent.trim();
-			setError(L('Одна или несколько категорий не соответствуют категории "{0}"', orientationName));
+			setError(L('Одна или несколько категорий не соответствуют категории «{orientation}»', { orientation: orientationName }));
 			return;
 		}
 
@@ -121,15 +124,19 @@ function initModule(parent) {
 
 		const selectedCount = parent.find('.js-xxx_cat_item[data-checked]').length + (isChecked ? 1 : -1);
 		if (isChecked && selectedCount > maxCategoriesCount) {
-			Spaces.view.setInputError(checkbox, L('Нельзя выбрать более {0}',
-				numeral(maxCategoriesCount, [L('$n категории'), L('$n категорий'), L('$n категорий')])));
+			Spaces.view.setInputError(checkbox, plural(maxCategoriesCount, {
+				one: 'Нельзя выбрать более # категории',
+				other: 'Нельзя выбрать более # категорий'
+			}));
 			e.preventDefault();
 			return;
 		}
 
 		if (isChecked && parent.data('fileId') && selectedCount < minCategoriesCount) {
-			Spaces.view.setInputError(checkbox, L('Нельзя выбрать менее {0}',
-				numeral(minCategoriesCount, [L('$n категории'), L('$n категорий'), L('$n категорий')])));
+			Spaces.view.setInputError(checkbox, plural(minCategoriesCount, {
+				one: 'Нельзя выбрать менее # категории',
+				other: 'Нельзя выбрать менее # категорий'
+			}));
 			e.preventDefault();
 			return;
 		}
@@ -277,8 +284,10 @@ function initModule(parent) {
 		let error = false;
 		if (checkbox.dataset.orientsHide) {
 			const disallowedOrientations = JSON.parse(checkbox.dataset.orientsHide);
-			if (disallowedOrientations.includes(selectedOrientation))
-				error = L('Недоступна для ориентации "{0}"', selectedOrientationName);
+			if (disallowedOrientations.includes(selectedOrientation)) {
+				// l10n context="category-orientation-error"
+				error = L('Недоступна для ориентации «{orientation}»', { orientation: selectedOrientationName });
+			}
 		}
 		return error;
 	}

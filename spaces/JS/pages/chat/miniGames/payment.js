@@ -1,4 +1,4 @@
-import { L } from "../../../utils";
+import { L } from "../../../core/l10n";
 import { Url } from "../../../spacesLib";
 
 const tpl = {

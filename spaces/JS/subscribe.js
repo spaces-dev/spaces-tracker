@@ -1,7 +1,7 @@
 import $ from './jquery';
 import {Spaces, Codes} from './spacesLib';
 import notifications from './notifications';
-import {L} from './utils';
+import { L } from './core/l10n';
 
 var $body = $('body'),
 	modes = {
@@ -35,7 +35,7 @@ $body.on('click', '.js-friend_request', function (e) {
 	
 	if (message.length > 100){
 		message_textarea.addClass('text-input_error');
-		message_error.addClass(L('pad_t_a')).text(L('Длина сообщения не должна превышать 100 символов.'));
+		message_error.addClass('pad_t_a').text(L('Длина сообщения не должна превышать 100 символов.'));
 	} else {
 		Spaces.api("friends.offer", {user: user, Contact: contact, message: message, CK: null}, function (res) {
 		if (res.code == Codes.COMMON.SUCCESS){

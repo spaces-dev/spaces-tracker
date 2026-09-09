@@ -1,7 +1,7 @@
 import module from 'module';
 import $ from './jquery';
-import {Spaces, Url, Codes} from './spacesLib';
-import {L} from './utils';
+import { Spaces, Url, Codes } from './spacesLib';
+import { L } from './core/l10n';
 
 var classes = {
 	linkClicked: 'js-link_clicked',

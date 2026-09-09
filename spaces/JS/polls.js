@@ -6,7 +6,8 @@ import page_loader from './ajaxify';
 import {HistoryManager} from './ajaxify';
 
 import './form_tools';
-import {tick, L, numeral} from './utils';
+import { tick } from './utils';
+import { L, plural } from './core/l10n';
 import { closeAllPoppers } from './widgets/popper';
 
 let form, params, poll_id, menu_opened, flag = false;
@@ -44,8 +45,8 @@ function init() {
 		new_variant_input
 			.val('')
 			.attr("name", 'variant' + (new_variant_id - 1))
-			.attr("aria-label", L("Вариант ответа #{0}", new_variant_id))
-			.attr("placeholder", L("Вариант ответа #{0}", new_variant_id));
+			.attr('aria-label', L('Вариант ответа #{number}', { number: new_variant_id }))
+			.attr('placeholder', L('Вариант ответа #{number}', { number: new_variant_id }));
 		variants.append(new_variant);
 		
 		Spaces.view.setInputError(new_variant_input, false);
@@ -105,8 +106,10 @@ function init() {
 		
 		if (valid_variants < params.min) {
 			let fields = $(not_valid.slice(0, params.min - valid_variants));
-			Spaces.view.setInputError(fields, L("Необходимо заполнить не менее {0}.",
-				numeral(params.min, [L("$n варианта"), L("$n вариантов"), L("$n вариантов")])));
+			Spaces.view.setInputError(fields, plural(params.min, {
+				one: 'Необходимо заполнить не менее # варианта.',
+				other: 'Необходимо заполнить не менее # вариантов.'
+			}));
 			++errors;
 		}
 		

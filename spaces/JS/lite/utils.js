@@ -134,11 +134,6 @@ export function ge(query, p) {
 	return null;
 }
 
-export function numeral(num, titles) {
-	var cases = [2, 0, 1, 1, 1, 2];
-	return titles[(num % 100 > 4 && num % 100 < 20 ? 2 : cases[Math.min(num % 10, 5)])].replace(/\$n/g, num);
-}
-
 export function extend() {
 	var target = arguments[0];
 	for (var i = 1; i < arguments.length; ++i) {
@@ -206,32 +201,6 @@ export function set_caret_pos(e, start, end) {
 		range.moveEnd('character', end - start);
 		range.select();
 	}
-}
-
-export function L(text, strings) {
-	var vars = strings;
-	var posOff = 0;
-	if (text && typeof text == "object" && typeof strings == "string") {
-		for (var k in text) {
-			if (text.hasOwnProperty(k) && k !== 'context' && k !== 'comment')
-				throw new Error("L(): неизвестный ключ меты: " + k);
-		}
-		text = strings;
-		vars = arguments[2];
-		posOff = 1;
-	}
-	if (vars && typeof vars == "object") {
-		return text.replace(/\{([\w\d-_]+)\}/gim, function (m, s) {
-			return vars[s] !== undefined ? vars[s] : m;
-		});
-	} else if (arguments.length > 1 + posOff) {
-		var str = arguments;
-		var base = 1 + posOff;
-		return text.replace(/\{(\d+)\}/gim, function (m, s) {
-			return +s < str.length - base ? str[+s + base] : m;
-		});
-	}
-	return text;
 }
 
 export function attr(el, name) {

@@ -5,7 +5,8 @@ import notifications from './notifications';
 import FileUploader from './files_uploader';
 import FilesMonitor from './files_monitor';
 import FilesUploader from './libs/FilesUploader';
-import {extend, numeral, L, html_unwrap, tick} from './utils';
+import { extend, html_unwrap, tick } from './utils';
+import { L, plural } from './core/l10n';
 
 import './form_controls';
 
@@ -146,7 +147,10 @@ function initUploader() {
 				state = STATE_COMPLETE;
 				
 				if (notifications && !notifications.isWindowActive()) {
-					let msg = success_uploaded > 1 ? L("Файлы успешно загружены") : L("Файл успешно загружен");
+					let msg = plural(success_uploaded, {
+						'=1': 'Файл успешно загружен',
+						other: 'Файлы успешно загружены'
+					});
 					notifications.showNewEvent(msg, {oneTab: true});
 				}
 				
@@ -537,12 +541,30 @@ function updateFormState() {
 	$('#upload_cancel_btn').toggleClass('disabled', state != STATE_UPLOADING);
 	
 	// Обновляем заголовок формы
-	let titles = {
-		[STATE_IDLE]:		[L('Выбран $n файл'), L('Выбрано $n файла'), L('Выбрано $n файлов')],
-		[STATE_UPLOADING]:	[L('Выгружаем $n файл'), L('Выгружаем $n файла'), L('Выгружаем $n файлов')],
-		[STATE_COMPLETE]:	[L('Файл загружен'), L('Файлы загружены'), L('Файлы загружены')]
-	};
-	$('#upload_header_text').text(numeral(selected_files, titles[state]));
+	let title;
+	switch (state) {
+		case STATE_IDLE:
+			title = plural(selected_files, {
+				one: 'Выбран # файл',
+				many: 'Выбрано # файлов',
+				other: 'Выбрано # файла'
+			});
+			break;
+		case STATE_UPLOADING:
+			title = plural(selected_files, {
+				one: 'Выгружаем # файл',
+				many: 'Выгружаем # файлов',
+				other: 'Выгружаем # файла'
+			});
+			break;
+		case STATE_COMPLETE:
+			title = plural(selected_files, {
+				'=1': 'Файл загружен',
+				other: 'Файлы загружены'
+			});
+			break;
+	}
+	$('#upload_header_text').text(title);
 }
 
 function serializeForm(file) {

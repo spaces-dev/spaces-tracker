@@ -1,6 +1,7 @@
 import cookie from './cookie';
 import {css2js} from './device';
-import {L, extend, ge, ce, insert_after, light_json} from './utils';
+import { extend, ge, ce, insert_after, light_json } from './utils';
+import { L } from './core/l10n';
 
 let api_req_n = 0;
 
@@ -245,13 +246,13 @@ let API_ERRORS = {
 	[Codes.COMMON.ERR_USER_IS_FROZEN]:				L("Пользователь удалён"),
 	[Codes.COMMON.ERR_USER_IS_BLOCKED]:				L("Пользователь заблокирован"),
 	[Codes.COMMON.ERR_FREQ_LIMITER]:				L("Слишком частая операция. Подождите немного и попробуйте снова."),
-	[Codes.COMMON.ERR_USER_NOT_FOUND]:				L("Обитатель не найден"),
+	[Codes.COMMON.ERR_USER_NOT_FOUND]:				L("Пользователь не найден"),
 	[Codes.COMMON.ERR_MESSAGE_TOO_LONG]:			L("Слишком длинное сообщение"),
 	[Codes.COMMON.ERR_FORBIDDEN]:					L("Доступ запрещён"),
 	[Codes.COMMON.ERR_UNKNOWN_ERROR_PLEASE_RETRY]:	L("Неизвестная ошибка, повторите"),
 	[Codes.COMMON.ERR_OFTEN_OPERATION]:				L('Слишком частая операция'),
-	[Codes.COMMON.ERR_USER_IN_YOUR_BLACKLIST]:		L("Обитатель находится в вашем чёрном списке"),
-	[Codes.COMMON.ERR_YOU_IN_USER_BLACKLIST]:		L("Вы находитесь в чёрном списке обитателя")
+	[Codes.COMMON.ERR_USER_IN_YOUR_BLACKLIST]:		L("Пользователь находится в вашем Чёрном списке"),
+	[Codes.COMMON.ERR_YOU_IN_USER_BLACKLIST]:		L("Вы находитесь в Чёрном списке пользователя")
 };
 
 let Spaces = {
@@ -336,11 +337,20 @@ let Spaces = {
 		if (res.error)
 		    return res.error;
 		switch (res.code) {
-			case Codes.AUTH.ERR_ACTIVATION_REQUIRED:
-				return L('Извините, вы не можете {0}, пока не {1}подтвердите свой аккаунт{2}.',
-						 data.action || L("это сделать"), '<a href="/registration/?Link_id=' + Spaces.params.link_id + '">', '</a>');
+			case Codes.AUTH.ERR_ACTIVATION_REQUIRED: {
+				const url = '/registration/?Link_id=' + Spaces.params.link_id;
+				const link = (content) => `<a href="${url}">${content}</a>`;
+				if (res.action) {
+					// l10n comment="{action}: готовый инфинитив действия с бэкенда."
+					return L('Извините, вы не можете {action}, пока не <link>подтвердите свой аккаунт</link>.', {
+						action: res.action,
+						link
+					});
+				}
+				return L('Извините, вы не можете это сделать, пока не <link>подтвердите свой аккаунт</link>.', { link });
+			}
 		}
-		return API_ERRORS[res.code] || (L('Неизвестная ошибка: {0}', res.code));
+		return API_ERRORS[res.code] || L('Неизвестная ошибка: {code}', { code: res.code });
 	},
 	showError: function (err) {
 		let last = ge('#common_error');
@@ -432,13 +442,14 @@ export function ajax(opts) {
 export function get_http_error(code) {
 	switch (code) {
 		case 501: case 502: case 503: case 504: case 403: case 404:
-			return L('Внимание! На {0} в данный момент проводятся технические работы!', Spaces.params.Domain);
+			return L('Внимание! На {domain} в данный момент проводятся технические работы!', { domain: Spaces.params.Domain });
 		case 500: case 525:
 			return L('При выполнении вашего запроса, произошла внутренняя ошибка сервера! Подождите немного и попробуйте снова.');
 		case 0:
-			return L("Ошибка подключения. Проверьте ваше подключение к интернету. ");
+			return L('Ошибка подключения. Проверьте ваше подключение к интернету.');
 		default:
-			return L('При выполнении вашего запроса произошла ошибка HTTP {0}. Подождите немного и попробуйте снова.', code);
+			return L('При выполнении вашего запроса произошла ошибка HTTP {code}. ' +
+				'Подождите немного и попробуйте снова.', { code });
 	}
 }
 

@@ -2,7 +2,8 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import './draggable';
-import {L, pad} from './utils';
+import { pad } from './utils';
+import { L } from './core/l10n';
 
 import "CommentWidget/ColorPicker.css";
 
@@ -53,6 +54,7 @@ var tpl = {
 			
 			'<div class="colorpicker-row">' + 
 				'<div class="btn-main perimeter-border js-cc_paste">' + 
+					// l10n context="color-picker-action"
 					L('Вставить') + 
 				'</div>' + 
 			'</div>';
@@ -259,4 +261,3 @@ function hsvToRgb(h, s, v) {
 	}
 	return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
-

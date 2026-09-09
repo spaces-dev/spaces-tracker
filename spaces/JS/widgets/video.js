@@ -1,7 +1,8 @@
 import module from 'module';
 import require from 'require';
 import { executeScripts } from 'loader';
-import { L, tick } from '../utils';
+import { tick } from '../utils';
+import { L } from '../core/l10n';
 import $ from '../jquery';
 import * as pushstream from '../core/lp';
 import Device from '../device';
@@ -38,7 +39,10 @@ class VideoPlayer {
 					if (data.resolution) {
 						player.updateConverterStatus(data.resolution, data.size, data.duration, !data.not_avail);
 					} else if (!this.hasConverted()) {
-						player.converterError(L('Ошибка конвертирования видео. {0}', Spaces.getSupportMessage()));
+						// l10n comment="{support}: готовое предложение со ссылкой на службу поддержки."
+						player.converterError(
+							L('Ошибка конвертирования видео. {support}', { support: Spaces.getSupportMessage() })
+						);
 					}
 					
 					if (data.message)
@@ -395,7 +399,7 @@ class VideoPlayer {
 							this.play();
 						});
 					}
-					play_btn.text(L('Воспроизвести в {0}', available_quality + "p"));
+					play_btn.text(L('Воспроизвести в {quality}', { quality: available_quality + 'p' }));
 				} else {
 					this.hideConverterStatus();
 				}

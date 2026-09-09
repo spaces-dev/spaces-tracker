@@ -1,8 +1,10 @@
-import {L, each, find_parents, ge, extend, ce, insert_after, addClass, removeClass, tick, hasClass, html_unwrap, base_domain, toggleClass, set_caret_pos} from './utils';
+import { each, find_parents, ge, extend, ce, insert_after, addClass, removeClass, tick, hasClass, html_unwrap, base_domain, toggleClass, set_caret_pos } from './utils';
+import { L } from './core/l10n';
 
 var TOGGLE_TOOLBAR_ICO = ["ico/more.png", "ico/more_black.png"];
 var ICO_SPINNER = ICONS_BASEURL + 'spinner2.gif';
 var ITEM_WIDTH = 21;
+// l10n-set context="editor-toolbar"
 var TOOLBAR_ITEMS = {
 	quote:	["mail/quote.png",			L("Вставить цитату")],
 	url:	["mail/link.png",			L("Вставить ссылку")],
@@ -15,6 +17,7 @@ var TOOLBAR_ITEMS = {
 	fon:	["mail/background.png",		L("Фон текста")],
 	more:	[TOGGLE_TOOLBAR_ICO[0],		L("Ещё")]
 };
+// l10n-reset
 
 var COLORS = [
 	"90CAF9 80DEEA A5D6A7 FFF59D FFCC80 FFAB91 CE93D8".split(" "),

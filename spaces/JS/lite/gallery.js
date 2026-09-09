@@ -3,7 +3,8 @@ import Device from './device';
 import {Events} from './events';
 import {moveable} from './touch';
 import {canPlayMP4} from './video';
-import {L, base_domain, each, ge, tick, addClass, ce, toggleClass, hasClass, removeClass, light_json, dattr, nsign, extend, insert_before, insert_after} from './utils';
+import { base_domain, each, ge, tick, addClass, ce, toggleClass, hasClass, removeClass, light_json, dattr, nsign, extend, insert_before, insert_after } from './utils';
+import { L, select } from './core/l10n';
 
 import "Files/Gallery.css";
 
@@ -121,19 +122,20 @@ let tpl = {
 		'</div>';
 		return html;
 	},
-	adult: function (what) {
+	adult: function (content) {
+		const label = content == 'video' ? L('Показать видео') : L('Показать фото');
 		let html = 
 			'<div class="gallery__error_inner">' + 
 				'<div class="gallery__error-msg">' + 
-					L('Внимание! Эти материалы только для взрослых! ') + 
-					L('Нажимая &quot;Показать {0}&quot;, вы подтверждаете, ', what) + 
-					L('что вам 18 или более лет.')  + 
+					L('Внимание! Эти материалы только для взрослых! ' +
+						'Нажимая «{content, select, video {Показать видео} other {Показать фото}}», ' +
+						'вы подтверждаете, что вам 18 или более лет.', { content }) +
 				'</div>' + 
 				'<div class="gallery_error-side prev"></div>' + 
 				'<div class="gallery_error-side next"></div>' + 
 				'<a href="#g-adult-show" class="gallery__button" id="gallery_adult_show">' + 
 					'<span class="ico_gallery ico_gallery_eye m"></span> ' + 
-					'<span class="m">' + L('Показать  {0}', what) + '</span>' + 
+					'<span class="m">' + label + '</span>' +
 				'</a>' + 
 			'</div>';
 		return html;
@@ -163,12 +165,12 @@ let tpl = {
 		return html;
 	},
 	collectionsMotivator: function (data) {
-		let html = 
-			'<div class="t_center">' + 
-				'Сохраните этот файл в свою коллекцию. Нажмите кнопку ' + 
-				'<a href="' + data.link + '">' + 
-					'<img class="m" alt="" src="' + ICONS_BASEURL + 'ico/plus_white.png" />' + 
-				'</a>' + 
+		let html =
+			'<div class="t_center">' +
+				// l10n comment="{button}: кнопка только с иконкой добавления в коллекцию, без текста."
+				L('Сохраните этот файл в свою коллекцию. Нажмите кнопку {button}', {
+					button: `<a href="${data.link}"><img class="m" alt="" src="${ICONS_BASEURL}ico/plus_white.png" /></a>`
+				}) +
 			'</div>';
 		return html;
 	},
@@ -176,11 +178,10 @@ let tpl = {
 		let html = 
 			'<div class="t_center">' + 
 				'<div class="m">' + L('Извините, эта функция доступна только зарегистрированным пользователям.') + '</div>' + 
-				'<span class="m">' + L('Узнайте все преимущества') + '</span> ' + 
-				'<a href="/registration/" class="inl-link link-blue">' + 
-					'<span class="m">' + L('регистрации') + '</span> ' + 
-					'<img src="' + ICONS_BASEURL + 'ico/arr3_r_blue.png" alt="" class="m" />' + 
-				'</a>' + 
+				L('Узнайте все преимущества <link>регистрации {icon}</link>', {
+					link: (content) => `<a href="/registration/" class="inl-link link-blue">${content}</a>`,
+					icon: `<img src="${ICONS_BASEURL}ico/arr3_r_blue.png" alt="" class="ico_m" />`
+				}) +
 			'</div>';
 		return html;
 	}
@@ -317,14 +318,26 @@ function openGallery(e) {
 		'.gallery__link': function (e) {
 			if (hasClass(this, 'disabled')) {
 				let link = this.getElementsByTagName('a')[0],
-					what = current.content == 'video' ? L("видео") : L("фото"),
+					content = current.content,
 					auth = Spaces.params.nid;
 				
 				let errors = {
-					g_comments_link: L('У этого {0} нет комментариев.', what),
-					g_collections_link: auth ? L("Это {0} нельзя сохранять в коллекции.", what) : tpl.onlyAuthMotivator(),
-					like_up_gallery: auth ? L("Это {0} нельзя лайкать.", what) : tpl.onlyAuthMotivator(),
-					like_down_gallery: auth ? L("Это {0} нельзя дислайкать.", what) : tpl.onlyAuthMotivator()
+					g_comments_link: select(content, {
+						video: 'У этого видео нет комментариев.',
+						other: 'У этого фото нет комментариев.'
+					}),
+					g_collections_link: auth ? select(content, {
+						video: 'Это видео нельзя сохранять в коллекции.',
+						other: 'Это фото нельзя сохранять в коллекции.'
+					}) : tpl.onlyAuthMotivator(),
+					like_up_gallery: auth ? select(content, {
+						video: 'Это видео нельзя лайкать.',
+						other: 'Это фото нельзя лайкать.'
+					}) : tpl.onlyAuthMotivator(),
+					like_down_gallery: auth ? select(content, {
+						video: 'Это видео нельзя дислайкать.',
+						other: 'Это фото нельзя дислайкать.'
+					}) : tpl.onlyAuthMotivator()
 				};
 				if (errors[link.id])
 					showNotif(errors[link.id]);
@@ -513,7 +526,8 @@ function selectItem(gid, id) {
 	let total = group_items.length;
 	
 	// Выводим заголовок
-	ge('#gallery_cnt').innerHTML = L('{0} из {1}', offset + 1, total);
+	// l10n context="gallery-position"
+	ge('#gallery_cnt').innerHTML = L('{current} из {total}', { current: offset + 1, total });
 	
 	toggleClass(gallery, 'one_image', total < 2);
 	
@@ -776,7 +790,7 @@ function showNotif(text, callback) {
 }
 
 function showAdult() {
-	showError(tpl.adult(current.content == 'video' ? L('видео') : L('фото')));
+	showError(tpl.adult(current.content));
 	
 	// Аццкое костылище, чтобы по клику по тексту можно было перелистывать
 	Events.on(ge('.gallery_error-side', gallery), 'click', function () {

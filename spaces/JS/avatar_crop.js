@@ -3,7 +3,8 @@ import Device from './device';
 import Spaces from './spacesLib';
 import './anim';
 import { startDraggable, stopDraggable } from './core/touch/draggable';
-import {L, pad, tick} from './utils';
+import { pad, tick } from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers } from './widgets/popper';
 
 var crop_window,

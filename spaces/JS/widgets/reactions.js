@@ -4,7 +4,8 @@ import Spaces from "../spacesLib";
 import { ICONS_BASEURL } from "../core/env";
 import * as pushstream from '../core/lp';
 import { isVisibleOnScreen } from '../utils/dom';
-import { numeral, L, TRANSPARENT_PIXEL } from "../utils";
+import { TRANSPARENT_PIXEL } from "../utils";
+import { L, plural } from "../core/l10n";
 import { closeAllPoppers } from './popper';
 import { confetti } from '../effects/confetti';
 import { simplePagination } from "./fragments/simplePagination";
@@ -131,7 +132,11 @@ const tpl = {
 	},
 
 	usersList({ users, count, reactions, emotionId, pagination }) {
-		const reactionsCountText = numeral(count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]);
+		const reactionsCountText = plural(count, {
+			one: '# реакция',
+			many: '# реакций',
+			other: '# реакции'
+		});
 		return `
 			<a href="#" class="list-link js-popper_close">
 				<span class="ico ico_dating_black"></span>
@@ -229,7 +234,7 @@ function initUsersMenu(objectType, objectId) {
 
 		const all = {
 			emotion: 0,
-			label: L("Все"),
+			label: L("Все"), // l10n context="reaction-filter"
 			count: 0,
 		};
 

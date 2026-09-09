@@ -5,7 +5,7 @@ import flip from '@popperjs/core/lib/modifiers/flip';
 import preventOverflow from '@popperjs/core/lib/modifiers/preventOverflow';
 import arrow from '@popperjs/core/lib/modifiers/arrow';
 import { debounce } from 'throttle-debounce';
-import { L } from "../utils";
+import { L } from "../core/l10n";
 
 let closePrevPopper;
 
@@ -62,7 +62,7 @@ function initStickerPopover(el) {
 					<span class="ico_xlarge ico_xlarge_magic"></span>
 				</div>
 				<div class="text-list__item">
-					${L("Этот стикер создал {0}!", el.dataset.userName)}
+					${L('Этот стикер создал {name}!', { name: el.dataset.userName })}
 				</div>
 				<div class="text-list__item">
 					${L("Хочешь такой же?")}

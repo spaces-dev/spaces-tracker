@@ -1,6 +1,7 @@
 import { startRecording, stopRecording } from "../audio/recorder";
 import { AudioWaveformWidget } from "../audio/visualisation";
-import { L, formatDuration, tick } from '../utils';
+import { formatDuration, tick } from '../utils';
+import { L } from '../core/l10n';
 import 'howler/src/howler.core.js';
 import { startDraggable, stopDraggable } from '../core/touch/draggable';
 import { IPCSingleton } from '../core/ipc';
@@ -27,6 +28,7 @@ const tpl = {
 				</li>
 				<li>
 					${L('Перейдите в:')}
+					<!-- l10n context="android-settings-item" comment="Название должно совпадать с пунктом в системных настройках Android." -->
 					<i>${L('Приложения → Все приложения')}</i>.
 				</li>
 				<li>
@@ -34,6 +36,7 @@ const tpl = {
 				</li>
 				<li>
 					${L('Перейдите в:')}
+					<!-- l10n context="android-settings-item" comment="Название должно совпадать с пунктом в системных настройках Android." -->
 					<i>${L('Разрешения')}</i>.
 				</li>
 				<li>
@@ -73,8 +76,11 @@ const tpl = {
 		}
 
 		return `
-			${L("Ошибка доступа к микрофону: {0}", error)}<br />
-			${L("Нажмите на {0} или {1} в адресной строке браузера и разрешите доступ к микрофону.", lockIcon, lockIcon2)}
+			${L('Ошибка доступа к микрофону: {error}', { error })}<br />
+			${L('Нажмите на {lock_icon} или {settings_icon} в адресной строке браузера и разрешите доступ к микрофону.', {
+				lock_icon: lockIcon,
+				settings_icon: lockIcon2
+			})}
 
 			<a href="#" onclick="
 				document.getElementById('microphone-setup-help').classList.remove('hide');
@@ -87,7 +93,9 @@ const tpl = {
 			<div id="microphone-setup-help" class="hide">
 				<br />
 				${systemHelp}
-				${L("Если проблему не удалось решить, обратитесь в {0}службу поддержки{1}.", "<a href='/soo/help/'>", "</a>")}
+				${L('Если проблему не удалось решить, обратитесь в <link>службу поддержки</link>.', {
+					link: (content) => `<a href="/soo/help/">${content}</a>`
+				})}
 			</div>
 		`;
 	}
@@ -290,7 +298,7 @@ function initVoicePlayer() {
 		html5: true,
 		onplayerror(error) {
 			console.error(`[Howl]`, error);
-			Spaces.showError(L("Ошибка воспроизведения голосового сообщения: {0}", error));
+			Spaces.showError(L('Ошибка воспроизведения голосового сообщения: {error}', { error }));
 		},
 		onplay() {
 			setState('playing');

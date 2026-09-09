@@ -2,7 +2,8 @@ import module from 'module';
 import { closeAllPoppers, getPopperById } from '../widgets/popper';
 import { Spaces } from '../spacesLib';
 import $ from '../jquery';
-import { html_wrap, L } from '../utils';
+import { html_wrap } from '../utils';
+import { L } from '../core/l10n';
 import { simplePagination } from '../widgets/fragments/simplePagination';
 import { showToast } from '../widgets/toaster';
 

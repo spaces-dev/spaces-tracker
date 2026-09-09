@@ -1,6 +1,7 @@
 import {Events} from './events';
 import {moveable} from './touch';
-import {hasClass, ge, insert_after, ce, L, toggleClass, tick, each, find_parents} from './utils';
+import { hasClass, ge, insert_after, ce, toggleClass, tick, each, find_parents } from './utils';
+import { L } from './core/l10n';
 import {Sound} from './sound';
 import {Spaces, parse_query} from './core';
 

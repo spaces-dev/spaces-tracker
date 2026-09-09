@@ -1,6 +1,6 @@
 import module from 'module';
-import {Spaces, Url} from '../spacesLib';
-import {L} from '../utils';
+import { Spaces, Url } from '../spacesLib';
+import { L } from '../core/l10n';
 import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
 module.on('component', () => {

@@ -1,6 +1,6 @@
 import module from 'module';
 import $ from './jquery';
-import { L } from './utils';
+import { L } from './core/l10n';
 
 module.on("componentpage", () => {
 	let checkAllList = document.querySelectorAll('.js-checkall');

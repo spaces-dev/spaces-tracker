@@ -5,7 +5,7 @@ import Spaces from './spacesLib';
 
 import './form_controls';
 import './search';
-import { L } from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers } from './widgets/popper';
 
 var MODE_REQUIRED	= 1, // Требовать указание этого
@@ -91,6 +91,7 @@ var tpl = {
 		
 		return `
 			<div class="pgn-wrapper js-geosel_pagenav">
+				<!-- l10n-set context="pagination" -->
 				<div class="pgn">
 					<table class="table__wrap pgn__table">
 						<tr>
@@ -104,7 +105,7 @@ var tpl = {
 							</td>
 							<td class="table__cell" style="cursor: pointer;">
 								<div class="js-geosel_pagenav_cnt pgn__counter pgn__range pgn__link_hover">
-									${L('{0} из {1}', data.page , data.total)}
+									${L('{current} из {total}', { current: data.page, total: data.total })}
 								</div>
 							</td>
 							<td class="table__cell table__cell_last" width="35%">
@@ -118,6 +119,7 @@ var tpl = {
 						</tr>
 					</table>
 				</div>
+				<!-- l10n-reset -->
 			</div>
 		`;
 	},
@@ -541,5 +543,3 @@ module.on("component", function () {
 		$(this).geoSelector();
 	});
 });
-
-

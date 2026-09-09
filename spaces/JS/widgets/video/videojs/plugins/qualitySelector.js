@@ -1,5 +1,5 @@
 import videojs from 'video.js';
-import { L } from '../../../../utils';
+import { L } from '../../../../core/l10n';
 import { findSelectedSource, silentPromise } from './utils';
 import cookie from '../../../../cookie';
 

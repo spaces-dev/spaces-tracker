@@ -12,7 +12,8 @@ import GALLERY from './gallery';
 import AttachSelector from './widgets/attach_selector';
 
 import './form_toolbar';
-import {L, html_wrap, ge, numeral, tick, throttle} from './utils';
+import { html_wrap, ge, tick, throttle } from './utils';
+import { L, plural } from './core/l10n';
 import { closeVoiceRecoder, destroyVoiceMessages, initVoiceMessages, startVoiceRecording, stopVoiceRecording } from './mail/voice-messages';
 import { canRecordVoiceMessages } from './audio/recorder';
 import { checkVoicePlayers } from './mail/voice-player';
@@ -81,6 +82,7 @@ var classes = {
 
 var tpl = {
 	contactUndo: function (data) {
+		// l10n context="undo-action"
 		return ' <a href="#" class="js-mail_contact_undo" data-action="' + data.action + '" ' + 
 					'data-ids="' + data.ids  + '" data-state="' + data.state + '">' + L('Отмена') + 
 					' <span class="ico ico_spinner js-spinner hide"></span></a>';
@@ -342,7 +344,10 @@ var mailCore = {
 
 				if (code == Codes.COMMON.ERR_NEED_CAPTCHA || code == Codes.COMMON.ERR_WRONG_CAPTCHA_CODE) {
 					var html = '<div style="padding-left: 5px; padding-top: 5px"><img src="' + res.captcha_url + '" /></div>' +
-						'<div class="stnd_padd" style="font-size:small;">Введите код: <input type="text" name="captcha_code" size="4" value="" /></div>';
+						'<div class="stnd_padd" style="font-size:small;">' +
+							L('Введите код:') + ' ' +
+							'<input type="text" name="captcha_code" size="4" value="" />' +
+						'</div>';
 					$("#captcha").html(html);
 				}
 			} else {
@@ -565,11 +570,13 @@ var mailCore = {
 				var msg;
 				mailCore.clearUndo();
 				
-				if (contactsLength > 1) {
-					msg = garbage ? L('Контакты перенесены в Корзину.') : L('Контакты восстановлены из Корзины.');
-				} else {
-					msg = garbage ? L('Контакт перенесён в Корзину.') : L('Контакт восстановлен из Корзины.');
-				}
+				msg = garbage ? plural(contactsLength, {
+					'=1': 'Контакт перенесён в Корзину.',
+					other: 'Контакты перенесены в Корзину.'
+				}) : plural(contactsLength, {
+					'=1': 'Контакт восстановлен из Корзины.',
+					other: 'Контакты восстановлены из Корзины.'
+				});
 				
 				if (!data.undo)
 					msg += tpl.contactUndo({state: garbage, action: 'swap', ids: data.contacts.join(',')});
@@ -633,11 +640,13 @@ var mailCore = {
 				var msg;
 				mailCore.clearUndo();
 				
-				if (contactsLength > 1) {
-					msg = archive ? L('Контакты перенесены в Архив.') : L('Контакты восстановлены из Архива.');
-				} else {
-					msg = archive ? L('Контакт перенесён в Архив.') : L('Контакт восстановлен из Архива.');
-				}
+				msg = archive ? plural(contactsLength, {
+					'=1': 'Контакт перенесён в Архив.',
+					other: 'Контакты перенесены в Архив.'
+				}) : plural(contactsLength, {
+					'=1': 'Контакт восстановлен из Архива.',
+					other: 'Контакты восстановлены из Архива.'
+				});
 				
 				if (!data.undo)
 					msg += tpl.contactUndo({state: archive, action: 'archive', ids: data.contacts.join(',')});
@@ -700,7 +709,10 @@ var mailCore = {
 				var msg;
 				mailCore.clearUndo();
 				if (!data.undo)
-					msg = contact_length > 1 ? L('Контакты удалены из Корзины') :  L('Контакт удалён из корзины');
+					msg = plural(contact_length, {
+						'=1': 'Контакт удалён из Корзины',
+						other: 'Контакты удалены из Корзины'
+					});
 				mailServices.resetSelection();
 				mailCore.callbackAction(msg, 'contact', data.contacts, response);
 			}
@@ -765,11 +777,13 @@ var mailCore = {
 				mailCore.clearUndo();
 				mailServices.resetSelection();
 				
-				if (contactsLength > 1) {
-					msg = spam ? L('E-mail контакты отправлены в Спам.') : ('E-mail контакты восстановлены из Спама.');
-				} else {
-					msg = spam ? L('E-mail контакт отправлен в Спам.') : ('E-mail контакт восстановлен из Спама.');
-				}
+				msg = spam ? plural(contactsLength, {
+					'=1': 'E-mail контакт отправлен в Спам.',
+					other: 'E-mail контакты отправлены в Спам.'
+				}) : plural(contactsLength, {
+					'=1': 'E-mail контакт восстановлен из Спама.',
+					other: 'E-mail контакты восстановлены из Спама.'
+				});
 				
 				if (!data.undo)
 					msg += tpl.contactUndo({state: spam, action: 'spam', ids: data.contacts.join(',')});
@@ -816,7 +830,7 @@ var mailCore = {
 				Spaces.showApiError(response);
 			} else {
 				mailCore.showMsg(!data.postponed ? L('Ваша корзина очищена') : L('Контакты будут очищены в течение нескольких минут'));
-				$('#contacts_wrapper').after('<div class="content-bl">Список контактов пуст.</div>');
+				$('#contacts_wrapper').after('<div class="content-bl">' + L('Список контактов пуст.') + '</div>');
 				$('#contacts_wrapper, #mail__contacts_buttons, #mail_pagination').remove();
 				$('#confirm_clear_garbage').hide();
 				mailCore.updateCounters(response.counters);
@@ -1012,15 +1026,25 @@ var mailCore = {
 						
 						var writing;
 						
+						// l10n-set comment="{users}: список без последнего пользователя; {last_user}: последний пользователь списка."
 						if (users.length > 0) {
-							writing = users.length > 1 ?
-								L('{0} и {1} печатают', users.slice(0, -1).join(', '), users.slice(-1).join('')) :
-								L('<strong>{0}</strong> печатает', users[0]);
+							writing = L('{count, plural, =1 {{user} печатает} ' +
+								'other {{users} и {last_user} печатают}}', {
+								count: users.length,
+								last_user: users[users.length - 1],
+								user: `<strong>${users[0]}</strong>`,
+								users: users.slice(0, -1).join(', ')
+							});
 						} else {
-							writing = voice.length > 1 ?
-								L('{0} и {1} записывают голосовое сообщение', voice.slice(0, -1).join(', '), voice.slice(-1).join('')) :
-								L('<strong>{0}</strong> записывает голосовое сообщение', voice[0]);
+							writing = L('{count, plural, =1 {{user} записывает голосовое сообщение} ' +
+								'other {{users} и {last_user} записывают голосовое сообщение}}', {
+								count: voice.length,
+								last_user: voice[voice.length - 1],
+								user: `<strong>${voice[0]}</strong>`,
+								users: voice.slice(0, -1).join(', ')
+							});
 						}
+						// l10n-reset
 
 						if (from_cl) {
 							place.typing.show().html('<span class="ico_mail ico_mail_write"></span> ' + writing + points[mailCore.typing.cnt]);
@@ -1247,10 +1271,16 @@ var mailCore = {
 			if (response.code != 0) {
 				Spaces.showApiError(response);
 			} else {
-				var msg = messagesLength > 1 ? L('Сообщения удалены из корзины') : L('Сообщение удалено из корзины');
+				var msg = plural(messagesLength, {
+					'=1': 'Сообщение удалено из корзины',
+					other: 'Сообщения удалены из корзины'
+				});
 				
 				if (for_all)
-					msg = messagesLength > 1 ? L('Сообщения удалены у вас и у собеседника') : L('Сообщение удалено у вас и у собеседника');
+					msg = plural(messagesLength, {
+						'=1': 'Сообщение удалено у вас и у собеседника',
+						other: 'Сообщения удалены у вас и у собеседника'
+					});
 				
 				closeAllPoppers();
 				mailCore.callbackAction(msg, 'message', data.messages, response);
@@ -1362,7 +1392,11 @@ var mailServices = {
 		MailPage.on('reactions:updateCounter', '.js-message', function (e) {
 			const message = $(this);
 			const link = message.find('.js-mail_message_reactions_users_link');
-			link.find('.js-text').html(numeral(e.detail.count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]));
+			link.find('.js-text').html(plural(e.detail.count, {
+				one: '# реакция',
+				many: '# реакций',
+				other: '# реакции'
+			}));
 			link.toggleClass('hide', e.detail.count == 0);
 		});
 
@@ -1870,6 +1904,7 @@ var mailServices = {
 				if (att_sel)
 					att_sel.lock(flag);
 				if (flag) {
+					// l10n context="message-send-status"
 					$('#mail-send-button').attr("disabled", "disabled").css("opacity", "0.4").find('.js-btn_val').text(L("Отправка"));
 					$textarea.attr("readonly", "readonly");
 				} else {
@@ -1885,8 +1920,9 @@ var mailServices = {
 			if (!message.length && !isVoiceRecording && !attaches.length > 0 && (!att_sel || !att_sel.getTmpCnt()) && !$('#mail_share').length) {
 				msg_error = L('Сообщение не должно быть пустым.');
 			} else if (message.length > $textarea.data('maxlength')) {
-				msg_error = L('Сообщение не должно быть больше {0} {1}.', max_length,
-					numeral(max_length, [L("символа"), L("символов"), L("символов")]));
+				msg_error = L('Сообщение не должно быть больше ' +
+					'{max_length, plural, one {# символа} other {# символов}}.',
+					{ max_length });
 			}
 			
 			var has_errors = false;
@@ -2821,7 +2857,12 @@ var mailTemplates = {
 
 		html +=
 			'>' +
-			'<a class="list-link list-link_single t_center" href="javascript: void();">+ ' + newMessagesCnt + " " + numeral(newMessagesCnt, [L('новое сообщение'), L('новых сообщения'), L('новых сообщений')]) + '</a>' +
+			'<a class="list-link list-link_single t_center" href="javascript: void();">' +
+				plural(newMessagesCnt, {
+					one: '+# новое сообщение',
+					many: '+# новых сообщений',
+					other: '+# новых сообщения'
+				}) + '</a>' +
 			'</div>';
 		return html;
 	}

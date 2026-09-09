@@ -5,7 +5,8 @@ import {Class} from './class';
 import * as pushstream from './core/lp';
 import Spaces from './spacesLib';
 import fixPageHeight from './min_height';
-import { L, extend, tick, updateUrl, html_wrap } from './utils';
+import { extend, tick, updateUrl, html_wrap } from './utils';
+import { L } from './core/l10n';
 
 export const EVENT_TYPE = {
 	MAIL:			0,
@@ -187,6 +188,7 @@ var Notifications = Class({
 		});
 	},
 	Static: {
+		// l10n-set context="site-section"
 		counters: {
 			[TOP_COUNTER_TYPE.JOURNAL]: {
 				title: L("Журнал"),
@@ -205,6 +207,7 @@ var Notifications = Class({
 				key: "mail"
 			},
 		},
+		// l10n-reset
 		_instance: null,
 		instance: function () {
 			if (!Notifications._instance)
@@ -753,4 +756,3 @@ function counterBlinker(el, states, next_timeout) {
 
 export {Notifications};
 export default new Notifications();
-

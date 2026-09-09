@@ -1,5 +1,6 @@
 import { loadScript } from 'loader';
-import { L, tick, windowReady } from './utils';
+import { tick, windowReady } from './utils';
+import { L } from './core/l10n';
 
 const GOOGLE_ANALYTICS		= SPACES_PARAMS.GA;
 const YANDEX_METRIC_ID		= SPACES_PARAMS.YM;

@@ -8,7 +8,8 @@ import AttachSelector from './widgets/attach_selector';
 
 import './form_tools';
 import './colorpicker';
-import {L, html_wrap, extend, tick, html_unwrap, base_domain, set_caret_pos} from './utils';
+import { html_wrap, extend, tick, html_unwrap, base_domain, set_caret_pos } from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers } from './widgets/popper';
 
 /*
@@ -23,6 +24,7 @@ var ITEMS_INLINE = {
 };
 var ITEM_WIDTH = 40;
 // Элементы тулбара
+// l10n-set context="editor-toolbar"
 var ITEMS = {
 	quote: {
 		iconInline: 'ico ico_quote',
@@ -105,6 +107,7 @@ var ITEMS = {
 		param: L('Введите имя сообщества')
 	}
 };
+// l10n-reset
 
 var TYPE2TAG = {
 	[Spaces.TYPES.FILE]: 'file',
@@ -122,7 +125,7 @@ var COLORS = [
 	"ECF0F1 CFD8DC B0BEC5 97A6B0 546E7A 44565E 3A474C".split(" ")
 ];
 var PL_NAMES = {
-	text: L("Текст"),
+	text: L("Текст"), // l10n context="syntax-language"
 	ini: '^',
 	'1c': '^',
 	json: '^',
@@ -223,7 +226,9 @@ var tpl = {
 	restoreTemp: function (data) {
 		var html =
 			'<div class="nl system-message system-message_service mb10 js-temp_text_parent">' +
-				L('Обнаружен черновик.') + ' <a href="#" class="js-temp_text" data-action="restore">' + L('Восстановить') + '</a>' +
+				L('Обнаружен черновик.') + ' <a href="#" class="js-temp_text" data-action="restore">' +
+					// l10n context="draft-action"
+					L('Восстановить') + '</a>' +
 				'<span class="ico ico_remove right pointer js-temp_text" data-action="delete"></span>' +
 			'</div>';
 		return html;
@@ -276,6 +281,7 @@ var tpl = {
 			'<div class="popper-spoiler spoiler_inject" id="ddspoiler_' + id + '"></div>' +
 			'<div class="js-bb_menu" style="position:relative;display:none"></div>';
 	},
+	// l10n-set context="editor-toolbar"
 	attachesMenu: function (data) {
 		const FILES_ITEMS = {
 			picture:	[L('Фото'), 'ico_mail ico_mail_picture'],
@@ -356,6 +362,7 @@ var tpl = {
 			'</div>';
 		return html;
 	}
+	// l10n-reset
 };
 
 function Toolbar(el, opts) {
@@ -566,7 +573,7 @@ function Toolbar(el, opts) {
 			} else if (type == 'close') {
 				showMenu();
 			} else if (type == 'vote') {
-				alert('Ничего нет!');
+				alert(L('Ничего нет!'));
 			} else {
 				showMenu(type);
 			}

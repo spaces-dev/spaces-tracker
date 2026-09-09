@@ -2,7 +2,7 @@ import module from 'module';
 import { closeAllPoppers, getPopperById } from '../widgets/popper';
 import { FILE_TYPE_TO_DIR_TYPE, Spaces, Url } from '../spacesLib';
 import $ from '../jquery';
-import { L } from '../utils';
+import { L } from '../core/l10n';
 import { simplePagination } from '../widgets/fragments/simplePagination';
 
 const PER_PAGE = 5;

@@ -1,6 +1,6 @@
 import module from 'module';
-import {Spaces, Url} from '../spacesLib';
-import {L} from '../utils';
+import { Spaces, Url } from '../spacesLib';
+import { L } from '../core/l10n';
 
 module.on('component', () => {
 	$('#main').on('click', '.js-legacy_tab', function (e) {

@@ -1,6 +1,7 @@
 import module from 'module';
 import $ from '../../jquery';
-import { L, updateUrl, updateUrlScheme } from '../../utils';
+import { updateUrl, updateUrlScheme } from '../../utils';
+import { L } from '../../core/l10n';
 import * as pushstream from '../../core/lp';
 import { AI_STATUS } from './common';
 

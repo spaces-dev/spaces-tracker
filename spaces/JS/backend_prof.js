@@ -2,20 +2,21 @@ import module from 'module';
 import cookie from './cookie';
 import Spaces from './spacesLib';
 import {ge, ce} from './utils';
+import { L } from './core/l10n';
 
 const TIME_COLORS = [
-	{ MIN: undefined,	MAX: 0.05,		BG: '#0dad59',	FG: 'white',	PSI: 'быстро',	GSC: 'быстро' },
-	{ MIN: 0.05,		MAX: 0.1,		BG: '#87a12c',	FG: 'white',	PSI: 'средне',	GSC: 'быстро' },
-	{ MIN: 0.1,			MAX: 0.25,		BG: '#faac00',	FG: 'black',	PSI: 'средне',	GSC: 'средне' },
-	{ MIN: 0.25,		MAX: 0.3,		BG: '#fa7a21',	FG: 'black',	PSI: 'медленно',GSC: 'средне' },
-	{ MIN: 0.3,			MAX: undefined,	BG: '#ed423d',	FG: 'white',	PSI: 'медленно',GSC: 'медленно' },
+	{ MIN: undefined,	MAX: 0.05,		BG: '#0dad59',	FG: 'white',	PSI: L('быстро'),	GSC: L('быстро') },
+	{ MIN: 0.05,		MAX: 0.1,		BG: '#87a12c',	FG: 'white',	PSI: L('средне'),	GSC: L('быстро') },
+	{ MIN: 0.1,			MAX: 0.25,		BG: '#faac00',	FG: 'black',	PSI: L('средне'),	GSC: L('средне') },
+	{ MIN: 0.25,		MAX: 0.3,		BG: '#fa7a21',	FG: 'black',	PSI: L('медленно'),GSC: L('средне') },
+	{ MIN: 0.3,			MAX: undefined,	BG: '#ed423d',	FG: 'white',	PSI: L('медленно'),GSC: L('медленно') },
 ];
 const METRICS = {
-	__TIME__:		{PRECISION: 3, HEADER: '⟨rt⟩',	TITLE: 'Среднее реальное время'},
-	__UTIME__:		{PRECISION: 2, HEADER: '⟨ut⟩',	TITLE: 'Среднее userland время'},
-	__CNT__:		{PRECISION: 0, HEADER: '#',		TITLE: 'Кол-во вызовов'},
-	__TIME__SUM__:	{PRECISION: 3, HEADER: 'Σ rt',	TITLE: 'Суммарное реальное время'},
-	__UTIME__SUM__: {PRECISION: 2, HEADER: 'Σ ut',	TITLE: 'Суммарное userland время'},
+	__TIME__:		{PRECISION: 3, HEADER: '⟨rt⟩',	TITLE: L('Среднее реальное время')},
+	__UTIME__:		{PRECISION: 2, HEADER: '⟨ut⟩',	TITLE: L('Среднее userland время')},
+	__CNT__:		{PRECISION: 0, HEADER: '#',		TITLE: L('Кол-во вызовов')},
+	__TIME__SUM__:	{PRECISION: 3, HEADER: 'Σ rt',	TITLE: L('Суммарное реальное время')},
+	__UTIME__SUM__: {PRECISION: 2, HEADER: 'Σ ut',	TITLE: L('Суммарное userland время')},
 };
 
 let state, url_hash_params, first_init = false;
@@ -159,12 +160,12 @@ function render_debug_widget( container ) {
 	container.innerHTML = '';
 	
 	const anchor2stats = ce( 'a',
-		{ href: '/admin/stat/prof/', innerText: 'Статистика профилирования' },
+		{ href: '/admin/stat/prof/', innerText: L('Статистика профилирования') },
 		{ float: 'left', margin: '5px', 'text-decoration': 'underline !important' }
 	);
 	
 	if ( state.mode === 'OFF' ) {
-		const switch_on_btn = ce( 'button', { innerHTML: 'Включить профилирование', id: 'webapp_prof_enable' }, { float: 'left', maring: '1px' } );
+		const switch_on_btn = ce( 'button', { innerHTML: L('Включить профилирование'), id: 'webapp_prof_enable' }, { float: 'left', maring: '1px' } );
 		switch_on_btn.addEventListener( 'click', () => {
 			
 			switch_on_btn.disabled = true;
@@ -195,13 +196,17 @@ function render_debug_widget( container ) {
 		
 		
 		if ( state.mode === 'LOADING' ) {
-			container.appendChild( ce( 'span', { className: 'grey', innerText: 'Загрузка...' }, { float: 'left', margin: '4px' } ) );
+			container.appendChild( ce( 'span', { className: 'grey', innerText: L('Загрузка...') }, { float: 'left', margin: '4px' } ) );
 		}
 		else if ( state.mode === 'ON' ) {
 			
 			if ( !Object.keys( state.prof_data ).length ) {
 				container.appendChild( ce( 'span',
-					{ className: 'grey', innerText: 'Нет данных', title: 'С момента последнего включения профилирования или показа профиля не собрано новых данных' },
+					{
+						className: 'grey',
+						innerText: L('Нет данных'),
+						title: L('С момента последнего включения профилирования или показа профиля не собрано новых данных')
+					},
 					{ float: 'left', margin: '4px' }
 				) );
 			} else {
@@ -209,11 +214,11 @@ function render_debug_widget( container ) {
 				const prof_node = container.querySelector( `div[data-node-name='root'` )
 					|| container.appendChild( ce( 'div', {}, { 'margin-top': '1px' }, { 'data-node-name': 'root' } ) );
 				
-				render_prof_node( prof_node, 'Профили', state.prof_data, '', 0 );
+				render_prof_node( prof_node, L('Профили'), state.prof_data, '', 0 );
 			}
 		}
 		
-		const switch_off_btn = ce( 'button', { innerHTML: 'Выключить профилирование' }, { float: 'left', maring: '1px' } );
+		const switch_off_btn = ce( 'button', { innerHTML: L('Выключить профилирование') }, { float: 'left', maring: '1px' } );
 		switch_off_btn.addEventListener( 'click', () => {
 			cookie.remove( "webapp_prof" );
 			state.mode = 'OFF';
@@ -223,15 +228,16 @@ function render_debug_widget( container ) {
 		container.appendChild( anchor2stats );
 		
 		const legend = container.appendChild( ce( 'span',
-			{ title: 'Легенда цветовой дифференциации времени выполнения запросов' },
+			{ title: L('Легенда цветовой дифференциации времени выполнения запросов') },
 			{ float: 'left', margin: '5px' },
 			{ 'data-type': 'legend' },
 		) );
-		for ( let tc of TIME_COLORS )
+		for ( let tc of TIME_COLORS ) {
+			const range = `${tc.MIN === undefined ? '0' : tc.MIN * 1000}${tc.MAX === undefined ? '+' : '-' + tc.MAX * 1000}`;
 			legend.appendChild(
 				ce( 'span',
 					{
-						innerText: `${tc.MIN === undefined ? '0' : tc.MIN * 1000}${tc.MAX === undefined ? '+' : '-' + tc.MAX * 1000}мс`,
+						innerText: L('{range} мс', { range }),
 						title: `PageSpeed Insights: ${tc.PSI}\nGoogle Search Console: ${tc.GSC}`,
 					}, {
 						backgroundColor: tc.BG,
@@ -242,6 +248,7 @@ function render_debug_widget( container ) {
 					}
 				)
 			);
+		}
 		
 		
 		container.appendChild( ce( 'br', {}, { clear: 'both' } ) );
@@ -422,13 +429,17 @@ function render_stats_page( container ) {
 	
 	const form = container.querySelector( 'form' ) || container.appendChild( ce( 'form' ) );
 	
-	Array.from(form.childNodes).filter( _ => _.nodeValue === 'Период с ' ).length || form.appendChild( document.createTextNode( 'Период с ' ) );
+	const period_from = L('Начало периода:') + ' ';
+	if (!Array.from(form.childNodes).some( _ => _.nodeValue === period_from ))
+		form.appendChild( document.createTextNode( period_from ) );
 	const from_date = form.querySelector( 'input#from-date' )
 		|| form.appendChild( ce( 'input', { id: 'from-date', type: 'date', value: state.from.split( 'T' )[ 0 ], required: true } ) );
 	const from_time = form.querySelector( 'input#from-time' )
 		|| form.appendChild( ce( 'input', { id: 'from-time', type: 'time', value: state.from.split( 'T' )[ 1 ], required: true, step: 300 } ) );
 	
-	Array.from(form.childNodes).filter( _ => _.nodeValue === ' по ' ).length || form.appendChild( document.createTextNode( ' по ' ) );
+	const period_to = ' ' + L('Конец периода:') + ' ';
+	if (!Array.from(form.childNodes).some( _ => _.nodeValue === period_to ))
+		form.appendChild( document.createTextNode( period_to ) );
 	const to_date = form.querySelector( 'input#to-date' )
 		|| form.appendChild( ce( 'input', { id: 'to-date', type: 'date', value: state.to.split( 'T' )[ 0 ], required: true } ) );
 	const to_time = form.querySelector( 'input#to-time' )
@@ -439,7 +450,7 @@ function render_stats_page( container ) {
 	const fetch_btn = ( form.querySelector( 'input[type=submit]' )
 		|| form.appendChild( ce( 'input',
 			{
-				type: 'submit', value: 'Получить',
+				type: 'submit', value: L('Получить'),
 				onclick: function ( ev ) {
 					state.prof_data = { __HCID__: 0 };
 					state.from = from_date.value + 'T' + from_time.value;
@@ -448,7 +459,7 @@ function render_stats_page( container ) {
 					url_hash_params.set( 'to', state.to );
 					url_hash_params.upd_location();
 					
-					fetch_data( state.prof_data, () => render_prof_node( root_prof_node, 'Чекпоинты', state.prof_data, '', 0, true ) );
+					fetch_data( state.prof_data, () => render_prof_node( root_prof_node, L('Чекпоинты'), state.prof_data, '', 0, true ) );
 					ev.preventDefault();
 					return false;
 				}
@@ -461,7 +472,7 @@ function render_stats_page( container ) {
 	if ( !root_prof_node.parentElement )
 		container.appendChild( root_prof_node );
 	
-	render_prof_node( root_prof_node, 'Чекпоинты', state.prof_data, '', 0 );
+	render_prof_node( root_prof_node, L('Чекпоинты'), state.prof_data, '', 0 );
 	
 	fetch_btn.dispatchEvent( new Event( 'click' ) );
 }

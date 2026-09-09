@@ -5,7 +5,8 @@ import * as pushstream from './core/lp';
 import {Spaces, Url, Codes} from './spacesLib';
 import {default as page_loader, HistoryManager} from './ajaxify';
 import notifications from './notifications';
-import {L, tick, numeral, ge} from './utils';
+import { tick, ge } from './utils';
+import { L, plural } from './core/l10n';
 import {copyToClipboard} from './core/clipboard';
 import { closeAllPoppers, getPopperById } from './widgets/popper';
 
@@ -58,7 +59,7 @@ let AttachSelector;
 */
 var tpl = {
 	copied: function () {
-		return '<span class="green">Скопировано!</span>';
+		return '<span class="green">' + L('Скопировано!') + '</span>';
 	},
 	captcha: function (data) { // TODO: получать с бекенда
 		if (data.url) {
@@ -324,7 +325,11 @@ var CommentsModule = function (wrap) {
 			wrap.on('reactions:updateCounter', '.js-comm', function (e) {
 				const comment = $(this);
 				const link = comment.find('.js-comm_reactions_users_link');
-				link.find('.js-text').html(numeral(e.detail.count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]));
+				link.find('.js-text').html(plural(e.detail.count, {
+					one: '# реакция',
+					many: '# реакций',
+					other: '# реакции'
+				}));
 				link.toggleClass('hide', e.detail.count == 0);
 			});
 
@@ -532,7 +537,7 @@ var CommentsModule = function (wrap) {
 					spinner.addClass('hide');
 				}, function (err) {
 					spinner.addClass('hide');
-					Spaces.showError(L("Ошибка получения комментариев:") + err);
+					Spaces.showError(L('Ошибка получения комментариев: {error}', { error: err }));
 				});
 			}).on('click', '.js-comments_unread-link', function (e) {
 				e.preventDefault();
@@ -608,8 +613,9 @@ var CommentsModule = function (wrap) {
 			if (!text.length && (!att_sel || (!att_sel.getTmpCnt()) && !attaches.length)) {
 				msg_error = L('Комментарий не должен быть пустым.');
 			} else if (text.length > max_length) {
-				msg_error = L('Комментарий не должен быть больше {0} {1}.', max_length,
-					numeral(max_length, [L("символа"), L("символов"), L("символов")]));
+				msg_error = L('Комментарий не должен быть больше ' +
+					'{max_length, plural, one {# символа} other {# символов}}.',
+					{ max_length });
 			}
 			Spaces.view.setInputError(current.textarea, msg_error);
 			
@@ -622,7 +628,8 @@ var CommentsModule = function (wrap) {
 					current.textarea.attr('readonly', 'readonly');
 					if (!submit_btn.data('old_name'))
 						submit_btn.data('old_name', submit_btn.val());
-					submit_btn.val('Отправка').attr('disabled', 'disabled').css({opacity: 0.5});
+					// l10n context="message-send-status"
+					submit_btn.val(L('Отправка')).attr('disabled', 'disabled').css({opacity: 0.5});
 				} else {
 					current.textarea.removeAttr('readonly');
 					submit_btn.val(submit_btn.data('old_name')).removeAttr('disabled').css({opacity: ''});
@@ -988,7 +995,12 @@ var CommentsModule = function (wrap) {
 				var curl = new Url(location.href);
 				self.updateUrlPage(curl, current.sort[root_id] ? 1 : self.getPage(root_id) + Math.ceil(current.unread[root_id] / current.onPage));
 				
-				var title = numeral(current.unread[root_id], [L('+$n новый комментарий'), L('+$n новых комментария'), L('+$n новых комментариев')]);
+				var unread_count = current.unread[root_id];
+				var title = plural(unread_count, {
+					one: '+# новый комментарий',
+					many: '+# новых комментариев',
+					other: '+# новых комментария'
+				});
 				unread_wrap.find('.js-comments_unread-link').prop("href", curl.url()).html(tpl.newSpinner() + title);
 				
 				if (notifications && !notifications.isWindowActive())
@@ -1413,7 +1425,7 @@ var CommentsModule = function (wrap) {
 						if (api_data.Pag)
 							current.pagination.html(res.pagination || '');
 					} else {
-						Spaces.showError(L("Ошибка получения комментариев:") + Spaces.apiError(res));
+						Spaces.showError(L('Ошибка получения комментариев: {error}', { error: Spaces.apiError(res) }));
 					}
 				}, {
 					retry: 10,
@@ -1658,7 +1670,12 @@ var CommentsModule = function (wrap) {
 			current.counter[root_id] = +cnt;
 			
 			if (root_id) {
-				var title = numeral(current.counter[root_id], [L('Скрыть $n ответ'), L('Скрыть $n ответа'), L('Скрыть $n ответов')]);
+				var replies_count = current.counter[root_id];
+				var title = plural(replies_count, {
+					one: 'Скрыть # ответ',
+					many: 'Скрыть # ответов',
+					other: 'Скрыть # ответа'
+				});
 				$('#c' + root_id)
 					.find('.js-sub_comments_collapse')
 					.toggleClass('hide', current.counter[root_id] <= 1)
@@ -1681,13 +1698,21 @@ var CommentsModule = function (wrap) {
 			if (current.lenta || root_id) {
 				var more_cnt = self.hasMore(root_id);
 				let comments_next = wrap.find(`.js-comments_more_${root_id}.js-comments_more_next`);
-				let next_title = numeral(more_cnt, [L('Ещё $n комментарий'), L('Ещё $n комментария'), L('Ещё $n комментариев')]);
+				let next_title = plural(more_cnt, {
+					one: 'Ещё # комментарий',
+					many: 'Ещё # комментариев',
+					other: 'Ещё # комментария'
+				});
 				comments_next.find('.js-comments_more-link').html(tpl.newSpinner() + next_title);
 				comments_next.toggleClass('hide', !more_cnt);
 				
 				let prev_cnt = self.hasPrev(root_id);
 				let comments_prev = wrap.find(`.js-comments_more_${root_id}.js-comments_more_prev`);
-				let prev_title = numeral(prev_cnt, [L('Ещё $n комментарий'), L('Ещё $n комментария'), L('Ещё $n комментариев')]);
+				let prev_title = plural(prev_cnt, {
+					one: 'Ещё # комментарий',
+					many: 'Ещё # комментариев',
+					other: 'Ещё # комментария'
+				});
 				comments_prev.find('.js-comments_more-link').html(tpl.newSpinner() + prev_title);
 				comments_prev.toggleClass('hide', !prev_cnt);
 			}

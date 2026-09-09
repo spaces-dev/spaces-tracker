@@ -4,7 +4,8 @@ import {Class, TSimpleEvents} from './class';
 import {Spaces, Url} from './spacesLib';
 import page_loader from './ajaxify';
 import FilesUploader from './libs/FilesUploader';
-import {L, html_wrap, extend, tick} from './utils';
+import { html_wrap, extend, tick } from './utils';
+import { L, plural } from './core/l10n';
 
 /*
 	#upload_file_{id}
@@ -181,7 +182,7 @@ var tpl = {
 			(full ? L('Выгружаем...') : '');
 	},
 	uploadSuccess: function (data) {
-		return '<b class="green"><span class="ico ico_ok_green"></span> ' + L('Файл успешно заргружен') + '</b>';
+		return '<b class="green"><span class="ico ico_ok_green"></span> ' + L('Файл успешно загружен') + '</b>';
 	},
 	uploadError: function (data) {
 		return '<span class="ico ico_alert_red"></span><small class="red break-word">' + data.message + '</small>';
@@ -319,7 +320,7 @@ var FileUploader = new (Class({
 				current_progress[0].style.width = pct + '%';
 			if (current_progress_pct[0])
 				current_progress_pct[0].innerHTML = Math.round(pct) + '%';
-			upload_view.label.val(L('Выгружаем... {0}%', Math.round(pct)));
+			upload_view.label.val(L('Выгружаем... {percent}%', { percent: Math.round(pct) }));
 		};
 		
 		var current_progress,
@@ -345,7 +346,7 @@ var FileUploader = new (Class({
 					self.removeTmpFile(file.id);
 			})
 			.on('limitError', function () {
-				self.error(L('Невозможно добавить файл, вы выбрали максимальное количество файлов. '));
+				self.error(L('Невозможно добавить файл, вы выбрали максимальное количество файлов.'));
 			})
 			.on('filesChunkStart', function () {
 				self._trigger('filesChunkStart', []);
@@ -456,7 +457,9 @@ var FileUploader = new (Class({
 						Spaces.redirect(res.redirect);
 					});
 				} else if (res.redirect_link && !res.data && params.multiple) {
-					var message = L('Файл заблокирован. <a href="{0}">Узнать подробности</a>', res.redirect_link);
+					var message = L('Файл заблокирован. <link>Узнать подробности</link>', {
+						link: (content) => `<a href="${res.redirect_link}">${content}</a>`
+					});
 					if (params.multiple)
 						self.setFileError(file.id, message);
 					else
@@ -510,24 +513,29 @@ var FileUploader = new (Class({
 				}
 			})
 			.on('extError', function (file) {
-				var error = L("Неподдерживаемый тип файла ({0}).", html_wrap(file.ext));
+				var error = L('Неподдерживаемый тип файла ({extension}).', { extension: html_wrap(file.ext) });
 				if (params.multiple)
 					self.addFileWithError(file, error);
 				else
 					self.error(error);
 			})
 			.on('sizeError', function (file) {
-				var error = L("Максимальный размер файла <b>{0}</b>", Spaces.getHumanSize(state_params.maxSize));
+				var error = L('Максимальный размер файла {size}', {
+					size: `<b>${Spaces.getHumanSize(state_params.maxSize)}</b>`
+				});
 				if (params.multiple)
 					self.addFileWithError(file, error);
 				else
 					self.error(error);
 			})
 			.on('notSelectedError', function () {
-				self.error(params.maxFiles > 1 ? L("Файл не выбран!") : L("Файлы не выбраны!"));
+				self.error(plural(params.maxFiles, {
+					'=1': 'Файл не выбран!',
+					other: 'Файлы не выбраны!'
+				}));
 			})
 			.on('error', function (file, code, message, response) {
-				var errmsg = message ? message : L("Неизвестная ошибка #{0}", code);
+				var errmsg = message ? message : L('Неизвестная ошибка #{code}', { code });
 				if (params.multiple)
 					self.setFileError(file.id, errmsg);
 				else

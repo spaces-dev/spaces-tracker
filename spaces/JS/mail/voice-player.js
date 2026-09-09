@@ -1,7 +1,8 @@
 import module from "module";
 import 'howler/src/howler.core.js';
 import { AudioWaveformWidget } from "../audio/visualisation";
-import { L, formatDuration } from "../utils";
+import { formatDuration } from "../utils";
+import { L } from "../core/l10n";
 import { startDraggable, stopDraggable } from '../core/touch/draggable';
 import { IPCSingleton } from "../core/ipc";
 import * as pushstream from '../core/lp';
@@ -197,7 +198,7 @@ function initializeAudio() {
 		rate: currentPlayer.playbackRate,
 		onplayerror(error) {
 			console.error(`[Howl]`, error);
-			showError(L("Ошибка воспроизведения голосового сообщения: {0}", error));
+			showError(L('Ошибка воспроизведения голосового сообщения: {error}', { error }));
 		},
 		onplay() {
 			setPlayerState('playing');
@@ -251,7 +252,9 @@ function showError(error) {
 	currentPlayer.view.errorMessage.classList.toggle('hide', !error);
 	if (error) {
 		currentPlayer.view.errorMessage.innerHTML = error + '<br />' +
-			L('Вы можете попробовать <a href="{0}">скачать голосовое сообщение</a>.', currentPlayer.ogg);
+			L('Вы можете попробовать <link>скачать голосовое сообщение</link>.', {
+				link: (content) => `<a href="${currentPlayer.ogg}">${content}</a>`
+			});
 	}
 }
 

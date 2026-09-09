@@ -1,5 +1,5 @@
 import videojs from 'video.js';
-import { L, numeral } from '../../../../utils';
+import { plural } from '../../../../core/l10n';
 
 const TAP_TIMEOUT = 450;
 
@@ -108,7 +108,12 @@ class TouchOverlay extends Component {
 	}
 
 	setRewindSeconds(count) {
-		const text = numeral(Math.abs(count), [L('$n секунда'), L('$n секунды'), L('$n секунд')]);
+		const seconds = Math.abs(count);
+		const text = plural(seconds, {
+			one: '# секунда',
+			many: '# секунд',
+			other: '# секунды'
+		});
 		this.prevButton.setAttribute('data-text', text);
 		this.nextButton.setAttribute('data-text', text);
 	}

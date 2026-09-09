@@ -1,6 +1,7 @@
 import $ from './jquery';
 import {each} from './utils';
-import {addClass, removeClass, hasClass, toggleClass, ge, L} from './utils';
+import { addClass, removeClass, hasClass, toggleClass, ge } from './utils';
+import { L } from './core/l10n';
 
 var Spoilers = {
 	/*

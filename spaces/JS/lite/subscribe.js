@@ -1,6 +1,7 @@
 import {Events} from './events';
 import {Spaces, Codes, node_data} from './core';
-import {ge, L, toggleClass, removeClass, insert_after, addClass, hasClass} from './utils';
+import { ge, toggleClass, removeClass, insert_after, addClass, hasClass } from './utils';
+import { L } from './core/l10n';
 
 let CLASS_ROW_WRAP = ['js-row', 'wrapper'];
 

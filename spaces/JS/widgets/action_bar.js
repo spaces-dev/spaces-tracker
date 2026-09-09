@@ -1,7 +1,7 @@
 import module from 'module';
 import $ from '../jquery';
 import Spaces from '../spacesLib';
-import {L} from '../utils';
+import { L } from '../core/l10n';
 import {copyToClipboard} from '../core/clipboard';
 import { closeAllPoppers } from './popper';
 

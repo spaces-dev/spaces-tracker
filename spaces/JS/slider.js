@@ -5,7 +5,8 @@ import Device from './device';
 import {Class, TSimpleEvents} from './class';
 import {Spaces, Url, Codes} from './spacesLib';
 import page_loader from './ajaxify';
-import {tick, L, extend} from './utils';
+import { tick, extend } from './utils';
+import { L } from './core/l10n';
 import * as sidebar from './widgets/swiper';
 import GALLERY from './gallery';
 
@@ -1098,7 +1099,7 @@ var LoadableCarousel = Class({
 		}, function (e) {
 			if (self.lc_opts.gallery) {
 				import("./gallery").then(({default: GALLERY}) => {
-					GALLERY.setGroupError(self._gallery_gid, e.message ? e.message : L("Ошибка загрузки. "), function () {
+					GALLERY.setGroupError(self._gallery_gid, e.message ? e.message : L('Ошибка загрузки.'), function () {
 						e.retry();
 					});
 				});

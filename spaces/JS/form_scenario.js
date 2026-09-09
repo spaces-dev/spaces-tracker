@@ -1,8 +1,8 @@
 import module from 'module';
 import $ from './jquery';
 import Spaces from './spacesLib';
-import {resetForm} from './form_controls';
-import {L} from './utils';
+import { resetForm } from './form_controls';
+import { L } from './core/l10n';
 
 /*
 	Gcoc Общее

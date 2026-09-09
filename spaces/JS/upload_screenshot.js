@@ -4,7 +4,8 @@ import {Spaces, Codes, Url} from './spacesLib';
 import FileUploader from './files_uploader';
 import FilesMonitor from './files_monitor';
 import FilesUploader from './libs/FilesUploader';
-import {L, tick} from './utils';
+import { tick } from './utils';
+import { L } from './core/l10n';
 
 import './form_controls';
 

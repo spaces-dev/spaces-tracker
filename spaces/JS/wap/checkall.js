@@ -1,4 +1,5 @@
-import {L, ge} from './utils';
+import { ge } from './utils';
+import { L } from './core/l10n';
 
 let global_trigger = true;
 

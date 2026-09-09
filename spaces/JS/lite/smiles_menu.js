@@ -1,5 +1,6 @@
 import SMILES_JSON from '../data/smiles.json';
-import {L, ge, ce, hasClass, removeClass, addClass, tick, extend} from './utils';
+import { ge, ce, hasClass, removeClass, addClass, tick, extend } from './utils';
+import { L, plural } from './core/l10n';
 import {Events} from "./events";
 import {Spaces} from "./core";
 
@@ -176,7 +177,11 @@ const tpl = {
 				<div class="t_center pad_t_a pad_b_a">
 					${L('Этот набор стикеров пока недоступен.')}<br />
 					<a class="inl_bl" style="padding: 5px" href="${cat.buyLink}">
-						${L('Купить за {0} монет', cat.buyPrice)}
+						${plural(cat.buyPrice, {
+							one: 'Купить за # монету',
+							many: 'Купить за # монет',
+							other: 'Купить за # монеты'
+						})}
 					</a>
 				</div>
 			`) : ''}

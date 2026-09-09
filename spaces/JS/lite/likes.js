@@ -1,7 +1,8 @@
 import require from 'require';
 import {Spaces, Codes} from './core';
 import {Events} from './events';
-import {ge, dattr, find_parents, addClass, removeClass, hasClass, L, toggleClass} from './utils';
+import { ge, dattr, find_parents, addClass, removeClass, hasClass, toggleClass } from './utils';
+import { L } from './core/l10n';
 
 /*
 	Лёгкие лайки для Lite версии

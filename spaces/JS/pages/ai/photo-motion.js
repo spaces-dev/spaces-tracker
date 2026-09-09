@@ -2,7 +2,8 @@ import module from 'module';
 import $ from '../../jquery';
 import * as pushstream from '../../core/lp';
 import Spaces, { Url } from '../../spacesLib';
-import { debounce, L } from '../../utils';
+import { debounce } from '../../utils';
+import { L } from '../../core/l10n';
 
 let pushstreamListeners = {};
 

@@ -4,7 +4,7 @@ import page_loader from '../ajaxify';
 import { getEffectiveTheme, onThemeChange } from '../core/theme';
 
 import '../libs/jquery.flot';
-import { L } from '../utils';
+import { L } from '../core/l10n';
 import { addEvent, removeEvent } from '../core/events';
 
 let charts = [];
@@ -117,7 +117,9 @@ function setupChart(el) {
 			mode: "time",
 			timeformat: "%b %d",
 			timeBase: "milliseconds",
+			// l10n-set context="chart-month-short"
 			monthNames: [L("Янв"), L("Фев"), L("Мар"), L("Апр"), L("Май"), L("Июн"), L("Июл"), L("Авг"), L("Сен"), L("Окт"), L("Ноя"), L("Дек")]
+			// l10n-reset
 		},
 		yaxis: {
 			minTickSize: 0.01,

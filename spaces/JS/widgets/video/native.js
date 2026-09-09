@@ -1,4 +1,4 @@
-import { L } from '../../utils';
+import { L } from '../../core/l10n';
 import $ from '../../jquery';
 import BaseDriver from './base';
 
@@ -15,6 +15,7 @@ const tpl = {
 		return `
 			<div class="video-player_quality_wrap">
 				<label>
+					<!-- l10n context="video-quality" -->
 					${L('Качество:')}
 					<select class="video-player_quality select">
 						${tpl.qualityOptions(sources, selected_index)}

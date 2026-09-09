@@ -1,6 +1,7 @@
 import module from 'module';
 import Spaces from '../spacesLib';
 import $ from '../jquery';
+import { L } from '../core/l10n';
 
 let current_sort = 'real_time';
 let current_order = 'DESC';
@@ -120,7 +121,7 @@ function renderCheckPoint(parent, checkpoint, depth, flat) {
 				<span style="${checkpoint.hcid < 0 ? 'color:red;' : ''}">
 					${checkpoint.name}
 				</span>
-				<b class="checkpoint-value long" title="${(+checkpoint.cnt_pct).toFixed(1)}% от кол-ва">${checkpoint.cnt}</b>
+				<b class="checkpoint-value long" title="${L('{percent}% от кол-ва', { percent: (+checkpoint.cnt_pct).toFixed(1) })}">${checkpoint.cnt}</b>
 				<b class="checkpoint-value long">${(+checkpoint.real_time).toFixed(4)} s</b>
 				<b class="checkpoint-value">${(+checkpoint.real_time_avg * 1000).toFixed(2)} ms</b>
 				<b class="checkpoint-value">${(+checkpoint.real_time_pct).toFixed(1)}%</b>

@@ -3,7 +3,8 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
-import {L, numeral, set_caret_pos, html_wrap} from './utils';
+import { set_caret_pos, html_wrap } from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers, getNearestPopper } from './widgets/popper';
 
 var AUTOSAVE_INTERVAL = 2000,
@@ -131,8 +132,9 @@ var FormToolsModule = {
 			if (v.match(/[ а-я]/i) && input.data('new')) {
 				error = L("В пароле допускаются только латинские буквы, цифры, дефисы и символ подчёркивания.");
 			} else if (v.length > input.data("maxlength")) {
-				error = L("Пароль слишком длинный. Максимальная длина пароля - {0}.",
-					numeral(input.data("maxlength"), [L('$n символ'), L('$n символа'), L('$n символов')]));
+				error = L('Пароль слишком длинный. Максимальная длина пароля - ' +
+					'{limit, plural, one {# символ} many {# символов} other {# символа}}.',
+					{ limit: input.data("maxlength") });
 			}
 
 			Spaces.view.setInputError(input.data('saveError', !!error), error);
@@ -293,8 +295,10 @@ var FormToolsModule = {
 			if (maxlength) {
 				var current_len = el[0].value.length;
 				if (current_len > maxlength) {
-					Spaces.view.setInputError(el, L('Длина текста не должна превышать {0} (сейчас {1})',
-						numeral(maxlength, [L('$n символ'), L('$n символа'), L('$n символов')]), numeral(current_len, [L('$n символ'), L('$n символа'), L('$n символов')])));
+					Spaces.view.setInputError(el, L('Длина текста не должна превышать ' +
+						'{maxlength, plural, one {# символ} many {# символов} other {# символа}} ' +
+						'(сейчас {current_len, plural, one {# символ} many {# символов} ' +
+						'other {# символа}})', { maxlength, current_len }));
 					++has_errors;
 				}
 			} else if (required && !$.trim(el[0].value).length) {

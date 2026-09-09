@@ -2,7 +2,7 @@ import $ from './jquery';
 import Device from './device';
 import * as pushstream from './core/lp';
 import Spaces from './spacesLib';
-import {L} from './utils';
+import { L } from './core/l10n';
 
 var TAB_ID = Date.now();
 

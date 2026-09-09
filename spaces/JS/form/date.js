@@ -4,15 +4,17 @@ import Spaces from '../spacesLib';
 import Datepicker from 'vanillajs-datepicker/Datepicker';
 import DatepickerES from 'vanillajs-datepicker/locales/es';
 import DatepickerRU from 'vanillajs-datepicker/locales/ru';
-import { L } from '../utils';
+import { L } from '../core/l10n';
 import dayjs from 'dayjs';
 import { closeAllPoppers } from '../widgets/popper';
 
 const MONTHS_LABELS = [
+	// l10n-set context="month-in-date"
 	L('января'), L('февраля'), L('марта'),
 	L('апреля'), L('мая'), L('июня'),
 	L('июля'), L('августа'), L('сентября'),
 	L('октября'), L('ноября'), L('декабря')
+	// l10n-reset
 ];
 
 const tpl = {
@@ -32,6 +34,7 @@ const tpl = {
 			<div class="datepicker-buttons">
 				${optional ? `
 					<button class="btn-main js-date_picker_clear">
+						<!-- l10n context="date-clear-action" -->
 						${L("Сбросить")}
 					</button>
 				` : ``}

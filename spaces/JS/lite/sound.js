@@ -1,4 +1,5 @@
-import {extend, L, ce, ge, each} from './utils';
+import { extend, ce, ge, each } from './utils';
+import { L } from './core/l10n';
 
 /*
 	Одиночный инстанс:

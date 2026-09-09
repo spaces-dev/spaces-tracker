@@ -1,8 +1,8 @@
 import module from 'module';
 import $ from './jquery';
 import Device from './device';
-import {Spaces, Codes, Url} from './spacesLib';
-import {L} from './utils';
+import { Spaces, Codes, Url } from './spacesLib';
+import { L } from './core/l10n';
 
 var last_values = {},
 	allow_fields = {
@@ -28,7 +28,9 @@ function initModule(parent) {
 function setSaveBtnState(saved) {
 	var status = $('button[name="cfms"]').toggleClass('disabled', !saved);
 	status.find('.js-ico').toggleClass('ico_spinner', !saved);
+	// l10n-set context="save-status"
 	status.find('.js-btn_val').text(saved ? L('Готово') : L('Сохранение'));
+	// l10n-reset
 }
 
 function saveForm(form) {
@@ -109,4 +111,3 @@ function isFormChanged(form) {
 }
 
 module.on("componentpage", initModule);
-

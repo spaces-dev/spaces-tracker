@@ -3,7 +3,7 @@ import $ from './jquery';
 import Device from './device';
 import {Spaces, Codes} from './spacesLib';
 import './form_tools';
-import {L} from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers, getNearestPopper, getPopperById } from './widgets/popper';
 
 var $body = $('body');

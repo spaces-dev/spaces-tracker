@@ -1,4 +1,5 @@
-import {ce, L} from './utils';
+import { ce } from './utils';
+import { L } from './core/l10n';
 import {Events} from './events'
 import {node_data} from './core';
 

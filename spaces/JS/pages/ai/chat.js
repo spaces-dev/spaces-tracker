@@ -3,7 +3,8 @@ import $ from '../../jquery';
 import * as pushstream from '../../core/lp';
 import { MsgFlowControl } from '../../msg_fc';
 import Spaces, { Codes, Url } from '../../spacesLib';
-import { debounce, L } from '../../utils';
+import { debounce } from '../../utils';
+import { L } from '../../core/l10n';
 import { scrollIntoViewIfNotVisible } from '../../utils/scroll';
 import { closeAllPoppers } from '../../widgets/popper';
 

@@ -4,8 +4,8 @@ import {Spaces, Url} from './spacesLib';
 import page_loader from './ajaxify';
 import {HistoryManager} from './ajaxify';
 import GALLERY from './gallery';
-import {GalleryLoader} from './gallery';
-import {L} from './utils';
+import { GalleryLoader } from './gallery';
+import { L } from './core/l10n';
 
 var share2lt = {
 	1: Spaces.FILES_LIST.NEW_FILES,
@@ -119,6 +119,7 @@ module.on("componentpage", function () {
 
 function gallery_moder_enabled() {
 	var k = "sz_gallery", enabled = Spaces.LocalStorage.get(k) === "true";
+	// l10n context="shared-zone-viewer"
 	$('#sz_gallery_sw').click(function () {
 		Spaces.LocalStorage.set(k, !enabled);
 		Spaces.redirect();

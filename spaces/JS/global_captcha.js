@@ -3,7 +3,8 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
-import {L, tick} from './utils';
+import { tick } from './utils';
+import { L } from './core/l10n';
 
 import "Common/GlobalCaptcha.css";
 
@@ -36,7 +37,7 @@ var tpl = {
 								'<div class="pad_t_a">' + 
 									'<button class="btn btn_green btn_full btn_full_fix js-form_submit" id="gcaptcha_btn" disabled="disabled">' + 
 										'<span class="ico ico_spinner_white js-spinner hide"></span> ' + 
-										'Подтвердить' + 
+										L('Подтвердить') +
 									'</button>' + 
 								'</div>' + 
 							'</div>' + 

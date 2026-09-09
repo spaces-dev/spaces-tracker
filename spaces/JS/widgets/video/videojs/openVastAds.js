@@ -1,6 +1,6 @@
 import cookie from "../../../cookie";
 import { reachGoal } from "../../../metrics/track";
-import { L } from "../../../utils";
+import { L } from "../../../core/l10n";
 
 export function setupAds(player, adBreaks) {
 	let currentAdType = undefined;
@@ -40,11 +40,13 @@ export function setupAds(player, adBreaks) {
 	const vmap = createVmap(adBreaks);
 	player.vast({
 		vmapUrl: 'data:application/xml;charset=utf-8,' + encodeURIComponent(vmap),
+		// l10n-set context="video-ad"
 		translation: {
 			skipButtonText: L("Пропустить"),
 			adsSingleLabel: L("Реклама: {timeLeft}"),
 			adsMultiLabel: L("Реклама {current} из {total}: {timeLeft}")
 		},
+		// l10n-reset
 		debug: !!cookie.get('vast_debug'),
 	});
 }

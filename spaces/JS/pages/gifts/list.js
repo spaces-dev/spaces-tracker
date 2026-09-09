@@ -1,7 +1,8 @@
 import module from 'module';
 import $ from '../../jquery';
 import Spaces from '../../spacesLib';
-import {L, debounce} from '../../utils';
+import { debounce } from '../../utils';
+import { L } from '../../core/l10n';
 import { closeAllPoppers } from '../../widgets/popper';
 
 var tpl = {

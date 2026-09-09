@@ -1,7 +1,7 @@
 import module from 'module';
 import $ from './jquery';
-import {Spaces, Codes} from './spacesLib';
-import {L} from './utils';
+import { Spaces, Codes } from './spacesLib';
+import { L } from './core/l10n';
 
 module.on("componentpage", function () {
     // отправка приглашениея на телефон и почту
@@ -34,11 +34,15 @@ module.on("componentpage", function () {
        
 	    Spaces.api(method, tempObj, function (res) {
 		if (res.code == Codes.COMMON.SUCCESS){
+		    // l10n-set context="invite-sent-status"
 		    if (type == 'sms'){
-			$this.addClass('btn_clicked js-disable').html('<span class="ico ico_ok_white"></span> ' + L('Пригласили {0}', tempObj.phone));
+			$this.addClass('btn_clicked js-disable').html('<span class="ico ico_ok_white"></span> ' +
+				L('Пригласили {contact}', { contact: tempObj.phone }));
 		    } else if (type == 'email'){
-			$this.addClass('btn_clicked js-disable').html('<span class="ico ico_ok_white"></span> ' + L('Пригласили {0}', tempObj.email));
+			$this.addClass('btn_clicked js-disable').html('<span class="ico ico_ok_white"></span> ' +
+				L('Пригласили {contact}', { contact: tempObj.email }));
 		    }
+		    // l10n-reset
 		    
 		    setTimeout(function(){
 			if (type == 'sms'){

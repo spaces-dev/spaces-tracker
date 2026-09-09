@@ -1,6 +1,6 @@
 import module from 'module';
-import {Spaces, Url} from '../spacesLib';
-import {L} from '../utils';
+import { Spaces, Url } from '../spacesLib';
+import { L } from '../core/l10n';
 
 module.on('component', () => {
 	$('#main').on('ajax-form-saved', '.js-sz_seo_form', function (e, {response}) {
@@ -20,7 +20,7 @@ module.on('component', () => {
 		if (response.uniq && $.inArray(current_tab_name, uniq_lt) < 0)
 			uniq_lt.push(current_tab_name);
 		
-		uniq_lt_el.text(L('Уникальные: {0}', uniq_lt.join(', ') || '-'));
+		uniq_lt_el.text(L('Уникальные: {items}', { items: uniq_lt.join(', ') || '-' }));
 		
 		parent.data('uniqLt', uniq_lt);
 	});

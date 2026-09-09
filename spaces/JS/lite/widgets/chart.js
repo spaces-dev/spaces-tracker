@@ -1,5 +1,5 @@
 import module from 'module';
-import { L } from '../utils';
+import { L } from '../core/l10n';
 
 // Возьмём эти модули с тач версии (так делать плохо)
 import $ from '../../vendor/jquery';
@@ -96,7 +96,9 @@ function setupChart(el) {
 			mode: "time",
 			timeformat: "%b %d",
 			timeBase: "milliseconds",
+			// l10n-set context="chart-month-short"
 			monthNames: [L("Янв"), L("Фев"), L("Мар"), L("Апр"), L("Май"), L("Июн"), L("Июл"), L("Авг"), L("Сен"), L("Окт"), L("Ноя"), L("Дек")]
+			// l10n-reset
 		},
 		yaxis: {
 			color: theme.axis,

@@ -7,7 +7,8 @@ import page_loader from './ajaxify';
 import notifications, { EVENT_TYPE } from './notifications';
 import Toolbar from './form_toolbar';
 import AttachSelector from './widgets/attach_selector';
-import {L, html_wrap, numeral, ge} from './utils';
+import { html_wrap, ge } from './utils';
+import { L, plural } from './core/l10n';
 import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
 import { isFullyVisibleOnScreen, waitTransitionEnd } from './utils/dom';
 import { showToast } from './widgets/toaster';
@@ -17,7 +18,10 @@ let focusIntersectionObserver;
 var CHAT_REFRESH_INTERVAL = 30 * 1000;
 var tpl = {
 	recipient: function (data) {
-		return '<span class="m">' + L('Для {0}', data.name) + '</span> <span class="ico ico_remove m pointer mb0" id="remove_recipient"></span>';
+		return '<span class="m">' +
+				// l10n context="message-recipient"
+				L('Для {name}', { name: data.name }) +
+			'</span> <span class="ico ico_remove m pointer mb0" id="remove_recipient"></span>';
 	},
 	userProperty: function (data) {
 		return '' + 
@@ -28,7 +32,9 @@ var tpl = {
 	},
 	confirmCompl: function (data) {
 		return '' + 
-			'<div class="content-bl text help-block t_center">' + L('Вы уверены, что хотите отправить жалобу на <b>{0}</b>?', data.name)+ '</div>' + 
+			'<div class="content-bl text help-block t_center">' +
+				L('Вы уверены, что хотите отправить жалобу на {name}?', { name: `<b>${data.name}</b>` }) +
+			'</div>' +
 			'<table class="table__wrap">' + 
 				'<tr>' + 
 					'<td class="table__cell links-group links-group_attention table_cell_border" width="50%">' + 
@@ -43,8 +49,11 @@ var tpl = {
 			'</table>';
 	},
 	title: function (n) {
-		return numeral(n, [L('+$n новое сообщение'), L('+$n новых сообщения'), L('+$n новых сообщений')])
-			.replace(/(\d+) \+\$n/, '$1');
+		return plural(n, {
+			one: '+# новое сообщение',
+			many: '+# новых сообщений',
+			other: '+# новых сообщения'
+		});
 	},
 	inputError: function (msg) {
 		return '<div class="error__msg js-input_error">' + msg + '</div>';
@@ -57,9 +66,14 @@ var tpl = {
 		return html;
 	},
 	hideAttachesError: function (data) {
-		var html = 
-			'<div class="red">' + 
-				data.error + ' <a href="#" class="js-block_attaches" data-id="' + data.id + '"' + (data.state ? ' data-revert="1"' : '') + '>Повторить.</a>' + 
+		var html =
+			'<div class="red">' +
+				data.error + ' ' +
+				'<a href="#" class="js-block_attaches" data-id="' + data.id + '"' +
+					(data.state ? ' data-revert="1"' : '') + '>' +
+					// l10n context="retry-action"
+					L('Повторить.') +
+				'</a>' +
 			'</div>';
 		return html;
 	},
@@ -157,7 +171,8 @@ var Chat = {
 				if (res.code != 0) {
 					Spaces.showApiError(res);
 				} else {
-					Spaces.showMsg(L('Жалоба на <b>{0}</b> отправлена.', el.data('name')), {hideTimeout: 15000});
+					Spaces.showMsg(L('Жалоба на {name} отправлена.', { name: `<b>${el.data('name')}</b>` }),
+						{hideTimeout: 15000});
 				}
 			});
 		}).on('click', '.js-block_attaches, .js-reveal_attaches', function (e) {
@@ -255,7 +270,11 @@ var Chat = {
 		$('#main').on('reactions:updateCounter', '.js-message', function (e) {
 			const message = $(this);
 			const link = message.find('.js-chat_reactions_users_link');
-			link.find('.js-text').html(numeral(e.detail.count, [L('$n реакция'), L('$n реакции'), L('$n реакций')]));
+			link.find('.js-text').html(plural(e.detail.count, {
+				one: '# реакция',
+				many: '# реакций',
+				other: '# реакции'
+			}));
 			link.toggleClass('hide', e.detail.count == 0);
 		});
 
@@ -546,9 +565,11 @@ var Chat = {
 		var toggle_form_lock = function (flag) {
 			if (flag) {
 				textarea.attr("disabled", "disabled");
+				// l10n context="message-send-status"
 				btn.attr("disabled", "disabled").css("opacity", "0.5").val(L("Отправка"));
 			} else {
 				textarea.removeAttr("disabled");
+				// l10n context="message-compose-action"
 				btn.css("opacity", "").removeAttr('disabled').val(L("Написать"));
 			}
 		};

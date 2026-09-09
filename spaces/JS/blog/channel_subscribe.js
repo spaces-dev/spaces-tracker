@@ -1,7 +1,7 @@
 import module from 'module';
 import Spaces from '../spacesLib';
 import $ from '../jquery';
-import {L} from '../utils';
+import { L } from '../core/l10n';
 
 let timeout_id;
 
@@ -42,7 +42,8 @@ module.on("componentpage", function () {
 				if (subscription_done)
 					return;
 				
-				progress_text.text(L('{0} из {1}', counter, channels.length));
+				// l10n context="subscription-progress"
+				progress_text.text(L('{current} из {total}', { current: counter, total: channels.length }));
 				progress_line.css("width", (counter / channels.length * 100) + "%");
 				counter++;
 				

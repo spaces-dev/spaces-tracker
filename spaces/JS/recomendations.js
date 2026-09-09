@@ -4,7 +4,8 @@ import * as pushstream from './core/lp';
 import {Spaces, Codes} from './spacesLib';
 import page_loader from './ajaxify';
 import notifications from './notifications';
-import {L, tick} from './utils';
+import { tick } from './utils';
+import { L } from './core/l10n';
 
 var queue, ns = '.recomendations',
 	buttons = {
@@ -104,8 +105,8 @@ module.on("componentpage", function () {
 				if (res.code == 0) {
 					email.password.parents('.content-bl').append($(
 						'<div class="grey t_center pad_t_a" id="js-auth-message_' + type + '">' + 
-							L('Мы пытаемся получить список контактов из вашего почтового аккаунта. ' + 
-								'Обычно на это уходит не более 5 секунд, после чего вы можете попробовать обновить страницу. ') + 
+							L('Мы пытаемся получить список контактов из вашего почтового аккаунта. ' +
+								'Обычно на это уходит не более 5 секунд, после чего вы можете попробовать обновить страницу.') +
 						'</div>'
 					));
 					_setButtonStyle(el, "refresh");

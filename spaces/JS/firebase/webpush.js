@@ -3,6 +3,7 @@ import $ from '../jquery';
 import Spaces from '../spacesLib';
 import page_loader from '../ajaxify';
 import notifications from '../notifications';
+import { L } from '../core/l10n';
 import '../form_controls';
 
 import "Common/Sticker.css";
@@ -31,20 +32,22 @@ const tpl = {
 			'<div id="sticker" class="sticker">' + 
 				'<a href="#" class="ico_buttons ico_buttons_close ico_no-mrg sticker-close js-webpush_cancel"></a>' + 
 				'<div class="content-item3 wbg oh">' + 
-					'Хотите получать уведомления о самом важном от &laquo;' + Spaces.params.Domain + '&raquo;?' + 
+					L('Хотите получать уведомления о самом важном от «{domain}»?', { domain: Spaces.params.Domain }) +
 					'<div class="pad_t_a">' + 
 						notify_checkboxes + 
 					'</div>' + 
 					'<small class="pad_t_a grey">' + 
-						'Вы всегда сможете изменить это в <a href="' + WEB_PUSH.notifySettingsURL + '">Настройках</a>.' + 
+						L('Вы всегда сможете изменить это в <link>Настройках</link>.', {
+							link: (content) => `<a href="${WEB_PUSH.notifySettingsURL}">${content}</a>`
+						}) +
 					'</small>' + 
 					'<div class="pad_t_a">' + 
 						'<button class="btn btn_input js-webpush_accept" data-from="dialog">' + 
 							'<span class="ico ico_spinner_white js-spinner hide"></span> ' + 
-							'Включить уведомления' + 
+							L('Включить уведомления') +
 						'</button> ' + 
 						'<button class="btn btn_white btn_input js-webpush_cancel right sticker-close_btn">' + 
-							'Нет' + 
+							L('Нет') +
 						'</button> ' + 
 					'</div>' + 
 				'</div>' + 
@@ -88,7 +91,7 @@ module.on("componentpage", function () {
 						if (success) {
 							page_loader.reload()
 						} else {
-							Spaces.showError("Ошибка подписки на уведомления. <br />" + error);
+							Spaces.showError(L('Ошибка подписки на уведомления.<br />{error}', { error }));
 							e.detail.setState(false);
 						}
 					}, true);
@@ -98,7 +101,7 @@ module.on("componentpage", function () {
 				e.detail.setState(false);
 			}
 		}).catch(function (err) {
-			Spaces.showError("Ошибка подписки на уведомления. Попробуйте позже.");
+		Spaces.showError(L('Ошибка подписки на уведомления. Попробуйте позже.'));
 			console.error('[FCM] requestPermission: ' + err);
 			e.detail.setState(false);
 		});
@@ -210,12 +213,12 @@ function showSticker() {
 				firebaseInit(function () {
 					fetchNewToken(function (success, error) {
 						if (!success)
-							Spaces.showError("Ошибка подписки на уведомления. <br />" + error);
+							Spaces.showError(L('Ошибка подписки на уведомления.<br />{error}', { error }));
 					}, true, el.data('from'));
 				});
 			}
 		}).catch(function (err) {
-			Spaces.showError("Ошибка подписки на уведомления. Попробуйте позже.");
+		Spaces.showError(L('Ошибка подписки на уведомления. Попробуйте позже.'));
 			console.error('[FCM] requestPermission: ' + err);
 		});
 	});

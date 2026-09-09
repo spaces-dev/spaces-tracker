@@ -1,4 +1,5 @@
-import { L, updateUrl, updateUrlScheme } from './utils';
+import { updateUrl, updateUrlScheme } from './utils';
+import { L } from './core/l10n';
 import require from 'require';
 import { Codes, Spaces } from './spacesLib';
 import { ICONS_BASEURL } from './core/env';

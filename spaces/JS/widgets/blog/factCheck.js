@@ -1,7 +1,7 @@
 import module from 'module';
 import $ from '../../jquery';
 import { getPopperById } from '../popper';
-import { L } from '../../utils';
+import { L } from '../../core/l10n';
 import { isVisibleOnScreen } from '../../utils/dom';
 import * as pushstream from '../../core/lp';
 import { simplePagination } from '../fragments/simplePagination';
@@ -35,6 +35,7 @@ const tpl = {
 		return `
 			<div class="grey">
 				<span class="factcheck-status">
+					<!-- l10n context="fact-check-status" -->
 					<span class="js-factcheck_status">${L('Проверяем')}</span><span class="skeleton-dots"><span>.</span><span>.</span><span>.</span></span>
 				</span>
 			</div>
@@ -63,8 +64,10 @@ const tpl = {
 	},
 	errorInline(err) {
 		return `
+			<!-- l10n context="fact-check-result" -->
 			${L("Достоверность:")}
 			<span class="red">${err}</span>
+			<!-- l10n context="retry-action" -->
 			<a href="#" class="js-action_link" data-action="blog_check_for_truth" data-retry="true">${L("(повторить)")}</a>
 		`;
 	}

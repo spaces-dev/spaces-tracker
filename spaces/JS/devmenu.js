@@ -1,7 +1,8 @@
 import module from 'module';
 import $ from './jquery';
 import cookie from './cookie';
-import {ge, ce, L, html_wrap} from './utils';
+import { ge, ce, html_wrap } from './utils';
+import { L } from './core/l10n';
 
 var cookies_menu;
 

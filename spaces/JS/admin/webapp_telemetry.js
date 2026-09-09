@@ -1,5 +1,6 @@
 import module from 'module';
 import Spaces from '../spacesLib';
+import { L } from '../core/l10n';
 
 module.on("componentpage", function() {
 	function gebi(id) {return document.getElementById(id)}
@@ -100,19 +101,19 @@ module.on("componentpage", function() {
 	
 	renderProfileRow(gebi('profiles'), {
 		hcid: 0,
-		name: 'Чекпоинт'
+		name: L('Чекпоинт')
 	}, 0);
 	
 	renderStatsRow(gebi('stats'), {
-		pkg: 'Пакет',
-		checkpoint: 'Чекпоинт',
+		pkg: L('Пакет'),
+		checkpoint: L('Чекпоинт'),
 	});
 	
 	gebi('stats_fetch_btn').addEventListener('click', function() {
 		gebi('stats').innerHTML = '';
 		renderStatsRow(gebi('stats'), {
-			pkg: 'Пакет',
-			checkpoint: 'Чекпоинт',
+			pkg: L('Пакет'),
+			checkpoint: L('Чекпоинт'),
 		});
 		
 		this.value = '…';
@@ -143,7 +144,7 @@ module.on("componentpage", function() {
 				stats.forEach(st => 
 					renderStatsRow(gebi('stats'), st));
 				
-				btn.value = 'Обновить';
+				btn.value = L('Обновить');
 				btn.disabled = false;
 				
 				

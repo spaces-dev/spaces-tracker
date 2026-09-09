@@ -6,7 +6,8 @@ import {Class} from './class';
 import {Spaces, Url, Codes, FILE_TYPE_TO_DIR_TYPE} from './spacesLib';
 import page_loader from './ajaxify';
 import fixPageHeight from './min_height';
-import {html_wrap, L, tick} from './utils';
+import { html_wrap, tick } from './utils';
+import { L } from './core/l10n';
 import { closeAllPoppers, getPopperById } from './widgets/popper';
 
 var tpl = {
@@ -15,22 +16,28 @@ var tpl = {
 			cancel = 
 				'<a href="#coll-cancel" class="js-collection_delete" data-nid="' + data.id + '" data-type="' + data.type + '" data-orig-nid="' + data.origNid + '">' + 
 					'<span class="ico ico_spinner hide js-spinner"></span>' + 
+					// l10n context="undo-action"
 					L('Отменить') + 
 				'</a>';
-		return L('Файл сохранён в вашу коллекцию {0}. {1}', dir, cancel);
+		return L('Файл сохранён в вашу коллекцию {collection}. {cancel}', { collection: dir, cancel });
 	},
 	saveMusicNotif: function (data) {
 		if (data.exists) {
-			return L('Файл был добавлен ранее: ') + '<a href="' + data.url + '">' + data.name + '</a>';
+			return L('Файл был добавлен ранее: {file}', {
+				file: `<a href="${data.url}">${data.name}</a>`
+			});
 		} else {
-			var dir = '<a href="' + data.url + '">' + L('Музыку') + '</a>',
-				cancel = 
-					'<a href="#coll-cancel" class="js-collection_delete" data-nid="' + data.id + '" data-type="' + data.type + '" ' + 
-							'data-orig-nid="' + data.origNid + '" data-music="1">' + 
-						'<span class="ico ico_spinner hide js-spinner"></span>' + 
-						L('Отменить') + 
-					'</a>';
-			return L('Файл сохранён в вашу {0}. {1}', dir, cancel);
+			var cancel =
+				'<a href="#coll-cancel" class="js-collection_delete" data-nid="' + data.id + '" data-type="' + data.type + '" ' +
+					'data-orig-nid="' + data.origNid + '" data-music="1">' +
+					'<span class="ico ico_spinner hide js-spinner"></span>' +
+					// l10n context="undo-action"
+					L('Отменить') +
+				'</a>';
+			return L('Файл сохранён в вашу <link>музыку</link>. {cancel}', {
+				link: (content) => `<a href="${data.url}">${content}</a>`,
+				cancel
+			});
 		}
 	},
 	errorMessage: function (error) {
