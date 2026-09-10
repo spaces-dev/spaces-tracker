@@ -179,24 +179,6 @@
 	border-bottom-color: $bubble-bg;
 }
 
-.bubble.comm_voting_info {
-	padding: 10px;
-	margin-top: 15px;
-}
-
-.bubble.comm_voting_info::after {
-	display: none
-}
-
-.comm_voting_info .preview {
-	vertical-align: middle;
-}
-
-.comm_voting_info a[title] {
-	position: relative;
-	z-index: 1;
-}
-
 .comm_vote a,
 .comm_vote .ico_abar,
 .comm_chb_wrap,

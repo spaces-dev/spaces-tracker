@@ -2,88 +2,92 @@ import module from 'module';
 import { closeAllPoppers, getPopperById } from '../widgets/popper';
 import { FILE_TYPE_TO_DIR_TYPE, Spaces, Url } from '../spacesLib';
 import $ from '../jquery';
-import { L } from '../core/l10n';
+import { L, plural } from '../core/l10n';
 import { simplePagination } from '../widgets/fragments/simplePagination';
 
 const PER_PAGE = 5;
 
 const tpl = {
-	list({ location, subDirs, isRoot, canCreateDir, pagination, fileMoveError, isCollection, canMoveHere, isFileAlreadyInDir }) {
+	list({
+		location,
+		filesCnt,
+		subDirs,
+		isRoot,
+		canCreateDir,
+		pagination,
+		fileMoveError,
+		isCollection,
+		canMoveHere
+	}) {
 		const curDir = location[location.length - 1];
 		const prevDir = location.length > 1 ? location[location.length - 2] : 0;
-
-		const emptyMessage = () => {
-			if (isCollection) {
-				return canCreateDir ?
-					L('Список пуст. Вы можете выбрать текущую коллекцию или создать новую.') :
-					L('Список пуст. Вы можете выбрать текущую коллекцию.');
-			} else {
-				return canCreateDir ?
-					L('Список пуст. Вы можете выбрать текущую папку или создать новую.') :
-					L('Список пуст. Вы можете выбрать текущую папку.');
-			}
-		};
+		const canSelectDir = !fileMoveError && canMoveHere;
 
 		return `
 			<div class="dir-selector dropdown-content">
 				<div class="dir-selector__location">
 					<button
+						type="button"
 						class="
 							js-action_link dir-selector__location-button use-icon-state
 							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
 						"
 						data-action="dir_selector_back"
 						data-dir-id="${prevDir.nid}"
+						${isRoot ? 'disabled' : ''}
 						title="${L('Перейти назад')}"
 					>
-						<span class="js-ico ico-alone ico ico_arr_left"></span>
+						<span class="dir-selector__back-icon">
+							<span class="js-ico ico-alone ico ico_arr_left"></span>
+						</span>
+						${L('Назад')}
 					</button>
-					<div class="dir-selector__location-title">
-						${curDir.name}
+					<div class="dir-selector__location-text">
+						<div class="dir-selector__location-title">${curDir.name}</div>
+						<div class="dir-selector__location-subtitle">
+							${plural(filesCnt, {
+								one: '# файл',
+								many: '# файлов',
+								other: '# файла'
+							})}
+						</div>
 					</div>
 					<button
+						type="button"
 						class="
-							js-action_link dir-selector__location-button use-icon-state
-							${canCreateDir ? '' : 'dir-selector__location-button--is-disabled'}
+							js-action_link dir-selector__location-button dir-selector__location-button--select
+							${canSelectDir ? '' : 'dir-selector__location-button--is-disabled'}
 						"
-						data-action="dir_selector_create_dir_form"
-						title="${isCollection ? L('Создать коллекцию') : L('Создать папку')}"
+						data-action="dir_selector_select"
+						${canSelectDir ? '' : 'disabled'}
+						title="${isCollection ? L('Выбрать текущую коллекцию') : L('Выбрать текущую папку')}"
 					>
-						<span class="js-ico ico-alone ico ${canCreateDir ? 'ico_dir_create_blue' : 'ico_dir_create'}"></span>
+						<span class="js-ico ico-alone ico ico_spinner hide"></span>
+						<span class="js-text">${L('Выбрать')}</span>
 					</button>
 				</div>
-				${subDirs.length ? `
+				${!fileMoveError && subDirs.length ? `
 					<div class="dir-selector__list">
 						${subDirs.join("")}
 					</div>
 					${pagination}
 				` : `
 					<div class="dir-selector__empty">
-						${emptyMessage()}
+						${fileMoveError || L('В этой папке нет других папок.')}
 					</div>
 				`}
 			</div>
 
-			<div class="dropdown-content ${fileMoveError ? '' : 'hide'}">
-				<div class="stnd-block grey t_center">
-					<span class="ico ico_block"></span>
-					${fileMoveError ?? ''}
-				</div>
-			</div>
-
-			<div class="dropdown-content ${isFileAlreadyInDir ? '' : 'hide'}">
-				<div class="stnd-block grey t_center">
-					${isCollection ? L('Файл уже находится в текущей коллекции.') : L('Файл уже находится в текущей папке.')}
-				</div>
-			</div>
-
-			<div class="dropdown-content ${isFileAlreadyInDir || fileMoveError || !canMoveHere ? 'hide' : ''}">
+			<div class="dropdown-content ${!canCreateDir || fileMoveError ? 'hide' : ''}">
 				<div
-					class="js-action_link list-link list-link-blue list-link--short list-link_last t_center"
-					data-action="dir_selector_select"
+					class="
+						js-action_link list-link list-link-blue list-link--short list-link_last t_center
+						${canCreateDir ? '' : 'list-link--is-disabled'}
+					"
+					data-action="dir_selector_create_dir_form"
 				>
-					<span class="ico ico_ok_blue js-ico"></span>
-					${isCollection ? L('Выбрать текущую коллекцию') : L('Выбрать текущую папку')}
+					<span class="ico ico_plus_blue js-ico"></span>
+					${isCollection ? L('Создать новую коллекцию') : L('Создать новую папку')}
 				</div>
 			</div>
 		`;
@@ -169,6 +173,7 @@ function initDirSelector(selectorWidget) {
 		const offset = (currentPage - 1) * PER_PAGE;
 		selectorPopperContent.html(tpl.list({
 			location: directoryListing.location,
+			filesCnt: directoryListing.filesCnt,
 			subDirs: directoryListing.subDirs.slice(offset, offset + PER_PAGE),
 			isRoot: directoryListing.isRoot,
 			canCreateDir: directoryListing.canCreateDir,
@@ -176,7 +181,6 @@ function initDirSelector(selectorWidget) {
 			isCollection: directoryListing.isCollection,
 			canMoveHere: directoryListing.canMoveHere,
 			pagination: simplePagination({ current: currentPage, total: totalPages }),
-			isFileAlreadyInDir: mode == 'move' && getSelectedDir() === currentDir.id,
 		}));
 	};
 
@@ -274,8 +278,10 @@ function initDirSelector(selectorWidget) {
 
 		const link = $(this);
 		const toggleLoading = (flag) => {
-			link.find('.js-ico').toggleClass('ico_spinner', flag);
-			link.toggleClass("list-link--is-disabled", flag);
+			link.find('.js-ico').toggleClass('hide', !flag);
+			link.find('.js-text').toggleClass('hide', flag);
+			link.toggleClass('dir-selector__location-button--is-disabled', flag);
+			link.prop('disabled', flag);
 		};
 
 		toggleLoading(true);

@@ -12,7 +12,7 @@
 		display: inline-block;
 		position: absolute;
 		top: 50%;
-		right: 15px;
+		right: 19px;
 		transform: translateY(-50%);
 
 		.directory--with-arrow & {
@@ -43,12 +43,13 @@
 		flex-direction: column;
 		gap: 3px;
 		padding-top: 2px;
+		line-height: 1.15em;
 	}
 
 	&__content {
 		flex: 1;
 		display: flex;
-		gap: 8px;
+		gap: 10px;
 		padding: 12px 15px;
 
 		.directory--with-arrow & {

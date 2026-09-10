@@ -5,9 +5,6 @@ $file-card-gap: if($LITE, 8px, 4px);
 $file-card-padding: if($LITE, 10px, 5px);
 
 .file-card {
-	margin: if($LITE, 10px 5px, 5px 0);
-	border: 1px solid $default-border-color;
-	background: $content-bg;
 	color: $default-text-color;
 	word-wrap: break-word;
 
@@ -27,7 +24,11 @@ $file-card-padding: if($LITE, 10px, 5px);
 	&__header-title,
 	&__header-buttons {
 		display: table-cell;
-		vertical-align: middle;
+	}
+
+	&__header-icon,
+	&__header-buttons {
+		padding: $file-card-padding 0;
 	}
 
 	&__header-icon {
@@ -38,7 +39,7 @@ $file-card-padding: if($LITE, 10px, 5px);
 	}
 
 	&__header-title {
-		padding: $file-card-padding $file-card-gap;
+		padding: $file-card-padding $file-card-gap $file-card-padding 4px;
 		word-wrap: break-word;
 	}
 
@@ -50,7 +51,7 @@ $file-card-padding: if($LITE, 10px, 5px);
 
 	&__header-button {
 		display: inline-block;
-		padding: $file-card-padding;
+		padding: 0 $file-card-padding;
 		vertical-align: middle;
 	}
 
@@ -130,5 +131,10 @@ $file-card-padding: if($LITE, 10px, 5px);
 		width: 1%;
 		padding-left: $file-card-gap;
 		text-align: right;
+	}
+
+	&__subscribe-button {
+		display: inline-block;
+		width: 8em;
 	}
 }

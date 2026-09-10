@@ -581,12 +581,23 @@ extend(Spaces, {
 	cancelApi: function (rid) {
 		var request = Spaces.api_requests[rid];
 		if (request) {
-			Spaces.api_requests[rid] = false;
-			request.abort && request.abort();
+			delete Spaces.api_requests[rid];
+			request.cancelled = true;
+			request.xhr && request.xhr.abort();
+			request.onCancel && request.onCancel();
 		}
 	},
 	async asyncApi(method, params, opts) {
-		return new Promise((resolve) => Spaces.api(method, params, resolve, opts));
+		// При отмене возвращаем null, чтобы ожидающая операция могла завершиться.
+		return new Promise((resolve) => {
+			Spaces.api(method, params, resolve, {
+				...opts,
+				onCancel: () => {
+					resolve(null);
+					opts?.onCancel?.();
+				}
+			});
+		});
 	},
 	api(method, params, callback, opts) {
 		params = params || {};
@@ -601,8 +612,15 @@ extend(Spaces, {
 			requestId: Spaces.api_req_cnt++
 		}, opts);
 
-		if (Spaces.api_requests[opts.requestId])
+		// Повторы используют тот же объект запроса и сохраняют состояние отмены.
+		if (opts._request) {
+			if (opts._request.cancelled)
+				return opts.requestId;
+		} else {
 			Spaces.cancelApi(opts.requestId);
+			opts._request = { cancelled: false, onCancel: opts.onCancel };
+		}
+		Spaces.api_requests[opts.requestId] = opts._request;
 
 		var api_url;
 		if (method.indexOf('/') == 0 || method.indexOf('http') == 0) {
@@ -641,12 +659,7 @@ extend(Spaces, {
 		let elapsed = Date.now() - last_api_call_time;
 		if (elapsed < 1000) {
 			if (last_api_call_cnt > MAX_API_RPS) {
-				Spaces.api_requests[opts.requestId] = {};
-
 				setTimeout(() => {
-					if (!Spaces.api_requests[opts.requestId])
-						return;
-
 					Spaces.api(method, params, callback, opts);
 				}, 1000 - elapsed);
 
@@ -676,7 +689,7 @@ extend(Spaces, {
 				}
 			}
 
-			if (!Spaces.api_requests[opts.requestId]) // Отменённый запрос
+			if (opts._request.cancelled) // Отменённый запрос
 				return;
 
 			if (opts.cache && !from_cache) {
@@ -699,7 +712,6 @@ extend(Spaces, {
 			var cached = Spaces.api_cache[method + "?" + raw_data];
 			if (cached && cached.data && (!cached.expire || Date.now() - cached.time < cached.expire)) {
 				from_cache = true;
-				Spaces.api_requests[opts.requestId] = {};
 				xhr_callback(cached.data);
 				return opts.requestId;
 			}
@@ -714,7 +726,7 @@ extend(Spaces, {
 			return opts.requestId;
 		}
 
-		Spaces.api_requests[opts.requestId] = $.ajax(api_url, {
+		opts._request.xhr = $.ajax(api_url, {
 			method: "POST",
 			headers: {},
 			data: raw_data,
@@ -779,7 +791,7 @@ extend(Spaces, {
 		if (!api_params.opts.disableCaptcha && (res.code == Codes.COMMON.ERR_NEED_CAPTCHA || res.code == Codes.COMMON.ERR_WRONG_CAPTCHA_CODE)) {
 			console.log('[captcha] req_id=' + api_params.opts.requestId);
 			import("./global_captcha").then(function ({showGlobalCaptcha}) {
-				if (!Spaces.api_requests[api_params.opts.requestId])
+				if (api_params.opts._request.cancelled)
 					return;
 
 				var error;
@@ -787,7 +799,7 @@ extend(Spaces, {
 					error = Spaces.apiError(res);
 
 				showGlobalCaptcha(api_params.opts.requestId, res.captcha_url, function (code, captcha_callback) {
-					if (!Spaces.api_requests[api_params.opts.requestId])
+					if (api_params.opts._request.cancelled)
 						return;
 
 					if (code === false) {
@@ -817,7 +829,7 @@ extend(Spaces, {
 		return true;
 	},
 	defaultAjaxErrorCallback: function (err, api_params) {
-		if (!Spaces.api_requests[api_params.opts.requestId])
+		if (api_params.opts._request.cancelled)
 			return;
 		console.error("[API ERROR] " + api_params.method + ": " + err.status);
 		if (api_params.opts.retry && err.status == 0) {

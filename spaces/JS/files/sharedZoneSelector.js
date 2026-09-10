@@ -7,7 +7,7 @@ import { L } from '../core/l10n';
 import { simplePagination } from '../widgets/fragments/simplePagination';
 import { showToast } from '../widgets/toaster';
 
-const PER_PAGE = 5;
+const PER_PAGE = 7;
 
 const tpl = {
 	list({ parentDirs, dirs, pagination, selectedDir, deleteUrl, apiParams }) {
@@ -23,18 +23,23 @@ const tpl = {
 			<div class="dir-selector dropdown-content">
 				<div class="dir-selector__location">
 					<button
+						type="button"
 						class="
 							js-action_link dir-selector__location-button use-icon-state
 							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
 						"
 						data-action="sz_dir_selector_back"
 						data-dir-id="${prevDir.shared_dir}"
+						${isRoot ? 'disabled' : ''}
 						title="${L('Перейти назад')}"
 					>
-						<span class="js-ico ico-alone ico ico_arr_left"></span>
+						<span class="dir-selector__back-icon">
+							<span class="js-ico ico-alone ico ico_arr_left"></span>
+						</span>
+						${L('Назад')}
 					</button>
-					<div class="dir-selector__location-title">
-						${curDir.name}
+					<div class="dir-selector__location-text">
+						<div class="dir-selector__location-title upcs">${curDir.name}</div>
 					</div>
 					<div class="dir-selector__location-space"></div>
 				</div>
@@ -64,18 +69,23 @@ const tpl = {
 			<div class="dir-selector dropdown-content">
 				<div class="dir-selector__location">
 					<button
+						type="button"
 						class="
 							js-action_link dir-selector__location-button use-icon-state
 							${isRoot ? 'dir-selector__location-button--is-disabled' : ''}
 						"
 						data-action="sz_dir_selector_back"
 						data-dir-id="${prevDir.shared_dir}"
+						${isRoot ? 'disabled' : ''}
 						title="${L('Перейти назад')}"
 					>
-						<span class="js-ico ico-alone ico ico_arr_left"></span>
+						<span class="dir-selector__back-icon">
+							<span class="js-ico ico-alone ico ico_arr_left"></span>
+						</span>
+						${L('Назад')}
 					</button>
-					<div class="dir-selector__location-title">
-						${curDir.name}
+					<div class="dir-selector__location-text">
+						<div class="dir-selector__location-title upcs">${curDir.name}</div>
 					</div>
 					<div class="dir-selector__location-space"></div>
 				</div>
@@ -213,7 +223,7 @@ function initDirSelector(selectorWidget) {
 		selectorPopperContent.html(tpl.list({
 			parentDirs: directoryListing.parentDirs,
 			dirs: directoryListing.dirs.slice(offset, offset + PER_PAGE),
-			pagination: simplePagination({ current: currentPage, total: totalPages }),
+			pagination: simplePagination({ current: currentPage, total: totalPages, arrows: false, numbered: true }),
 			selectedDir: selectorWidget.data('value'),
 			deleteUrl: selectorWidget.data('deleteUrl'),
 			apiParams: selectorWidget.data('params'),
@@ -298,6 +308,9 @@ function initDirSelector(selectorWidget) {
 		e.preventDefault();
 		const link = $(this);
 		const direction = link.data('dir');
+		const page = link.data('page');
+		if (page)
+			currentPage = page;
 		if (direction == 'prev')
 			currentPage--;
 		if (direction == 'next')

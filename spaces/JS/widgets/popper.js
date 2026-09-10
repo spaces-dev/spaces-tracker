@@ -71,6 +71,7 @@ export class Popper {
 	options;
 	ignoreBodyClick = false;
 	scrollTopBeforeOpen;
+	eventHandlers = [];
 
 	constructor(popperElement, options = {}) {
 		this.popperElement = popperElement;
@@ -473,10 +474,12 @@ export class Popper {
 
 	on(eventName, handler) {
 		this.popperElement.addEventListener(`popper:${eventName}`, handler);
+		this.eventHandlers.push({ eventName, handler });
 	}
 
 	off(eventName, handler) {
 		this.popperElement.removeEventListener(`popper:${eventName}`, handler);
+		this.eventHandlers = this.eventHandlers.filter((entry) => entry.eventName !== eventName || entry.handler !== handler);
 	}
 
 	getType() {
@@ -497,6 +500,9 @@ export class Popper {
 	destroy() {
 		popperInstances.delete(this.popperElement);
 		this.close();
+		for (const { eventName, handler } of this.eventHandlers)
+			this.popperElement.removeEventListener(`popper:${eventName}`, handler);
+		this.eventHandlers = [];
 	}
 }
 

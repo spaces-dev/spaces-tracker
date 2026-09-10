@@ -1306,6 +1306,13 @@ a.link-blue:active {
 	word-wrap: break-word;
 	box-shadow: $system-message-shadow;
 
+	&--inline {
+		padding: 12px 15px;
+		border-radius: 8px;
+		box-shadow: none;
+		text-align: center;
+	}
+
 	&--clickable {
 		cursor: pointer;
 	}

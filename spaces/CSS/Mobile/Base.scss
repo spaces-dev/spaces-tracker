@@ -2823,6 +2823,35 @@ input[type="submit"].transpar{
 	padding: 0 10px !important;
 }
 
+.inline-button {
+	display: inline-block;
+	padding: 8px 12px;
+	border: 1px solid currentColor;
+	border-radius: 8px;
+	background: $content-bg;
+	color: $blue-text-color;
+	line-height: normal;
+	text-align: center;
+	vertical-align: middle;
+	white-space: nowrap;
+
+	&--green {
+		color: $green-text-color;
+	}
+
+	@if $PC {
+		&:hover {
+			background: $default-hover-bg;
+		}
+	}
+
+	&:active {
+		background: $content-bg;
+		color: $default-text-color;
+		box-shadow: $default-clicked-shadow;
+	}
+}
+
 .bordered{
 	display: block;
 	text-align: center;

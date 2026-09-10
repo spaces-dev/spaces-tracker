@@ -4,6 +4,7 @@ import { waitTransitionEnd } from "../utils/dom";
 let queue = [];
 let closeTimerId;
 let currentToastId;
+let closing = false;
 
 const tpl = {
 	toast({ title, text, severity }) {
@@ -37,6 +38,12 @@ export function showToast(toast) {
 	return id;
 }
 
+export function hideToast(id) {
+	queue = queue.filter((toast) => toast.id !== id);
+	if (currentToastId === id)
+		closeToast();
+}
+
 function processToasts() {
 	if (!queue.length)
 		return;
@@ -63,6 +70,7 @@ function renderToast(toast) {
 
 	toastElement.querySelector('.js-toast_close').addEventListener('click', (e) => {
 		e.preventDefault();
+		e.stopPropagation();
 		closeToast();
 	});
 
@@ -81,6 +89,9 @@ function renderToast(toast) {
 
 async function closeToast() {
 	const toastElement = document.getElementById('toast');
+	if (!toastElement || closing)
+		return;
+	closing = true;
 	toastElement.classList.remove('toast--visible');
 	await waitTransitionEnd(toastElement);
 	toastElement.remove();
@@ -89,5 +100,6 @@ async function closeToast() {
 		closeTimerId = undefined;
 	}
 	currentToastId = undefined;
+	closing = false;
 	processToasts();
 }

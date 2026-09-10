@@ -107,10 +107,11 @@ export function initLikes(id) {
 		}
 		
 		if (disabled) {
-			if (!Spaces.params.nid)
-				return;
-			showError(L("Вы не можете голосовать за себя."));
-			return false;
+			if (!is_plus && Spaces.params.nid) {
+				showError(L('Вы не можете голосовать за себя.'));
+				return false;
+			}
+			return true;
 		}
 		
 		if (binded) {

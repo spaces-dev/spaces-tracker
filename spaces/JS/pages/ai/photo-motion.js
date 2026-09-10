@@ -115,13 +115,12 @@ function initForm() {
 		Spaces.api("services.ai.photoMotion.getCost", {
 			CK: null,
 			...Url.serializeForm(form),
-			requestId: "photoMotionGetCost"
 		}, (response) => {
 			if (response.code == 0) {
 				const buttonLabel = form.find('button[data-action="process_photo"] .js-btn_val');
 				buttonLabel.text(response.caption);
 			}
-		});
+		}, { requestId: "photoMotionGetCost" });
 	}, 250);
 
 	form.on('picturePicker:select', () => checkNSFW());

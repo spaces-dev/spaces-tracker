@@ -92,6 +92,16 @@ var gallery_transp = Device.type == 'desktop',
 // gallery_gestures = false;
 
 var tpl = {
+	collections(popper_id) {
+		return `
+			<div
+				class="popper-dropdown popper-dropdown--with-layout"
+				data-popper-type="gallery"
+				style="z-index:100001"
+				id="${popper_id}"
+			></div>
+		`;
+	},
 	playBtn() {
 		return `
 			<div class="gallery__play_btn">
@@ -546,16 +556,19 @@ Gallery = {
 						popperId,
 					});
 
-					$('#Gallery').after(`<div class="popper-dropdown" data-popper-type="gallery" style="z-index:100001" id="${popperId}">`);
+					$('#Gallery').after(tpl.collections(popperId));
 
 					current.collectionsLink = el;
+					const collections_item = current;
 					
 					// Trigger component
 					require.component(import.meta.id('./collections'));
 					
-					import('./collections').then(({default: FileCollections}) => {
+					import('./collections').then(({ FileCollections }) => {
+						if (current !== collections_item)
+							return;
 						ico.removeClass('ico_spinner');
-						FileCollections.init(el);
+						collections_item.collectionsInstance = FileCollections.init(el);
 						el.addClass('js-popper_open');
 						el.click();
 					});
@@ -1898,11 +1911,10 @@ Gallery = {
 		
 		let collections = current.collectionsLink;
 		if (collections) {
-			import('./collections').then(({default: FileCollections}) => {
-				FileCollections.freeInstance(collections);
-				$('#' + collections.data('popperId')).remove();
-			});
+			current.collectionsInstance?.destroy();
+			$('#' + collections.data('popperId')).remove();
 			current.collectionsLink = null;
+			current.collectionsInstance = null;
 		}
 	},
 	getItemPos: function () {

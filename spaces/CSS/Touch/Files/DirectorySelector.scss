@@ -5,20 +5,16 @@
 	&__location {
 		display: flex;
 		height: 46px;
-		gap: 10px;
 		align-items: center;
 		background: $content-bg;
-		border-bottom: 1px solid $separator-color;
+		border-bottom: 2px solid $separator-color;
 	}
 
-	&__location-title {
+	&__location-text {
 		flex: 1;
+		min-width: 0;
+		padding: 0 10px;
 		text-align: center;
-		text-transform: uppercase;
-		font-weight: bold;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 
 		&:first-child {
 			text-align: left;
@@ -26,20 +22,50 @@
 		}
 	}
 
+	&__location-title {
+		font-weight: bold;
+		line-height: 16px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__location-subtitle {
+		margin-top: 2px;
+		color: $secondary-text-color;
+		font-size: 0.86em;
+		line-height: 1.2em;
+	}
+
 	&__location-space {
-		width: 40px;
+		flex-shrink: 0;
+		width: 82px;
 		height: 46px;
 	}
 
 	&__location-button {
 		display: flex;
+		flex-shrink: 0;
 		justify-content: center;
 		align-items: center;
-		width: 40px;
+		gap: 4px;
+		box-sizing: border-box;
+		width: 82px;
 		height: 46px;
+		padding: 0 10px;
+		color: $blue-text-color;
+		background: $content-bg;
+		line-height: 16px;
+		white-space: nowrap;
 		cursor: pointer;
 		border: none;
 		border-radius: 0;
+		@include switch-sprite-color("ico", "blue");
+
+		&--select {
+			color: $blue-text-color;
+			font-weight: bold;
+		}
 
 		&:hover {
 			background: $default-hover-bg;
@@ -51,9 +77,20 @@
 		}
 
 		&--is-disabled {
+			color: $secondary-text-color;
 			opacity: 0.5;
 			pointer-events: none;
+			@include switch-sprite-color("ico", "default");
 		}
+	}
+
+	&__back-icon {
+		display: flex;
+		flex-shrink: 0;
+		justify-content: center;
+		align-items: center;
+		width: 16px;
+		height: 16px;
 	}
 
 	&__list {
@@ -66,11 +103,15 @@
 	}
 
 	&__empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		min-height: 64px;
 		background: $content-bg;
 		color: $secondary-text-color;
 		padding: 15px;
 		text-align: center;
-		border-bottom: 1px solid $separator-color;
 	}
 
 	&__message {

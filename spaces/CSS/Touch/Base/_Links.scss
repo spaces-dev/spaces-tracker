@@ -699,6 +699,7 @@ body .stnd-link_disabled:hover {
 .clicked .stnd-link,
 .stnd-link:active,
 .list-link-blue.clicked,
+body .list-link-red.link_active,
 body .stnd-link_active,
 .links-group .sublink .list-link:active,
 .links-group .stnd-link_arr.list-link-blue:active{
@@ -783,6 +784,35 @@ body .stnd-link_active:hover,
 
 .stnd-link_attention{
 	background: $attention-block-bg;
+}
+
+.inline-button {
+	display: inline-block;
+	padding: 8px 12px;
+	border: 1px solid currentColor;
+	border-radius: 8px;
+	background: $content-bg;
+	color: $blue-text-color;
+	line-height: normal;
+	text-align: center;
+	vertical-align: middle;
+	white-space: nowrap;
+
+	&--green {
+		color: $green-text-color;
+	}
+
+	@if $PC {
+		&:hover {
+			background: $default-hover-bg;
+		}
+	}
+
+	&:active {
+		background: $content-bg;
+		color: $default-text-color;
+		box-shadow: $default-clicked-shadow;
+	}
 }
 
 /* bordered */

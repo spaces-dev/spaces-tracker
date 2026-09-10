@@ -109,6 +109,9 @@ $topic-gap: if($LITE, 8px, 4px);
 	&__details {
 		padding: if($LITE, 10px, 5px);
 		border-top: 1px solid $default-border-color;
+	}
+
+	&__edit-info {
 		color: $secondary-text-color;
 	}
 

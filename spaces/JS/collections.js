@@ -1,549 +1,422 @@
 import module from 'module';
 import $ from './jquery';
 import cookie from './cookie';
-import Device from './device';
-import {Class} from './class';
-import {Spaces, Url, Codes, FILE_TYPE_TO_DIR_TYPE} from './spacesLib';
-import page_loader from './ajaxify';
-import fixPageHeight from './min_height';
-import { html_wrap, tick } from './utils';
+import { Spaces, Url, FILE_TYPE_TO_DIR_TYPE } from './spacesLib';
+import pageLoader from './ajaxify';
+import { html_wrap } from './utils';
 import { L } from './core/l10n';
-import { closeAllPoppers, getPopperById } from './widgets/popper';
+import { getPopperById } from './widgets/popper';
+import { simplePagination } from './widgets/fragments/simplePagination';
+import { showToast, hideToast } from './widgets/toaster';
+import 'Files/DirectorySelector.css';
 
-var tpl = {
-	saveNotif: function (data) {
-		var dir = '<a href="' + data.url + '">' + html_wrap(data.name) + '</a>',
-			cancel = 
-				'<a href="#coll-cancel" class="js-collection_delete" data-nid="' + data.id + '" data-type="' + data.type + '" data-orig-nid="' + data.origNid + '">' + 
-					'<span class="ico ico_spinner hide js-spinner"></span>' + 
-					// l10n context="undo-action"
-					L('Отменить') + 
-				'</a>';
-		return L('Файл сохранён в вашу коллекцию {collection}. {cancel}', { collection: dir, cancel });
+const PER_PAGE = 5;
+
+const tpl = {
+	saveNotif(data) {
+		return L('Файл сохранён в вашу коллекцию {collection}.', {
+			collection: `<a href="${data.url}">${html_wrap(data.name)}</a>`
+		});
 	},
-	saveMusicNotif: function (data) {
+	saveMusicNotif(data) {
 		if (data.exists) {
 			return L('Файл был добавлен ранее: {file}', {
 				file: `<a href="${data.url}">${data.name}</a>`
 			});
-		} else {
-			var cancel =
-				'<a href="#coll-cancel" class="js-collection_delete" data-nid="' + data.id + '" data-type="' + data.type + '" ' +
-					'data-orig-nid="' + data.origNid + '" data-music="1">' +
-					'<span class="ico ico_spinner hide js-spinner"></span>' +
-					// l10n context="undo-action"
-					L('Отменить') +
-				'</a>';
-			return L('Файл сохранён в вашу <link>музыку</link>. {cancel}', {
-				link: (content) => `<a href="${data.url}">${content}</a>`,
-				cancel
-			});
 		}
+		return L('Файл сохранён в вашу <link>музыку</link>.', {
+			link: (content) => `<a href="${data.url}">${content}</a>`
+		});
 	},
-	errorMessage: function (error) {
-		var html =
-			'<div class="content-item3 wbg content-bl__sep red t_center">' + error + '</div>' + 
-			'<div class="links-group links-group_grey" data-view="list">' + 
-				'<span class="list-link links-group_grey t_center list-link_last js-popper_close">' +
-					'<span class="ico ico_remove js-ico"></span> ' + 
-					L('Закрыть') + 
-				'</span>' + 
-			'</div>';
-		return html;
+	list(listing, currentPage) {
+		const offset = (currentPage - 1) * PER_PAGE;
+		return `
+			<div class="dropdown-content">
+				<div class="js-collection_add list-link list-link-blue list-link--short list-link_last t_center">
+					<span class="ico ico_plus_blue js-ico"></span>
+					${L('Создать коллекцию')}
+				</div>
+			</div>
+			<div class="dropdown-content">
+				<div class="js-collections_dirs">
+					${listing.collections.length ? listing.collections.slice(offset, offset + PER_PAGE).join('') : `
+						<div class="dir-selector__empty">${L('У вас пока нет коллекций.')}</div>
+					`}
+				</div>
+				${simplePagination({ current: currentPage, total: Math.ceil(listing.collections.length / PER_PAGE) })}
+			</div>
+		`;
 	},
-	noDirs: function () {
-		var html = 
-			'<div class="content-item3 wbg t_center grey content-bl__sep">' + 
-				L("У вас пока нет коллекций.") + 
-			'</div>';
-		return html;
+	loader() {
+		return `
+			<div class="dropdown-content">
+				<div class="dir-selector__empty">
+					<span class="ico ico_spinner"></span>
+					${L('Загрузка коллекций')}
+				</div>
+			</div>
+		`;
 	},
-	window: function () {
-		var html = 
-				'<div data-view="error" data-empty="1"></div>' + 
-				'<div data-view="create" data-empty="1"></div>' + 
-				'<div data-view="list">' +
-					'<div class="js-collections_warn stnd-block-yellow stnd-block content-bl__sep hide"></div>' + 
-					'<div class="js-collections_dirs">' + 
-						'<div class="content-item3 wbg t_center grey content-bl__sep">' + 
-							'<span class="ico ico_spinner"></span> ' + L("Загрузка коллекций") + 
-						'</div>' + 
-					'</div>' + 
-					'<div class="links-group links-group_grey t_center hide js-collections_next">' + 
-						'<span class="list-link">' + 
-							L('Показать ещё') + 
-						'</span>' + 
-					'</div>' + 
-					'<div class="links-group links-group_grey t_center hide js-collections_rewind">' + 
-						'<span class="list-link">' + 
-							L('Перейти к началу') + 
-						'</span>' + 
-					'</div>' + 
-					(Device.type == 'desktop' ? 
-						// PC
-						'<table class="table__wrap">' + 
-							'<tr>' + 
-								'<td class="table__cell links-group links-group_grey table__cell_border" width="50%">' + 
-									'<span class="list-link list-link-blue js-collection_add list-link_first list-link_last">' + 
-										'<span class="ico ico_plus_blue js-ico"></span> ' + 
-										'<span class="t">' +  L('Создать коллекцию') + '</span>' + 
-									'</span>' + 
-								'</td>' + 
-								'<td class="table__cell links-group links-group_grey table__cell_last" width="50%">' + 
-									'<span class="list-link js-popper_close list-link_first list-link_last">' +
-										'<span class="t">' + L('Отменить') + '</span>' + 
-									'</span>' + 
-								'</td>' + 
-							'</tr>' + 
-						'</table>' : 
-						// Touch
-						'<div class="links-group links-group_grey">' + 
-							'<span class="list-link list-link-blue js-collection_add list-link_first">' + 
-								'<span class="ico ico_plus_blue js-ico"></span> ' + 
-								'<span class="t">' +  L('Создать коллекцию') + '</span>' + 
-							'</span>' + 
-							'<span class="list-link js-popper_close list-link_last">' +
-								'<span class="ico ico_remove js-ico"></span> ' + 
-								'<span class="t">' + L('Отменить') + '</span>' + 
-							'</span>' + 
-						'</div>'
-					) + 
-				'</div>';
-		return html;
+	form(widget) {
+		return `
+			<div class="dropdown-content">
+				${widget}
+			</div>
+		`;
+	},
+	error(error) {
+		return `
+			<div class="dropdown-content">
+				<div class="content-item3 content-bl__sep red t_center">${error}</div>
+				<div class="js-popper_close list-link list-link-grey list-link--short list-link_last t_center">
+					<span class="ico ico_remove"></span>
+					${L('Закрыть')}
+				</div>
+			</div>
+		`;
 	}
 };
 
-var FileCollections = Class({
-	Static: {
-		init: function (el) {
-			if (!el.data('__collections__'))
-				el.data('__collections__', new FileCollections(el));
-		},
-		freeInstance: function (link) {
-			if (link.data("__collections__"))
-				link.data("__collections__").destroy();
-		},
-		setup: function () {
-			$('.js-collection_copy').each(function () {
-				FileCollections.init($(this).removeClass('js-collection_copy'));
-			});
-			
-			// Удаление файла из коллекции через "Отмена"
-			$('body').on('click.oneRequest', '.js-collection_delete', function (e) {
-				e.stopPropagation();
-				e.preventDefault();
-				
-				var cancel = $(this),
-					orig_nid = cancel.data('origNid'),
-					nid = cancel.data('nid'),
-					type = cancel.data('type');
-				cancel.find('.js-spinner').removeClass('hide');
-				
-				Spaces.api("files.delete", {
-					File_id: nid,
-					Type: type,
-					Link_id: Spaces.params.link_id,
-					CK: null
-				}, function (res) {
-					if (res.code == 0) {
-						$('#collections_' + type + '_' + orig_nid).addClass('hide');
-						Spaces.showMsg(cancel.data('music') ? L("Файл удалён из музыки.") : L("Файл удалён из коллекции."), {gallery: true});
-					} else {
-						Spaces.showError(Spaces.showApiError(res));
-					}
-				}, {
-					onError: function (err) {
-						Spaces.showError(err, false, false, {gallery: true});
-					}
-				});
+function showSaveToast(type, nid, text) {
+	$(`#collections_motivator_${type}_${nid}`).remove();
+	showToast({
+		id: 'collections',
+		severity: 'info',
+		text
+	});
+}
+
+function initMusicCollections(link) {
+	const nid = link.data('nid');
+	const type = Spaces.TYPES.MUSIC;
+	const fileType = link.data('type');
+
+	link.on('click.collections', async (e) => {
+		if (!Spaces.params.nid)
+			return;
+		e.preventDefault();
+
+		const toggleLoading = (loading) => {
+			link.data('busy', loading);
+			link.find('.js-ico').toggleClass('ico_spinner', loading);
+		};
+
+		if (link.data('busy'))
+			return;
+
+		toggleLoading(true);
+		const response = await Spaces.asyncApi('files.copy2me', {
+			...new Url(link.prop('href')).query,
+			CK: null,
+			Ft: fileType,
+			Type: type
+		});
+		toggleLoading(false);
+
+		if (response.code == 0 || response.exists) {
+			showSaveToast(type, nid, tpl.saveMusicNotif({
+				name: response.fileName,
+				exists: response.exists,
+				url: response.url
+			}));
+		} else {
+			showToast({
+				id: 'collections',
+				severity: 'error',
+				text: Spaces.apiError(response)
 			});
 		}
-	},
-	Constructor: function (link) {
-		var self = this;
-		
-		self.nid = link.data('nid');
-		self.type = link.data('extType') || link.data('type');
-		self.fileType = link.data('type');
-		self.msg = $('#collections_' + self.type + '_' + self.nid);
-		self.link = link;
-		
-		var autoreg_handler = function (res) {
-			if (!Spaces.params.nid) {
-				// Обновляем виджеты на странице
-				page_loader.refreshWidgets(Spaces.WIDGETS.FOOTER | Spaces.WIDGETS.HEADER | Spaces.WIDGETS.SIDEBAR | Spaces.WIDGETS.CSS, function () {
-					// Обновляем user_id
-					Spaces.params.nid = cookie.get("user_id");
-				});
-				// Делаем следующий хит с перезагрузкой
-				page_loader.disable(true);
-			}
+	});
+	return {
+		destroy() {
+			link.off('.collections').removeData('__collections__');
 		}
-		
-		if (self.type == Spaces.TYPES.MUSIC) {
-			if (!Spaces.params.nid)
+	};
+}
+
+function initCollections(link) {
+	const nid = link.data('nid');
+	const type = link.data('extType') || link.data('type');
+	const fileType = link.data('type');
+	const popper = getPopperById(link.data('popperId'));
+	let listing;
+	let mode = 'listing';
+	let currentPage = 1;
+	const busyDirs = new Set();
+
+	const toggleLoading = (button, loading) => {
+		link.data('busy', loading);
+		button.find('.js-ico').toggleClass('ico_spinner', loading);
+	};
+
+	const render = (html) => {
+		popper.$content().html(html);
+		popper.update();
+	};
+
+	const showError = (response) => {
+		render(tpl.error(Spaces.apiError(response)))
+	};
+
+	const updateDirLoading = () => {
+		for (const dir of popper.$content().find('.js-collections_dirs .js-dir').toArray()) {
+			const loading = busyDirs.has(+dir.dataset.nid);
+			$(dir).find('input[type="checkbox"]').prop('disabled', loading);
+			$(dir).find('.js-checkbox').toggleClass('form-checkbox--is-disabled', loading);
+		}
+	};
+
+	const renderList = () => {
+		mode = 'listing';
+		render(tpl.list(listing, currentPage));
+		updateDirLoading();
+	};
+
+	const getApiParams = () => {
+		return {
+			D: -Spaces.params.nid,
+			Type: FILE_TYPE_TO_DIR_TYPE[type],
+			Col: 1,
+			a: 'cd',
+			CK: null,
+			Link_id: Spaces.params.link_id
+		};
+	};
+
+	const setCollectionSelected = async (dir, selected) => {
+		const dirId = dir.data('nid');
+		if (selected) {
+			const response = await Spaces.asyncApi('files.copy2me', {
+				File_id: nid,
+				Ft: fileType,
+				Type: type,
+				Dir: dirId,
+				Link_id: Spaces.params.link_id,
+				Force: 1,
+				CK: null
+			});
+
+			if (response.code != 0) {
+				showToast({ id: 'collections', severity: 'error', text: Spaces.apiError(response) });
 				return;
-			
-			link.click(function (e) {
-				e.preventDefault();
-				
-				if (link.data('busy'))
-					return;
-				
-				var toggle_save = function (flag) {
-					link.find('span').first().toggleClass('ico_spinner', !!flag).data('busy', !!flag);
-				};
-				toggle_save(true);
-				
-				var api_data = $.extend((new Url(link.prop("href"))).query, {
-					CK: null,
-					Ft: self.fileType,
-					Type: self.type
-				});
-				toggle_save(true);
-				Spaces.api("files.copy2me", api_data, function (res) {
-					toggle_save(false);
-					if (res.code == 0 || res.exists) {
-						// Удаляем мотиватор
-						$('#collections_motivator_' + self.type + '_' + self.nid).remove();
-						
-						self.showMsg(tpl.saveMusicNotif({
-							id: res.fileId,
-							name: res.fileName,
-							exists: res.exists,
-							url: res.url,
-							
-							type: self.type,
-							origNid: self.nid
-						}));
-					} else {
-						Spaces.showApiError(res);
-					}
-				}, {
-					onError: function (err) {
-						toggle_save(false);
-						Spaces.showError(err, false, {gallery: true});
-					}
-				});
-			});
-		} else {
-			link.addClass('js-popper_open');
-
-			const menu = $('#' + link.data('popperId'));
-			menu.on('popper:beforeOpen', function (e) {
-				self.msg.addClass('hide');
-				
-				Spaces.api("files.getCollections", {
-					Fid: self.nid,
-					Ft: self.fileType,
-					Type: FILE_TYPE_TO_DIR_TYPE[self.type],
-					Uid: Spaces.params.nid,
-					Link_id: Spaces.params.link_id
-				}, function (res) {
-					var list = self.view("list").find('.js-collections_dirs'),
-						msg = self.view("list").find('.js-collections_warn');
-					if (res.code == 0) {
-						autoreg_handler();
-						list.html(res.collections.length ? res.collections.join('') : tpl.noDirs());
-						msg.html(res.message).toggleClass('hide', !res.message);
-					} else {
-						self.showError(Spaces.apiError(res));
-					}
-					self.fixHeight();
-				});
-				self.view("list", true);
-				self.busy = false;
-			})
-			.on('click', '.js-collections_next', function (e) {
-				e.preventDefault();
-				self.menu.data('collectionsOffset', self.menu.data('collectionsOffset') + self.menu.data('collectionsChunk'));
-				self.onResize();
-			})
-			.on('click', '.js-collections_rewind', function (e) {
-				e.preventDefault();
-				self.menu.data('collectionsOffset', 0);
-				self.onResize();
-			})
-			// Добавление новой коллекции
-			.on('click', '.js-collection_add', function (e) {
-				e.preventDefault();
-				var btn = $(this);
-				
-				var toggle_save = function (saving) {
-					btn.find('.js-ico').toggleClass('ico_spinner', saving);
-				};
-				var api_data = {
-					D: -Spaces.params.nid,
-					Type: FILE_TYPE_TO_DIR_TYPE[self.type],
-					Col: 1,
-					a: 'cd',
-					CK: null,
-					Link_id: Spaces.params.link_id
-				};
-				toggle_save(true);
-				Spaces.api("files.createDir", api_data, function (res) {
-					toggle_save(false);
-					if (res.code == 0) {
-						self.view("create", true).html(res.widget);
-					} else {
-						self.showError(Spaces.apiError(res));
-					}
-					self.fixHeight();
-				}, {
-					onError: function (err) {
-						toggle_save(true);
-						self.showError(err);
-					}
-				});
-			})
-			// Выбор коллекции и сохранение файла в неё
-			.on('click', '.js-collections_dirs .js-dir', function (e, data) {
-				e.stopPropagation();
-				e.preventDefault();
-				
-				if (self.busy)
-					return;
-				
-				var dir = $(this);
-				
-				var toggle_save = function (saving) {
-					self.busy = saving;
-					
-					var img = dir.find('img');
-					if (saving) {
-						img.data("old_src", img.prop("src")).prop("src", ICONS_BASEURL + "spinner2.gif");
-					} else {
-						img.prop("src", img.data("old_src"));
-					}
-				};
-				
-				var api_data = {
-					File_id: self.nid,
-					Ft: self.fileType,
-					Type: self.type,
-					Dir: dir.data('nid'),
-					Link_id: Spaces.params.link_id,
-					Force: 1,
-					CK: null
-				};
-				
-				toggle_save(true);
-				Spaces.api("files.copy2me", api_data, function (res) {
-					toggle_save(false);
-					if (res.code == 0) {
-						self.showMsg(tpl.saveNotif({
-							name: $.trim(dir.find('.js-dir_name').text()),
-							url: dir.data("url"),
-							id: res.fileId,
-							type: self.type,
-							origNid: self.nid
-						}));
-						
-						// Удаляем мотиватор
-						$('#collections_motivator_' + self.type + '_' + self.nid).remove();
-						
-						closeAllPoppers();
-					} else {
-						self.showError(Spaces.apiError(res));
-					}
-				}, {
-					onError: function (err) {
-						toggle_save(false);
-						self.showError(err);
-					}
-				});
-			})
-			// Переход на список коллекций
-			.on('click', '.js-collections_list', function (e) {
-				e.stopPropagation();
-				e.preventDefault();
-				self.view("list", true);
-			})
-			// Сохранение новой коллекции
-			.on('click', 'button[name="cfms"]', function (e) {
-				e.stopPropagation();
-				e.preventDefault();
-				
-				var form = self.view("create"),
-					save_btn = $(this),
-					name = form.find('input[name="n"]'),
-					name_val = $.trim(name.val()),
-					api_data = $.extend(Url.serializeForm(form), {
-						D: -Spaces.params.nid,
-						Type: FILE_TYPE_TO_DIR_TYPE[self.type],
-						Col: 1,
-						a: 'cd',
-						cfms: 1,
-						Link_id: Spaces.params.link_id
-					});
-				
-				var toggle_save = function (saving) {
-					save_btn.find('.js-ico').toggleClass('ico_spinner', saving);
-				};
-				Spaces.api("files.createDir", api_data, function (res) {
-					toggle_save(false);
-					if (res.code == 0) {
-						if (res.dirs) {
-							var list = self.view("list", true).find('.js-collections_dirs');
-							list.html(res.dirs.join(''));
-							
-							// Ищем только что созданную папку
-							var dirs = [], dirs_hash = {};
-							list.find('[data-nid]').each(function () {
-								var el = $(this), nid = el.data('nid');
-								dirs_hash[nid] = el;
-								dirs.push(nid);
-							});
-							
-							dirs.sort(function (a, b) {
-								return b - a;
-							});
-							
-							// И сохраняем в неё файл
-							dirs_hash[dirs[0]].click();
-						} else {
-							form.html(res.widget);
-						}
-					} else {
-						Spaces.view.setInputError(name, Spaces.apiError(res));
-					}
-					self.fixHeight();
-				}, {
-					onError: function (err) {
-						toggle_save(false);
-						Spaces.view.setInputError(name, err);
-					}
-				});
-				
-				toggle_save(true);
-			});
-			
-			menu.append(tpl.window());
-			self.menu = menu;
-		}
-
-		self.resizeHandler = () => self.onResize();
-		$(window).on('resize', self.resizeHandler);
-
-		if ($('#Gallery').length) {
-			self.menu.on('popper:afterOpen', function () {
-				$('#g_sharelink_inner').addClass('js-clicked');
-			}).on('popper:afterClose', function () {
-				$('#g_sharelink_inner').removeClass('js-clicked');
-			});
-		} else {
-			page_loader.onShutdown("collections", function () {
-				self.destroy();
-			});
-		}
-	},
-	showMsg: function (text) {
-		var self = this;
-		if (self.msg.length) {
-			self.msg.html(text).removeClass('hide');
-		} else {
-			Spaces.showMsg(text, {gallery: true});
-		}
-	},
-	showError: function (err) {
-		var self = this;
-		self.view("error", true).html(tpl.errorMessage(err));
-	},
-	destroy: function () {
-		var self = this;
-		if (self.link) {
-			self.link.removeData('__collections__');
-		}
-		if (self.menu) {
-			getPopperById(self.menu.prop("id"))?.destroy();
-			self.menu.empty();
-		}
-
-		$(window).off('resize', self.resizeHandler);
-
-		self.msg = self.menu = self.link = null;
-	},
-	view: function (name, do_switch) { // TODO: вынести в класс
-		var self = this;
-		if (name === undefined)
-			return self.last_view_name;
-		
-		if (!self.views_cache || $.isEmptyObject(self.views_cache)) {
-			self.views_cache = {};
-			var list = self.menu.find('[data-view]');
-			for (var i = 0; i < list.length; ++i) {
-				var el = $(list[i]);
-				self.views_cache[el.data('view')] = el;
 			}
+
+			listing.savedFileIds[dirId] = response.fileId;
+
+			showSaveToast(type, nid, tpl.saveNotif({
+				name: dir.find('.js-dir_name').text().trim(),
+				url: dir.data('url')
+			}));
+		} else {
+			const response = await Spaces.asyncApi('files.delete', {
+				File_id: listing.savedFileIds[dirId],
+				Type: type,
+				Link_id: Spaces.params.link_id,
+				CK: null
+			});
+
+			if (response.code != 0) {
+				showToast({ id: 'collections', severity: 'error', text: Spaces.apiError(response) });
+				return;
+			}
+
+			delete listing.savedFileIds[dirId];
+			showToast({ id: 'collections', severity: 'info', text: L('Файл удалён из коллекции.') });
 		}
-		
-		if (name === self.last_view_name || !do_switch)
-			return self.views_cache[name];
-		
-		var ret;
-		for (var view_name in self.views_cache) {
-			var view = self.views_cache[view_name];
-			if (view_name === name) {
-				ret = view;
-				view.show();
+	};
+
+	const changeCollection = async (dir, selected) => {
+		const dirId = dir.data('nid');
+		busyDirs.add(dirId);
+		updateDirLoading();
+		try {
+			await setCollectionSelected(dir, selected);
+			await loadCollections(undefined, true);
+		} finally {
+			busyDirs.delete(dirId);
+			updateDirLoading();
+		}
+	};
+
+	const loadCollections = async (dirId, refresh = false) => {
+		if (refresh && !popper.isOpen())
+			return;
+
+		const response = await Spaces.asyncApi('files.getCollections', {
+			Fid: nid,
+			Ft: fileType,
+			Type: FILE_TYPE_TO_DIR_TYPE[type],
+			Uid: Spaces.params.nid,
+			Checkbox: 1,
+			Link_id: Spaces.params.link_id
+		}, { requestId: 'collections_list' });
+
+		if (!response)
+			return;
+
+		if (response.code != 0) {
+			if (refresh) {
+				showToast({ id: 'collections', severity: 'error', text: Spaces.apiError(response) });
 			} else {
-				if (view_name === self.last_view_name && view.data('empty'))
-					view.empty();
-				view.hide();
+				showError(response);
 			}
+			return;
 		}
-		
-		self.last_view_name = name;
-		
-		return ret;
-	},
-	onResize: function () { // FIXME: Что это, если не дичь?
-		const gallery = document.getElementById('Gallery');
-		const maxHeight = gallery ?
-			gallery.getBoundingClientRect().height - 150 :
-			window.innerHeight - 100;
 
-		const next = this.menu.find('.js-collections_next');
-		const rewind = this.menu.find('.js-collections_rewind');
-		const dirs_wrap = this.menu.find('.js-collections_dirs');
-		const dirs = dirs_wrap.children().hide().toArray();
-		
-		if (this.menu.data('lastMaxHeight') !== maxHeight) {
-			next.removeClass('hide');
-			rewind.addClass('hide');
-
-			let maxVisibleCount = 0;
-			for (const dir of dirs) {
-				$(dir).show();
-				if (this.menu.height() >= maxHeight || maxVisibleCount >= 5) {
-					$(dir).hide();
-					break;
+		// После авторегистрации обновляем виджеты и отключаем следующий AJAX-переход.
+		if (!Spaces.params.nid) {
+			pageLoader.refreshWidgets(
+				Spaces.WIDGETS.FOOTER | Spaces.WIDGETS.HEADER | Spaces.WIDGETS.SIDEBAR | Spaces.WIDGETS.CSS,
+				() => {
+					Spaces.params.nid = cookie.get('user_id');
 				}
-				maxVisibleCount++;
-			}
-
-			this.menu.data('collectionsOffset', 0);
-			this.menu.data('collectionsChunk', maxVisibleCount);
-			this.menu.data('lastMaxHeight', maxHeight);
-
-			next.toggleClass('hide', maxVisibleCount >= dirs.length);
-		} else {
-			const offset = this.menu.data('collectionsOffset');
-			const maxVisibleCount = this.menu.data('collectionsChunk');
-			for (let i = offset; i < offset + maxVisibleCount; i++)
-				$(dirs[i]).show();
-			next.toggleClass('hide', offset + maxVisibleCount >= dirs.length);
-			rewind.toggleClass('hide', offset + maxVisibleCount < dirs.length);
+			);
+			pageLoader.disable(true);
 		}
-	},
-	fixHeight: function () {
-		this.onResize();
-		fixPageHeight();
+
+		listing = {
+			collections: response.collections,
+			savedFileIds: response.savedFileIds
+		};
+
+		if (refresh) {
+			currentPage = Math.min(currentPage, Math.max(1, Math.ceil(listing.collections.length / PER_PAGE)));
+		} else {
+			const index = dirId ? listing.collections.findIndex((html) => $(html).data('nid') == dirId) : 0;
+			currentPage = Math.floor(Math.max(0, index) / PER_PAGE) + 1;
+		}
+
+		if (!refresh || mode == 'listing')
+			renderList();
+
+		return true;
+	};
+
+	link.addClass('js-popper_open');
+
+	popper.on('beforeOpen', () => {
+		render(tpl.loader());
+		return loadCollections();
+	});
+
+	if (popper.getType() == 'gallery') {
+		const galleryButton = $('#g_sharelink_inner');
+		popper.on('afterOpen', () => galleryButton.addClass('js-clicked'));
+		popper.on('afterClose', () => galleryButton.removeClass('js-clicked'));
 	}
-});
 
-module.on("component", function () {
-	FileCollections.setup();
-});
+	popper.$content().on('click', '.js-simple_pagination', (e) => {
+		e.preventDefault();
+		const direction = ($(e.currentTarget).data('dir') == 'next' ? 1 : -1);
+		currentPage = currentPage + direction;
+		renderList();
+	});
 
-export default FileCollections;
+	popper.$content().on('click', '.js-collection_add', async (e) => {
+		e.preventDefault();
+		if (link.data('busy'))
+			return;
+		const button = $(e.currentTarget);
+		toggleLoading(button, true);
+		const response = await Spaces.asyncApi('files.createDir', getApiParams());
+		toggleLoading(button, false);
+		if (response.code == 0) {
+			mode = 'createDir';
+			render(tpl.form(response.widget));
+		} else {
+			showError(response);
+		}
+	});
+
+	popper.$content().on('click', '.js-collections_dirs .js-dir', (e) => {
+		if (e.target.closest('.js-checkbox'))
+			return;
+		e.stopPropagation();
+		e.preventDefault();
+		$(e.currentTarget).find('.js-checkbox').trigger('click');
+	});
+
+	popper.$content().on('change', '.js-collections_dirs input[type="checkbox"]', (e) => {
+		e.stopPropagation();
+		const dir = $(e.currentTarget).closest('.js-dir');
+		changeCollection(dir, e.currentTarget.checked);
+	});
+
+	popper.$content().on('click', '.js-collections_list', (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		renderList();
+	});
+
+	popper.$content().on('click', 'button[name="cfms"]', async (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		if (link.data('busy'))
+			return;
+
+		const button = $(e.currentTarget);
+		const form = button.closest('form');
+
+		toggleLoading(button, true);
+
+		const response = await Spaces.asyncApi('files.createDir', {
+			...Url.serializeForm(form),
+			...getApiParams(),
+			cfms: 1
+		});
+
+		if (response.code != 0) {
+			Spaces.view.setInputError(form.find('input[name="n"]'), Spaces.apiError(response));
+		} else if (response.dirId) {
+			if (await loadCollections(undefined, true)) {
+				const dir = $(listing.collections.find((html) => $(html).data('nid') == response.dirId));
+				await setCollectionSelected(dir, true);
+				await loadCollections(response.dirId);
+			}
+		} else {
+			mode = 'createDir';
+			render(tpl.form(response.widget));
+		}
+
+		toggleLoading(button, false);
+	});
+
+
+	return {
+		destroy() {
+			Spaces.cancelApi('collections_list');
+			popper.destroy();
+			link.removeData('__collections__').removeData('busy');
+		}
+	};
+}
+
+export const FileCollections = {
+	init(link) {
+		if (!link.data('__collections__'))
+			link.data('__collections__', initCollections(link));
+		return link.data('__collections__');
+	},
+	freeInstance(link) {
+		link.data('__collections__')?.destroy();
+	}
+};
+
+module.on('componentpage', () => {
+	const instances = [];
+	module.on('component', () => {
+		for (const el of document.querySelectorAll('.js-collection_copy')) {
+			el.classList.remove('js-collection_copy');
+			const link = $(el);
+			const type = link.data('extType') || link.data('type');
+			instances.push(type == Spaces.TYPES.MUSIC ? initMusicCollections(link) : FileCollections.init(link));
+		}
+	});
+
+
+	return () => {
+		for (const instance of instances)
+			instance.destroy();
+		hideToast('collections');
+	};
+});

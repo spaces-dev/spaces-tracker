@@ -1,11 +1,11 @@
 import $ from './jquery';
 import {Spaces, Codes} from './spacesLib';
-import { ge, html_wrap } from './utils';
+import { ge, html_wrap, TRANSPARENT_PIXEL } from './utils';
+import { getPopperById } from './widgets/popper';
+import { simplePagination } from './widgets/fragments/simplePagination';
 import { L, select } from './core/l10n';
 
-const MORE_LINK_WIDTH = 150;
-const MAX_LIKE_USERS = 5;
-const ONE_LIKE_PREVIEW_WIDTH = 25;
+const USERS_PER_PAGE = 5;
 
 let classes = {
 	ico: {
@@ -16,37 +16,53 @@ let classes = {
 	}
 };
 let tpl = {
-	error: function (msg) {
-		return '<div class="red">' + msg + '</div>'
-	},
-	loadingLikes() {
+	popper(id, gallery) {
 		return `
-			<div style="height: 20px" class="inl_bl m"></div>
-			<span class="ico ico_spinner m"></span>
-			<span class="m">&nbsp;</span>
+			<div class="popper-dropdown" id="${id}"
+				${gallery ? 'data-popper-type="gallery" style="z-index:100001"' : ''}
+			></div>
 		`;
 	},
-	noLikes(text, error) {
+	userSkeleton() {
 		return `
-			<div style="height: 20px" class="inl_bl m"></div>
-			<span class="m ${error ? 'red' : 'grey'}">${text}</span>
+			<div class="list-link oh" aria-hidden="true">
+				<div class="block-item__avatar block-item__avatar_small">
+					<span>
+						<img src="${TRANSPARENT_PIXEL}" width="40" height="40" class="preview s41_40 skeleton" />
+					</span>
+				</div>
+				<div class="block-item__descr">
+					<div>
+						<span class="block-item__title">
+							<span class="mysite-nick skeleton skeleton--text" style="width: 8em">&nbsp;</span>
+						</span>
+					</div>
+					<div class="block-item__light oh">
+						<span class="skeleton skeleton--text" style="width: 6em">&nbsp;</span>
+					</div>
+				</div>
+			</div>
 		`;
 	},
-	fullLink(url) {
+	message(text, error = false) {
 		return `
-			<a href="${html_wrap(url)}" class="full_link"></a>
+			<div class="content-item3 t_center ${error ? 'red' : 'grey'}">
+				${text}
+			</div>
 		`;
 	},
-	moreLink(available, url) {
+	usersList(users, pagination) {
 		return `
-			<a href="${url}" class="padd_left m link-grey">
-				<!-- l10n comment="{count}: количество других пользователей, поставивших оценку." -->
-				${L('и ещё {count}', { count: available })}
+			<a href="#" class="list-link js-popper_close">
+				<span class="ico ico_dating_black"></span>
+				${L('Поставили лайк')}
+				<span class="ico ico_arr_up_black"></span>
 			</a>
+			<div>
+				${users.length ? users.join('') : tpl.message(L('Ещё никто не лайкал.'))}
+			</div>
+			${pagination}
 		`;
-	},
-	arrow() {
-		return `<span class="ico ico_arr_right ico_centered"></span>`;
 	},
 	subscribeOffer({ author, subscribeLink }) {
 		return `
@@ -86,7 +102,7 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 		
 		// Костыль!
 		if (isVisible) {
-			const wrap = likeOffer.parents('.widgets-group');
+			const wrap = likeOffer.parents('.widgets-group').first();
 			if (wrap.length > 0)
 				likeOffer.insertAfter(wrap);
 		}
@@ -122,7 +138,7 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	current_data.mode = current_data.mode || 'default';
 	
 	let binded = current_btn.data('binded');
-	if (binded) {
+	if (binded && !current_data.disabled) {
 		$('#' + binded + (type < 0 ? '_voteDown' : '_voteUp')).click();
 		return;
 	}
@@ -147,7 +163,11 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	}
 	
 	if (current_data.disabled) {
-		showError(L("Вы не можете голосовать за себя."));
+		if (type < 0) {
+			showError(L('Вы не можете голосовать за себя.'));
+		} else {
+			showLikes(current_btn, `${current_data.ot}_${current_data.oid}`, like_up_data.cnt);
+		}
 		return;
 	}
 	
@@ -282,46 +302,74 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	
 }).on('click', '.js-show_likes', function (e) {
 	e.preventDefault();
-	
-	let el = $(this);
-	let element_id = el.data('id');
-	let [ot, oid] = element_id.split('_');
-	let list = $(`#vote_up_list_${element_id}`)
-	
-	el.toggleClass('js-clicked');
-	list.toggleClass('hide');
-	
-	if (list.hasClass('hide'))
-		return;
-	
-	list.html(tpl.loadingLikes());
-	list.append(tpl.fullLink(el.prop("href")));
-	
-	Spaces.api("voting.users", {Oid: oid, Ot: ot, O: 0, L: 30}, (res) => {
-		if (res.code != 0) {
-			list.html(tpl.noLikes(Spaces.apiError(res), true));
-			list.append(tpl.fullLink(el.prop("href")));
+	e.stopPropagation();
+	const el = $(this);
+	showLikes(el, el.data('id'), el.data('count'));
+});
+
+function showLikes(el, elementId, count) {
+	const [ot, oid] = elementId.split('_');
+	// TODO: должно быть заранее в HTML
+	const gallery = el.closest('#Gallery');
+	let popperId;
+	if (gallery.length) {
+		popperId = `vote_users_gallery_${ot}_${oid}`;
+		if (!document.getElementById(popperId)) {
+			gallery.append(tpl.popper(popperId, true));
+		}
+	} else {
+		popperId = `vote_users_${ot}_${oid}`;
+		if (!document.getElementById(popperId)) {
+			el.after(tpl.popper(popperId, false));
+			initLikesPopper(getPopperById(popperId), ot, oid, count);
+		}
+	}
+
+	const popper = getPopperById(popperId);
+	popper.toggle({ clickedClass: 'clicked' }, el[0]);
+}
+
+function initLikesPopper(popper, ot, oid, count) {
+	let currentPage;
+	let usersCount = count;
+	const requestId = popper.id();
+	const showError = (text) => {
+		popper.$content().html(tpl.usersList([tpl.message(text, true)], ''));
+	};
+	const pagination = () => {
+		return simplePagination({ current: currentPage, total: Math.ceil(usersCount / USERS_PER_PAGE) });
+	};
+	const render = async () => {
+		const skeletonCount = Math.min(USERS_PER_PAGE, usersCount);
+		popper.$content().html(tpl.usersList(Array(skeletonCount).fill(tpl.userSkeleton()), pagination()));
+		const response = await Spaces.asyncApi('voting.users', {
+			Ot: ot,
+			Oid: oid,
+			O: (currentPage - 1) * USERS_PER_PAGE,
+			L: USERS_PER_PAGE,
+			List: 1
+		}, {
+			requestId,
+			onError: showError
+		});
+		if (!response)
+			return;
+		if (response.code != Codes.COMMON.SUCCESS) {
+			showError(Spaces.apiError(response));
 			return;
 		}
-		
-		let max_items = Math.min(MAX_LIKE_USERS, Math.floor((list.width() - MORE_LINK_WIDTH) / ONE_LIKE_PREVIEW_WIDTH));
-		
-		if (res.users.length > 0) {
-			list.html(res.users.slice(0, max_items).join(''));
-		} else {
-			list.html(tpl.noLikes(L('Ещё никто не лайкал.')));
-		}
-		
-		let available = res.count - max_items;
-		if (available > 0)
-			list.append(tpl.moreLink(available, el.prop("href")));
-		
-		list.append(tpl.arrow());
-		list.append(tpl.fullLink(el.prop("href")));
-	}, {
-		onError(err) {
-			list.html(tpl.noLikes(err, true));
-			list.append(tpl.fullLink(el.prop("href")));
-		}
+		usersCount = response.count;
+		popper.$content().html(tpl.usersList(response.users, pagination()));
+	};
+
+	popper.on('beforeOpen', () => {
+		currentPage = 1;
+		render();
 	});
-});
+	popper.on('afterClose', () => Spaces.cancelApi(requestId));
+	popper.$content().on('click', '.js-simple_pagination', (e) => {
+		e.preventDefault();
+		currentPage += $(e.currentTarget).data('dir') == 'next' ? 1 : -1;
+		render();
+	});
+}

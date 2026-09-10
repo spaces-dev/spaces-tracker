@@ -7,11 +7,6 @@
 	border-right: none;
 }
 
-.action-bar .table__wrap .ico{
-	margin: 0;
-	vertical-align: middle;
-}
-
 .action-bar_cnt{
 	vertical-align: middle;
 	margin-left: 4px;
@@ -37,24 +32,6 @@ a:active .action-bar_cnt_on {
 .action-bar-info{
 	overflow: hidden;
 	color: $secondary-text-color;
-}
-
-.action-bar-info .bubble .preview {
-	vertical-align: middle;
-}
-
-.action-bar-info .bubble a[title] {
-	position: relative;
-	z-index: 1;
-}
-
-.action-bar-info .bubble{
-	margin: 15px 15px 0 15px;
-	padding: 10px;
-}
-
-.action-bar-info .bubble:after{
-	display: none;
 }
 
 .action-bar-info .triangle-show:after{

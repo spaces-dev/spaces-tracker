@@ -65,7 +65,7 @@ const tpl = {
 	errorInline(err) {
 		return `
 			<!-- l10n context="fact-check-result" -->
-			${L("Достоверность:")}
+			<span class="grey">${L("Достоверность:")}</span>
 			<span class="red">${err}</span>
 			<!-- l10n context="retry-action" -->
 			<a href="#" class="js-action_link" data-action="blog_check_for_truth" data-retry="true">${L("(повторить)")}</a>

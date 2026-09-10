@@ -4,8 +4,6 @@
 .file-card {
 	display: flex;
 	flex-direction: column;
-	margin: 15px 10px;
-	box-shadow: $default-block-shadow;
 
 	&__header {
 		display: grid;
@@ -106,5 +104,11 @@
 	&__stats {
 		margin-top: 2px;
 		color: $secondary-text-color;
+	}
+
+	&__subscribe-button {
+		display: inline-block;
+		width: 8em;
+		text-align: right;
 	}
 }

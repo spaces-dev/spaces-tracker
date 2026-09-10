@@ -267,6 +267,16 @@
 	font-size: 1rem;
 	scroll-margin: 15px;
 	text-align: left;
+	white-space: normal;
+
+	&[data-popper-type="gallery"] {
+		max-height: calc(var(--100dvh) - 100px);
+		overflow-y: auto;
+
+		> .dropdown-content {
+			flex-shrink: 0;
+		}
+	}
 
 	&[data-popper-open="true"] {
 		display: block;
