@@ -106,6 +106,10 @@
 		color: $secondary-text-color;
 	}
 
+	&__stat {
+		white-space: nowrap;
+	}
+
 	&__subscribe-button {
 		display: inline-block;
 		width: 8em;

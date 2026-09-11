@@ -10,11 +10,13 @@ module.on("componentpage", async () => {
 	const port = useIframePort((payload) => {
 		switch (payload.type) {
 			case "REQUEST_AUTH_TOKEN": {
+				const sourceChatId = popper.element().dataset.sourceChatId;
 				port.send({
 					type: 'AUTH_TOKEN',
 					token: popper.element().dataset.token,
 					context: 'spaces',
 					lang: Spaces.params.lang,
+					sourceChatId: sourceChatId ? Number(sourceChatId) : undefined,
 				});
 				break;
 			}

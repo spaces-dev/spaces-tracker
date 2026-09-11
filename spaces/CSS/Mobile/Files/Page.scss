@@ -127,6 +127,10 @@ $file-card-padding: if($LITE, 10px, 5px);
 		color: $secondary-text-color;
 	}
 
+	&__stat {
+		white-space: nowrap;
+	}
+
 	&__subscribe {
 		width: 1%;
 		padding-left: $file-card-gap;
