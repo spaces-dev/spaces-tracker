@@ -17,7 +17,9 @@ async function invokeTelegramApi(
     body: JSON.stringify(body),
   })
   const data = await response.json()
-  if (!response.ok) throw new Error(`Telegram API error: ${JSON.stringify(data)}`)
+  if (!response.ok || !data?.ok) {
+    throw new Error(`Telegram API error: ${JSON.stringify(data)}`)
+  }
 }
 
 export async function sendTelegramRichMessage(
@@ -30,11 +32,16 @@ export async function sendTelegramRichMessage(
     html: text,
   }
 
-  await invokeTelegramApi(token, 'sendRichMessage', {
-    chat_id: chatId,
-    rich_message: richMessage,
-    reply_markup: replyMarkup,
-  })
+  try {
+    await invokeTelegramApi(token, 'sendRichMessage', {
+      chat_id: chatId,
+      rich_message: richMessage,
+      reply_markup: replyMarkup,
+    })
+  } catch (error) {
+    console.error(`Telegram send failed (${text.length} chars): ${text.slice(0, 200)}`)
+    throw error
+  }
 }
 
 export async function sendNotifications(
@@ -63,6 +70,11 @@ export async function sendNotifications(
   }
 
   for (const chunk of messageChunks) {
+    if (!chunk.trim()) {
+      console.log('Skipping empty Telegram chunk')
+      continue
+    }
+
     await sendTelegramRichMessage(botToken, chatId, chunk, keyboard)
   }
 }

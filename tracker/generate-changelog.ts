@@ -2,12 +2,16 @@ import { Config } from './config.ts'
 import { escapeHtml, getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
-const MESSAGE_LIMIT = 4000
-const TABLE_OPEN_RE = /<table>/
+const MESSAGE_LIMIT = 30_000
+const TABLE_OPEN = '<table bordered>'
 const TABLE_CLOSE = '</table>'
 const DETAILS_OPEN = '<details open>'
 const DETAILS_CLOSE = '</details>'
 const REPO_URL = `https://github.com/${process.env.REPOSITORY}/blob/master/`
+
+function escapeHtmlAttr(value: string) {
+  return escapeHtml(value).replace(/"/g, '&quot;')
+}
 
 async function generateAiSummary(diff: string): Promise<{ summary: string, model?: string }> {
   if (!process.env.OPENROUTER_API_KEY) {
@@ -63,7 +67,10 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
   return { summary: `Failed to generate summary: ${lastError}` }
 }
 
-export async function generateChangelog(stats: Stats) {
+export function buildChangelogHtml(
+  stats: Stats,
+  summary?: { summary: string, model?: string },
+) {
   const lines: string[] = []
 
   if (stats.changed.length > 0) {
@@ -80,7 +87,7 @@ export async function generateChangelog(stats: Stats) {
   }
 
   if (stats.added.length > 0) {
-    lines.push(`<h4>Added files: ${stats.added.length}<h4>`)
+    lines.push(`<h4>Added files: ${stats.added.length}</h4>`)
     lines.push(
       formatTable(
         stats.added.map((file) => ({
@@ -103,7 +110,7 @@ export async function generateChangelog(stats: Stats) {
   }
 
   if (stats.failed.length > 0) {
-    lines.push(`<h4>Failed downloads: ${stats.failed.length}<h4>`)
+    lines.push(`<h4>Failed downloads: ${stats.failed.length}</h4>`)
     const errorTable = formatTable(
       stats.failed.map((file) => ({
         path: file.path,
@@ -113,25 +120,27 @@ export async function generateChangelog(stats: Stats) {
     lines.push(errorTable)
   }
 
-  const diff = await getGitDiff()
-  const { summary, model } = await generateAiSummary(diff)
-  if (summary) {
-    lines.push(`${DETAILS_OPEN}<summary>${model ? `Summary (${model})` : 'Summary'}</summary>`)
-    lines.push(summary.trim())
+  if (summary?.summary) {
+    lines.push(`${DETAILS_OPEN}<summary>${summary.model ? `Summary (${summary.model})` : 'Summary'}</summary>`)
+    lines.push(summary.summary.trim())
     lines.push(DETAILS_CLOSE)
   }
 
+  return lines.join('\n')
+}
+
+export async function generateChangelog(stats: Stats) {
+  const diff = await getGitDiff()
+  const { summary, model } = await generateAiSummary(diff)
   const commitMessage = `chore: Changed ${stats.changed.length + stats.added.length} files
 
 ${model ? `Summary: ${model}` : 'Summary'}
 ${summary}
   `
 
-  const telegramMessage = splitTelegramMessage(lines.join('\n'))
-
   return {
     commitMessage,
-    telegramMessage,
+    telegramMessage: splitTelegramMessage(buildChangelogHtml(stats, { summary, model })),
   }
 }
 
@@ -141,14 +150,13 @@ interface TableRow {
   date?: string | null
 }
 
-function formatTable(rows: TableRow[]) {
+export function formatTable(rows: TableRow[]) {
   if (rows.length === 0) return ''
 
   const hasSize = rows.some((row) => row.size)
   const hasDate = rows.some((row) => row.date)
 
-  const header = [
-    '<table bordered>',
+  const headerRow = [
     '<tr>',
     '<th>File</th>',
     hasSize ? '<th>Size</th>' : '',
@@ -157,44 +165,46 @@ function formatTable(rows: TableRow[]) {
   ].filter(Boolean).join('')
 
   const bodyRows = rows.map((row) => {
-    const fileUrl = `${REPO_URL}${row.path}`
-    const fileCell = `<td><a href="${fileUrl}">${escapeHtml(row.path)}</a></td>`
+    const fileUrl = encodeURI(`${REPO_URL}${row.path}`)
+    const fileCell = `<td><a href="${escapeHtmlAttr(fileUrl)}">${escapeHtml(row.path)}</a></td>`
     const sizeCell = hasSize ? `<td>${row.size ? escapeHtml(row.size) : ''}</td>` : ''
     const dateCell = hasDate ? `<td>${row.date ? escapeHtml(row.date) : ''}</td>` : ''
     return `<tr>${fileCell}${sizeCell}${dateCell}</tr>`
   })
 
-  return `${header}${bodyRows.join('')}</table>`
+  return [TABLE_OPEN, headerRow, ...bodyRows, TABLE_CLOSE].join('\n')
 }
 
-function splitTelegramMessage(message: string): string[] {
+function getClosingTag(openTag: string) {
+  if (openTag === DETAILS_OPEN) return DETAILS_CLOSE
+  if (openTag.startsWith('<table')) return TABLE_CLOSE
+  return ''
+}
+
+function getOpenTag(line: string) {
+  if (line.includes(DETAILS_OPEN)) return DETAILS_OPEN
+  const tableOpen = line.match(/<table\b[^>]*>/)
+  if (tableOpen) return tableOpen[0]
+  return null
+}
+
+export function splitTelegramMessage(message: string): string[] {
   const chunks: string[] = []
   let currentChunk = ''
   let currentOpenTag: string | null = null
 
-  const lines = message.split('\n')
-
-  const getClosingTag = (openTag: string) => {
-    if (openTag === DETAILS_OPEN) return DETAILS_CLOSE
-    if (openTag.startsWith('<table>')) return TABLE_CLOSE
-    return ''
-  }
-
-  for (const line of lines) {
-    let newOpenTag: string | null = null
-
-    if (line.includes(DETAILS_OPEN)) {
-      newOpenTag = DETAILS_OPEN
-    } else if (TABLE_OPEN_RE.test(line)) {
-      newOpenTag = '<table>'
-    }
-
+  for (const line of message.split('\n')) {
+    const newOpenTag = getOpenTag(line)
     const isClosing = line.includes(DETAILS_CLOSE) || line.includes(TABLE_CLOSE)
     const potentialChunk = currentChunk + (currentChunk ? '\n' : '') + line
 
     if (potentialChunk.length > MESSAGE_LIMIT) {
-      if (currentOpenTag) currentChunk += getClosingTag(currentOpenTag)
-      chunks.push(currentChunk)
+      if (currentChunk.trim()) {
+        const closedChunk = currentOpenTag
+          ? currentChunk + getClosingTag(currentOpenTag)
+          : currentChunk
+        chunks.push(closedChunk)
+      }
       currentChunk = currentOpenTag
         ? `${currentOpenTag}\n${line}`
         : line
@@ -206,7 +216,7 @@ function splitTelegramMessage(message: string): string[] {
     if (isClosing) currentOpenTag = null
   }
 
-  if (currentChunk) {
+  if (currentChunk.trim()) {
     if (currentOpenTag) currentChunk += getClosingTag(currentOpenTag)
     chunks.push(currentChunk)
   }
