@@ -1,4 +1,5 @@
 import { Config } from './config.ts'
+import { openRouterHeaders } from './openrouter.ts'
 import { escapeHtml, getGitDiff } from './utils.ts'
 import type { Stats } from './types.ts'
 
@@ -29,10 +30,7 @@ async function generateAiSummary(diff: string): Promise<{ summary: string, model
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
+        headers: openRouterHeaders(process.env.OPENROUTER_API_KEY),
         body: JSON.stringify({
           model,
           messages: [
