@@ -363,6 +363,17 @@ function openChatFunction(functionId) {
 
 	const input = document.querySelector('.js-text_input_text textarea');
 	input.placeholder = PLACEHODLERS[functionId];
+
+	const isText = functionId === "text";
+	const submitButton = document.querySelector('.js-text_input_text button[name="cfms"]');
+	if (submitButton) {
+		submitButton.dataset.action = isText ? "ai_chat_submit" : "ai_chat_function_close";
+		const ico = submitButton.querySelector('.js-ico');
+		if (ico) {
+			ico.classList.toggle('ico_plane_blue', isText);
+			ico.classList.toggle('ico_remove', !isText);
+		}
+	}
 }
 
 async function updateAiFunctionDynamicCost() {
@@ -379,7 +390,13 @@ async function updateAiFunctionDynamicCost() {
 		...func.apiData,
 	}, (response) => {
 		if (response.code == 0 && response.cost) {
-			func.form.querySelector('.js-ai_chat_function_cost').innerHTML = response.cost;
+			if (func.id === "text") {
+				func.form.querySelector('.js-ai_chat_function_cost').innerHTML = response.cost;
+			} else {
+				const buttonLabel = func.form.querySelector('button[data-action="ai_chat_submit"] .js-btn_val');
+				if (buttonLabel)
+					buttonLabel.textContent = buttonLabel.textContent.replace(/\([^)]*\)/, `(${response.cost})`);
+			}
 		}
 	});
 }
