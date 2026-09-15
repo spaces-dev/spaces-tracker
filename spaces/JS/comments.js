@@ -327,8 +327,8 @@ var CommentsModule = function (wrap) {
 				const link = comment.find('.js-comm_reactions_users_link');
 				link.find('.js-text').html(plural(e.detail.count, {
 					one: '# реакция',
-					many: '# реакций',
-					other: '# реакции'
+					few: '# реакции',
+					other: '# реакций'
 				}));
 				link.toggleClass('hide', e.detail.count == 0);
 			});
@@ -998,8 +998,8 @@ var CommentsModule = function (wrap) {
 				var unread_count = current.unread[root_id];
 				var title = plural(unread_count, {
 					one: '+# новый комментарий',
-					many: '+# новых комментариев',
-					other: '+# новых комментария'
+					few: '+# новых комментария',
+					other: '+# новых комментариев'
 				});
 				unread_wrap.find('.js-comments_unread-link').prop("href", curl.url()).html(tpl.newSpinner() + title);
 				
@@ -1673,8 +1673,8 @@ var CommentsModule = function (wrap) {
 				var replies_count = current.counter[root_id];
 				var title = plural(replies_count, {
 					one: 'Скрыть # ответ',
-					many: 'Скрыть # ответов',
-					other: 'Скрыть # ответа'
+					few: 'Скрыть # ответа',
+					other: 'Скрыть # ответов'
 				});
 				$('#c' + root_id)
 					.find('.js-sub_comments_collapse')
@@ -1700,8 +1700,8 @@ var CommentsModule = function (wrap) {
 				let comments_next = wrap.find(`.js-comments_more_${root_id}.js-comments_more_next`);
 				let next_title = plural(more_cnt, {
 					one: 'Ещё # комментарий',
-					many: 'Ещё # комментариев',
-					other: 'Ещё # комментария'
+					few: 'Ещё # комментария',
+					other: 'Ещё # комментариев'
 				});
 				comments_next.find('.js-comments_more-link').html(tpl.newSpinner() + next_title);
 				comments_next.toggleClass('hide', !more_cnt);
@@ -1710,8 +1710,8 @@ var CommentsModule = function (wrap) {
 				let comments_prev = wrap.find(`.js-comments_more_${root_id}.js-comments_more_prev`);
 				let prev_title = plural(prev_cnt, {
 					one: 'Ещё # комментарий',
-					many: 'Ещё # комментариев',
-					other: 'Ещё # комментария'
+					few: 'Ещё # комментария',
+					other: 'Ещё # комментариев'
 				});
 				comments_prev.find('.js-comments_more-link').html(tpl.newSpinner() + prev_title);
 				comments_prev.toggleClass('hide', !prev_cnt);

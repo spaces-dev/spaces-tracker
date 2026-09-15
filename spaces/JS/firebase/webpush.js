@@ -91,7 +91,7 @@ module.on("componentpage", function () {
 						if (success) {
 							page_loader.reload()
 						} else {
-							Spaces.showError(L('Ошибка подписки на уведомления.<br />{error}', { error }));
+							Spaces.showError(L('Ошибка подписки на уведомления.') + '<br />' + error);
 							e.detail.setState(false);
 						}
 					}, true);
@@ -213,7 +213,7 @@ function showSticker() {
 				firebaseInit(function () {
 					fetchNewToken(function (success, error) {
 						if (!success)
-							Spaces.showError(L('Ошибка подписки на уведомления.<br />{error}', { error }));
+							Spaces.showError(L('Ошибка подписки на уведомления.') + '<br />' + error);
 					}, true, el.data('from'));
 				});
 			}

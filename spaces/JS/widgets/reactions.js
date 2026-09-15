@@ -134,8 +134,8 @@ const tpl = {
 	usersList({ users, count, reactions, emotionId, pagination }) {
 		const reactionsCountText = plural(count, {
 			one: '# реакция',
-			many: '# реакций',
-			other: '# реакции'
+			few: '# реакции',
+			other: '# реакций'
 		});
 		return `
 			<a href="#" class="list-link js-popper_close">

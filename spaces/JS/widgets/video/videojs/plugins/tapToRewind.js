@@ -111,8 +111,8 @@ class TouchOverlay extends Component {
 		const seconds = Math.abs(count);
 		const text = plural(seconds, {
 			one: '# секунда',
-			many: '# секунд',
-			other: '# секунды'
+			few: '# секунды',
+			other: '# секунд'
 		});
 		this.prevButton.setAttribute('data-text', text);
 		this.nextButton.setAttribute('data-text', text);

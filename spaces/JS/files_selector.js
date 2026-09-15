@@ -314,8 +314,8 @@ function updateSelectedList() {
 	if (selected_cnt > 0)
 		title = plural(selected_cnt, {
 			one: 'Выбран # файл',
-			many: 'Выбрано # файлов',
-			other: 'Выбрано # файла'
+			few: 'Выбрано # файла',
+			other: 'Выбрано # файлов'
 		});
 	$('#files_selector-title').text(title);
 	

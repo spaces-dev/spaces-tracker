@@ -47,8 +47,8 @@ const tpl = {
 						<div class="dir-selector__location-subtitle">
 							${plural(filesCnt, {
 								one: '# файл',
-								many: '# файлов',
-								other: '# файла'
+								few: '# файла',
+								other: '# файлов'
 							})}
 						</div>
 					</div>

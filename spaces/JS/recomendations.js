@@ -85,7 +85,7 @@ module.on("componentpage", function () {
 		Spaces.view.setInputError(email.password, false);
 		
 		if (!email.login.val()) {
-			Spaces.view.setInputError(email.login, L('Нужно ввести e-mail'));
+			Spaces.view.setInputError(email.login, L('Нужно ввести email'));
 			error = true;
 		}
 		

@@ -51,8 +51,8 @@ var tpl = {
 	title: function (n) {
 		return plural(n, {
 			one: '+# новое сообщение',
-			many: '+# новых сообщений',
-			other: '+# новых сообщения'
+			few: '+# новых сообщения',
+			other: '+# новых сообщений'
 		});
 	},
 	inputError: function (msg) {
@@ -272,8 +272,8 @@ var Chat = {
 			const link = message.find('.js-chat_reactions_users_link');
 			link.find('.js-text').html(plural(e.detail.count, {
 				one: '# реакция',
-				many: '# реакций',
-				other: '# реакции'
+				few: '# реакции',
+				other: '# реакций'
 			}));
 			link.toggleClass('hide', e.detail.count == 0);
 		});

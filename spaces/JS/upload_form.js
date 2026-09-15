@@ -546,15 +546,15 @@ function updateFormState() {
 		case STATE_IDLE:
 			title = plural(selected_files, {
 				one: 'Выбран # файл',
-				many: 'Выбрано # файлов',
-				other: 'Выбрано # файла'
+				few: 'Выбрано # файла',
+				other: 'Выбрано # файлов'
 			});
 			break;
 		case STATE_UPLOADING:
 			title = plural(selected_files, {
 				one: 'Выгружаем # файл',
-				many: 'Выгружаем # файлов',
-				other: 'Выгружаем # файла'
+				few: 'Выгружаем # файла',
+				other: 'Выгружаем # файлов'
 			});
 			break;
 		case STATE_COMPLETE:

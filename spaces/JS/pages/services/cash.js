@@ -11,8 +11,8 @@ const tpl = {
 	money(amount) {
 		const text = plural(amount, {
 			one: '# монета',
-			many: '# монет',
-			other: '# монеты'
+			few: '# монеты',
+			other: '# монет'
 		});
 		return `<span class="${amount > 0 ? 'green' : 'red'}">${text}</span>`;
 	},

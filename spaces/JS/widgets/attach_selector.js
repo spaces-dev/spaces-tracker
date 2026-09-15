@@ -1221,7 +1221,7 @@ MAttachSelector = Class({
 		
 		if (self.state.mode == "attaches" && !self.getAvail()) {
 			show_error(L('Превышен лимит количества файлов. Максимально можно прикрепить ' +
-				'{limit, plural, one {# файл} many {# файлов} other {# файла}}.',
+				'{limit, plural, one {# файл} few {# файла} other {# файлов}}.',
 				{ limit: self.state.limit }));
 			return;
 		}
@@ -2080,7 +2080,7 @@ MAttachSelector = Class({
 		var self = this;
 		n = n || self.state.limit;
 		self.showQSelError(L('Превышен лимит количества файлов. Максимально можно прикрепить ' +
-			'{limit, plural, one {# файл} many {# файлов} other {# файла}}.', { limit: n }));
+			'{limit, plural, one {# файл} few {# файла} other {# файлов}}.', { limit: n }));
 	},
 	checkParentLimit: function () {
 		var self = this;

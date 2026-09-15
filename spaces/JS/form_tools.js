@@ -133,7 +133,7 @@ var FormToolsModule = {
 				error = L("В пароле допускаются только латинские буквы, цифры, дефисы и символ подчёркивания.");
 			} else if (v.length > input.data("maxlength")) {
 				error = L('Пароль слишком длинный. Максимальная длина пароля - ' +
-					'{limit, plural, one {# символ} many {# символов} other {# символа}}.',
+					'{limit, plural, one {# символ} few {# символа} other {# символов}}.',
 					{ limit: input.data("maxlength") });
 			}
 
@@ -296,9 +296,9 @@ var FormToolsModule = {
 				var current_len = el[0].value.length;
 				if (current_len > maxlength) {
 					Spaces.view.setInputError(el, L('Длина текста не должна превышать ' +
-						'{maxlength, plural, one {# символ} many {# символов} other {# символа}} ' +
-						'(сейчас {current_len, plural, one {# символ} many {# символов} ' +
-						'other {# символа}})', { maxlength, current_len }));
+						'{maxlength, plural, one {# символ} few {# символа} other {# символов}} ' +
+						'(сейчас {current_len, plural, one {# символ} few {# символа} ' +
+						'other {# символов}})', { maxlength, current_len }));
 					++has_errors;
 				}
 			} else if (required && !$.trim(el[0].value).length) {

@@ -178,8 +178,8 @@ const tpl = {
 					<a class="inl_bl" style="padding: 5px" href="${cat.buyLink}">
 						${plural(cat.buyPrice, {
 							one: 'Купить за # монету',
-							many: 'Купить за # монет',
-							other: 'Купить за # монеты'
+							few: 'Купить за # монеты',
+							other: 'Купить за # монет'
 						})}
 					</a>
 				</div>

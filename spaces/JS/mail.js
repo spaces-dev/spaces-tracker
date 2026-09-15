@@ -778,11 +778,11 @@ var mailCore = {
 				mailServices.resetSelection();
 				
 				msg = spam ? plural(contactsLength, {
-					'=1': 'E-mail контакт отправлен в Спам.',
-					other: 'E-mail контакты отправлены в Спам.'
+					'=1': 'Email контакт отправлен в Спам.',
+					other: 'Email контакты отправлены в Спам.'
 				}) : plural(contactsLength, {
-					'=1': 'E-mail контакт восстановлен из Спама.',
-					other: 'E-mail контакты восстановлены из Спама.'
+					'=1': 'Email контакт восстановлен из Спама.',
+					other: 'Email контакты восстановлены из Спама.'
 				});
 				
 				if (!data.undo)
@@ -1394,8 +1394,8 @@ var mailServices = {
 			const link = message.find('.js-mail_message_reactions_users_link');
 			link.find('.js-text').html(plural(e.detail.count, {
 				one: '# реакция',
-				many: '# реакций',
-				other: '# реакции'
+				few: '# реакции',
+				other: '# реакций'
 			}));
 			link.toggleClass('hide', e.detail.count == 0);
 		});
@@ -2860,8 +2860,8 @@ var mailTemplates = {
 			'<a class="list-link list-link_single t_center" href="javascript: void();">' +
 				plural(newMessagesCnt, {
 					one: '+# новое сообщение',
-					many: '+# новых сообщений',
-					other: '+# новых сообщения'
+					few: '+# новых сообщения',
+					other: '+# новых сообщений'
 				}) + '</a>' +
 			'</div>';
 		return html;

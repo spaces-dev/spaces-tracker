@@ -312,7 +312,7 @@ API_ERRORS = {
 	[Codes.COMMON.ERR_OBJECT_NOT_FOUND]: L("Объект не найден"),
 	[Codes.COMMON.ERR_USER_IS_OWNER]: L("Пользователь - владелец объекта"), // и чо?
 	[Codes.COMMON.ERR_COMM_NOT_FOUND]: L("Сообщество не найдено"),
-	[Codes.COMMON.ERR_WRONG_EMAIL]: L("Неправильный e-mail"),
+	[Codes.COMMON.ERR_WRONG_EMAIL]: L("Неправильный email"),
 	[Codes.COMMON.ERR_FREQ_LIMITER]: L("Слишком частая операция. Подождите немного и попробуйте снова."),
 	[Codes.COMMON.ERR_WRONG_PHONE]: L("Неправильный номер телефона"),
 	[Codes.COMMON.ERR_USER_IS_BLOCKED]: L("Пользователь заблокирован"),
@@ -342,11 +342,11 @@ API_ERRORS = {
 	[Codes.MAIL.ERR_GARBAGE_IS_CLEARING]: L("Происходит очистка корзины"),
 	[Codes.MAIL.ERR_CONTACT_IS_SWAPPING]: L("Происходит перенос контакта"),
 	[Codes.MAIL.ERR_MESSAGE_NOT_FOUND]: L("Сообщение не найдено"),
-	[Codes.MAIL.ERR_WRONG_EMAIL_FORMAT]: L("Неверный формат E-mail"),
+	[Codes.MAIL.ERR_WRONG_EMAIL_FORMAT]: L("Неверный формат Email"),
 	[Codes.MAIL.ERR_DUP_MESSAGE]: L("Вы только что отправили такое же сообщение"),
 	[Codes.MAIL.ERR_WRONG_PHONE_FORMAT]: L("Неверный формат телефона"),
 	[Codes.MAIL.ERR_TOO_LARGE_ATTACHES_WEIGHT]: L("Суммарный размер вложений не может превышать 10Мб"),
-	[Codes.MAIL.ERR_SPAMING_INNER_CONTACT]: L('В СПАМ можно отправлять только E-mail контакты.'),
+	[Codes.MAIL.ERR_SPAMING_INNER_CONTACT]: L('В СПАМ можно отправлять только Email контакты.'),
 
 	// FRIENDS
 	[Codes.FRIENDS.ERR_HIS_LIMIT_EXCEEDED]: L("У пользователя превышен лимит на количество друзей."),
@@ -912,8 +912,9 @@ extend(Spaces, {
 		code = parseInt(code);
 		switch (code) {
 			case 501: case 502: case 503: case 504:
-				return L('Внимание! На {domain} в данный момент проводятся технические работы!' +
-					'<br />Подождите несколько секунд и повторите попытку.', { domain: Spaces.params.Domain }) +
+				return L('Внимание! На {domain} в данный момент проводятся технические работы!', { domain: Spaces.params.Domain }) +
+					'<br />' +
+					L('Подождите несколько секунд и повторите попытку.') +
 					(code == 502 && !!ge('#sandbox_indicator') ?
 						"<br />(" + L("Возможно, перезагрузка песочницы") + ")<br />" : "");
 			case -666:
