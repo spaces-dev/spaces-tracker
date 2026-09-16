@@ -151,14 +151,14 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 	if (current_data.ot == Spaces.TYPES.EXTERNAL_VIDEO) {
 		const action = type < 0 ? 'dislike' : 'like';
 		showError(select(action, {
-			dislike: 'Это видео нельзя дислайкать.',
+			dislike: 'Это видео нельзя дизлайкать.',
 			other: 'Это видео нельзя лайкать.'
 		}));
 		return;
 	}
 	
 	if (current_data.privatePhoto && type < 0) {
-		showError(L("Это фото нельзя дислайкать."));
+		showError(L("Это фото нельзя дизлайкать."));
 		return;
 	}
 	

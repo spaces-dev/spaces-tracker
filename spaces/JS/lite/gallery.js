@@ -335,8 +335,8 @@ function openGallery(e) {
 						other: 'Это фото нельзя лайкать.'
 					}) : tpl.onlyAuthMotivator(),
 					like_down_gallery: auth ? select(content, {
-						video: 'Это видео нельзя дислайкать.',
-						other: 'Это фото нельзя дислайкать.'
+						video: 'Это видео нельзя дизлайкать.',
+						other: 'Это фото нельзя дизлайкать.'
 					}) : tpl.onlyAuthMotivator()
 				};
 				if (errors[link.id])
