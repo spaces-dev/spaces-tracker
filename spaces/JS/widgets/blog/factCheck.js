@@ -26,7 +26,7 @@ const tpl = {
 			<div class="dropdown-content">
 				<div class="content-item3 wbg grey">
 					<span class="ico ico_spinner"></span>
-					${L('Загрузка....')}
+					${L('Загрузка...')}
 				</div>
 			</div>
 		`;

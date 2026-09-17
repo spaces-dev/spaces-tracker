@@ -104,7 +104,7 @@ const tpl = {
 			<div class="dropdown-content dir-selector">
 				<div class="dir-selector__empty">
 					<span class="ico ico_spinner"></span>
-					${L('Загрузка....')}
+					${L('Загрузка...')}
 				</div>
 			</div>
 		`;
