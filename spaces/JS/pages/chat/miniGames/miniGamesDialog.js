@@ -4,6 +4,7 @@ import { getDialogById } from '../../../widgets/dialog';
 import { useIframePort } from "./iframePort";
 import { snakeToCamelCase } from "../../../utils/string";
 import { useMiniGamesPayment } from "./payment";
+import { L } from "../../../core/l10n";
 
 let miniGamesDialog;
 let dialogCloseTimer;
@@ -28,6 +29,17 @@ module.on("componentpage", async () => {
 				context: 'spaces',
 				...JSON.parse(this.dataset.miniGamesInvite),
 			});
+			miniGamesDialog.expand();
+		} else {
+			const dialog = getDialogById("mini_games_dialog");
+			dialog.open({}, this);
+		}
+	});
+
+	$('#main').action('mini_games_profile_open', function (e) {
+		e.preventDefault();
+		if (miniGamesDialog) {
+			port.send(JSON.parse(this.dataset.gamePayload));
 			miniGamesDialog.expand();
 		} else {
 			const dialog = getDialogById("mini_games_dialog");
@@ -170,6 +182,34 @@ function handleGamePayload() {
 	const gamePayload = miniGamesDialog.opener().dataset.gamePayload;
 	if (gamePayload)
 		port.send(JSON.parse(gamePayload));
+}
+
+export async function loadMiniGamesRating(ratingElement) {
+	if (ratingElement.dataset.busy)
+		return;
+	ratingElement.dataset.busy = true;
+	const ratingText = ratingElement.querySelector('.js-text');
+
+	const miniGamesWidget = document.getElementById('mini_games_dialog');
+	const url = ratingElement.dataset.ratingUrl + ratingElement.dataset.userId;
+	let data;
+	try {
+		const response = await fetch(url, {
+			headers: {
+				Authorization: `Bearer ${miniGamesWidget.dataset.token}`,
+			},
+		});
+		if (!response.ok)
+			return;
+		data = await response.json();
+	} catch (e) {
+		return;
+	} finally {
+		delete ratingElement.dataset.busy;
+	}
+
+	ratingText.textContent = L('Рейтинг в Мини-играх: {rating}', { rating: data.rating });
+	ratingText.classList.remove('skeleton', 'skeleton--bordered');
 }
 
 function handleInviteCode() {

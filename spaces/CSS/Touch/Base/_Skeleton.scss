@@ -14,9 +14,13 @@ body {
 			border-radius: 50%;
 		}
 
-		&--text {
+		&--text,
+		&--bordered {
 			display: inline-block;
 			border-radius: 1em;
+		}
+
+		&--text {
 			height: 0.9em;
 			vertical-align: middle;
 		}
