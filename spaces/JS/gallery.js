@@ -189,13 +189,9 @@ var tpl = {
 							'<span class="ico_gallery ico_gallery_mess"></span> <span id="g_commentCnt" class="gallery__link_text"></span>' + 
 						'</a>' + 
 					'</td>' +
-					`<td
-						id="g_collections"
-						class="gallery__link"
-						title="${L('Сохранить к себе')}"
-					>
-						<span class="ico ico_plus_white"></span>
-					</td>` +
+					'<td id="g_collections" class="gallery__link" title="' + L('Сохранить к себе') + '">' + // l10n context="save-to-own-library"
+						'<span class="ico ico_plus_white"></span>' +
+					'</td>' +
 
 					`<td
 						id="g_share"

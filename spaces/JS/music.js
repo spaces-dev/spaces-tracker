@@ -169,7 +169,7 @@ var tpl = {
 									'</td>' + 
 									
 									'<td class="ico_td">' + 
-										'<a href="#" class="tdn js-music_add" title="' + L("Добавить к себе") + '">' +
+										'<a href="#" class="tdn js-music_add" title="' + L("Добавить к себе") + '">' + // l10n context="save-to-own-library"
 											'<span class="ico ico_plus_darkblue js-ico"></span>' + 
 										'</a>' + 
 									'</td>' + 

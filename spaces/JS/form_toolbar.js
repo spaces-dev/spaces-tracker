@@ -92,7 +92,7 @@ var ITEMS = {
 	},
 	more: {
 		icon: "ico ico_more ico-alone",
-		title: L("Ещё")
+		title: L("Ещё") // l10n context="show-more"
 	},
 	user: {
 		hide: true,

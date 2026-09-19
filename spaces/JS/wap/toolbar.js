@@ -15,7 +15,7 @@ var TOOLBAR_ITEMS = {
 	u:		["mail/underline.png",		L("Подчёркнутый текст")],
 	s:		["mail/strike.png",			L("Зачёркнутый текст")],
 	fon:	["mail/background.png",		L("Фон текста")],
-	more:	[TOGGLE_TOOLBAR_ICO[0],		L("Ещё")]
+	more:	[TOGGLE_TOOLBAR_ICO[0],		L("Ещё")] // l10n context="show-more"
 };
 // l10n-reset
 

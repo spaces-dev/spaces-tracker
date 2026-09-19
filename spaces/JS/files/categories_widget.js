@@ -9,10 +9,11 @@ import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
 const tpl = {
 	editLinkLabel({ selectedCatsCount, offersCount }) {
+		const actionLabel = selectedCatsCount > 0
+			? L('Изменить') // l10n context="file-category-action"
+			: L('Добавить'); // l10n context="file-category-action"
 		return `
-			<!-- l10n-set context="file-category-action" -->
-			${selectedCatsCount > 0 ? L('Изменить') : L('Добавить')}
-			<!-- l10n-reset -->
+			${actionLabel}
 			${offersCount > 0 ? `(<span class="red b">${offersCount}</span>)` : ``}
 		`;
 	}

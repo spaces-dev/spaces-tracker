@@ -17,7 +17,7 @@ var TOOLBAR_ITEMS = {
 	smiles:	["ico/smile.png",			L("Смайлы")],
 	code:	["mail/code.png",			L("Код")],
 	fon:	["mail/background.png",		L("Фон текста")],
-	more:	[TOGGLE_TOOLBAR_ICO[0],		L("Ещё")]
+	more:	[TOGGLE_TOOLBAR_ICO[0],		L("Ещё")] // l10n context="show-more"
 };
 // l10n-reset
 var COLORS = [
