@@ -112,6 +112,8 @@
 	}
 
 	&--variant-topic {
+		align-items: center;
+		flex-grow: 1;
 		margin-top: 0;
 
 		&[data-disabled="true"][data-count="0"] {
@@ -119,6 +121,12 @@
 		}
 
 		@include reactions-use-theme($reactions-theme-topic);
+	}
+
+	&__trailing {
+		flex-shrink: 0;
+		margin-left: auto;
+		white-space: nowrap;
 	}
 
 	&--variant-pills {

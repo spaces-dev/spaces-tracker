@@ -7,7 +7,7 @@ import { L, select } from './core/l10n';
 
 const USERS_PER_PAGE = 5;
 
-let classes = {
+const classes = {
 	ico: {
 		up: 'ico_abar_vote_up',
 		upActive: 'ico_abar_vote_up_on',
@@ -15,12 +15,13 @@ let classes = {
 		downActive: 'ico_abar_vote_down_on'
 	}
 };
-let tpl = {
+
+const tpl = {
 	popper(id, gallery) {
 		return `
-			<div class="popper-dropdown" id="${id}"
-				${gallery ? 'data-popper-type="gallery" style="z-index:100001"' : ''}
-			></div>
+				<div class="popper-dropdown" id="${id}"
+					${gallery ? 'data-popper-type="gallery" style="z-index:100001"' : 'data-popper-append-to="#main"'}
+				></div>
 		`;
 	},
 	userSkeleton() {
@@ -326,7 +327,7 @@ function showLikes(el, elementId, count) {
 	}
 
 	const popper = getPopperById(popperId);
-	popper.toggle({ clickedClass: 'clicked' }, el[0]);
+	popper.toggle({ clickedClass: el.hasClass('inl-link') ? 'js-clicked' : 'clicked' }, el[0]);
 }
 
 function initLikesPopper(popper, ot, oid, count) {

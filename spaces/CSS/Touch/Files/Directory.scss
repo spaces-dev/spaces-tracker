@@ -39,15 +39,18 @@
 
 	&__info {
 		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 3px;
 		padding-top: 2px;
 		line-height: 1.15em;
+		overflow-wrap: break-word;
 	}
 
 	&__content {
 		flex: 1;
+		min-width: 0;
 		display: flex;
 		gap: 10px;
 		padding: 12px 15px;
