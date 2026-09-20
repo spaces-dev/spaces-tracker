@@ -93,7 +93,7 @@ const tpl = {
 			<div id="microphone-setup-help" class="hide">
 				<br />
 				${systemHelp}
-				${L('Если проблему не удалось решить, обратитесь в <link>службу поддержки</link>.', {
+				${L('Если проблему не удалось решить, обратитесь в <link>службу тех. поддержки</link>.', {
 					link: (content) => `<a href="/soo/help/">${content}</a>`
 				})}
 			</div>
