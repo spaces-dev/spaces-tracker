@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { closeAllPoppers } from '../widgets/popper';
 
 const MONTHS_LABELS = [
-	// l10n-set context="month-in-date"
+	// l10n-set context="month genitive"
 	L('января'), L('февраля'), L('марта'),
 	L('апреля'), L('мая'), L('июня'),
 	L('июля'), L('августа'), L('сентября'),
