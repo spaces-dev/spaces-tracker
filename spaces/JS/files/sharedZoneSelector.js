@@ -277,8 +277,9 @@ function initDirSelector(selectorWidget) {
 
 	popper.on("beforeOpen", async () => {
 		selectorPopperContent.html(tpl.loader());
-		if (!await checkForAdd())
+		if (!selectorWidget.data('value') && !await checkForAdd()) {
 			return;
+		}
 		await openDir(0); // Всегда открываем корень
 	});
 
