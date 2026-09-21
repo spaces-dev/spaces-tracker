@@ -813,6 +813,16 @@ body .stnd-link_active:hover,
 		color: $default-text-color;
 		box-shadow: $default-clicked-shadow;
 	}
+
+	&--disabled,
+	&--disabled:hover,
+	&--disabled:active {
+		background: $content-bg;
+		border-color: $disabled-text-color;
+		color: $disabled-text-color;
+		box-shadow: none;
+		cursor: default;
+	}
 }
 
 /* bordered */

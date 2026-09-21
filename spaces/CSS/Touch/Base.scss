@@ -1082,27 +1082,34 @@ body a.disabled .bordered .t {
 
 .info-table {
 	display: grid;
-	gap: 8px;
+	grid-template-columns: fit-content(40%) minmax(0, 1fr);
+	column-gap: 15px;
+	row-gap: 8px;
+	align-items: start;
 
 	&__row {
-		display: grid;
-		grid-template-columns: 30% minmax(0, auto) 1fr;
-		gap: 8px;
-		align-items: start;
-
-		@media (min-width: 600px) {
-			grid-template-columns: 25% minmax(0, auto) 1fr;
-		}
+		display: contents;
 	}
 
 	&__title {
+		grid-column: 1;
+		min-width: 0;
+		max-width: 12rem;
 		color: $secondary-text-color;
 		overflow-wrap: break-word;
 	}
 
 	&__value {
+		grid-column: 2;
 		min-width: 0;
 		overflow-wrap: break-word;
+
+		&--with-actions {
+			display: grid;
+			grid-template-columns: minmax(0, max-content) max-content;
+			column-gap: 8px;
+			align-items: start;
+		}
 	}
 
 	&__actions {

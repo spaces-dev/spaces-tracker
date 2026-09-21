@@ -121,15 +121,15 @@ const tpl = {
 				${L("Зона обмена:")}
 			</div>
 
-			<div class="info-table__value">
-				${shZDirs || addShZDirLink}
-			</div>
+			<div class="info-table__value${changeShZDirLink ? " info-table__value--with-actions" : ""}">
+				<span>${shZDirs || addShZDirLink}</span>
 
-			${changeShZDirLink ? `
-				<div class="info-table__actions">
-					${changeShZDirLink}
-				</div>
-			` : ``}
+				${changeShZDirLink ? `
+					<div class="info-table__actions">
+						${changeShZDirLink}
+					</div>
+				` : ``}
+			</div>
 		`;
 	},
 	loader() {

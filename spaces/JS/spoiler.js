@@ -176,7 +176,12 @@ $('body').on('click', '.js-replace_link', function (e) {
 	if (el.data('selector')) {
 		$(el.data('selector')).toggleClass('hide');
 	} else if (el.data('id')) {
-		$('#' + el.data('id')).toggleClass('hide');
+		const spoiler = $('#' + el.data('id'));
+		const place = el.data('place');
+		if (place) {
+			$('#' + place).append(spoiler);
+		}
+		spoiler.toggleClass('hide');
 		el.toggleClass('js-clicked');
 	} else {
 		el.find('.ico_arr_down, .ico_arr_up').toggleClass('ico_arr_down ico_arr_up');

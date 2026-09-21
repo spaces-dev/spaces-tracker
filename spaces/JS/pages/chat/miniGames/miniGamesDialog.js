@@ -192,23 +192,27 @@ export async function loadMiniGamesRating(ratingElement) {
 
 	const miniGamesWidget = document.getElementById('mini_games_dialog');
 	const url = ratingElement.dataset.ratingUrl + ratingElement.dataset.userId;
-	let data;
+	let rating;
 	try {
 		const response = await fetch(url, {
 			headers: {
 				Authorization: `Bearer ${miniGamesWidget.dataset.token}`,
 			},
 		});
-		if (!response.ok)
-			return;
-		data = await response.json();
+		if (response.status === 404) {
+			rating = 0;
+		} else {
+			if (!response.ok)
+				throw new Error(`Mini Games rating request failed: ${response.status}`);
+			rating = (await response.json()).rating;
+		}
 	} catch (e) {
-		return;
+		rating = '?';
 	} finally {
 		delete ratingElement.dataset.busy;
 	}
 
-	ratingText.textContent = L('Рейтинг в Мини-играх: {rating}', { rating: data.rating });
+	ratingText.textContent = L('Рейтинг в Мини-играх: {rating}', { rating });
 	ratingText.classList.remove('skeleton', 'skeleton--bordered');
 }
 
