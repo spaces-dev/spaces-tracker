@@ -638,6 +638,7 @@
   "/js/touch/core/lp.js",
   "/js/touch/core/lp/jsonp.js",
   "/js/touch/core/polyfills/misc.js",
+  "/js/touch/core/share.js",
   "/js/touch/core/textarea-autoresize.js",
   "/js/touch/core/theme.js",
   "/js/touch/core/touch/draggable.js",

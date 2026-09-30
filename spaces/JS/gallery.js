@@ -6,6 +6,7 @@ import {Class, TSimpleEvents} from './class';
 import {Spaces, Url, Codes} from './spacesLib';
 import SpacesApp from './android/api';
 import page_loader from './ajaxify';
+import { canShare } from './core/share';
 import { tick, extend } from './utils';
 import { L, select } from './core/l10n';
 
@@ -1678,7 +1679,7 @@ Gallery = {
 						$.extend(item, viewer_info);
 
 						// Если у нас в списке только "Поделиться с помощью..." и он не работает, то отключаем кнопку деления
-						if (('shareLinks' in item) && item.shareLinks.length == 2 && typeof navigator.share !== 'function')
+						if (('shareLinks' in item) && item.shareLinks.length == 2 && !canShare())
 							item.shareLinks = false;
 
 						item.loaded = true;

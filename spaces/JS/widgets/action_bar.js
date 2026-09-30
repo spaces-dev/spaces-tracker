@@ -3,19 +3,20 @@ import $ from '../jquery';
 import Spaces from '../spacesLib';
 import { L } from '../core/l10n';
 import {copyToClipboard} from '../core/clipboard';
+import { canShare, share } from '../core/share';
 import { closeAllPoppers } from './popper';
 
 function init(container) {
-	// Скрываем "Поделиться с помощью..", если браузер не поддерживает
+	// Скрываем "Поделиться с помощью..", если платформа не поддерживает
 	container.on('popper:beforeOpen', '.js-share_menu', function () {
 		const menu = $(this);
-		menu.find('[data-action="share_external"]').toggleClass('hide', typeof navigator.share !== 'function');
+		menu.find('[data-action="share_external"]').toggleClass('hide', !canShare());
 		menu.find('[data-action="save_to_collections"]').addClass('hide');
 	});
 	
 	container.action('share_external', function (e) {
 		e.preventDefault();
-		navigator.share({url: getObjectUrl($(this))});
+		share({url: getObjectUrl($(this))});
 	}).action('copy_link', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
