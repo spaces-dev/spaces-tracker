@@ -23,6 +23,7 @@ export const TOP_COUNTER_TYPE = {
 };
 
 var BEACON_INTERVAL = 1000 * 60 * 4; // Интервал маячка
+const BACKGROUND_SOUND_INTERVAL = 30 * 1000;
 
 var interactive = Spaces.params.nid > 0,
 	beacon_extra = {},
@@ -77,6 +78,7 @@ var Notifications = Class({
 		self.deffered = [];
 		self.blinker = {interval: null, old_title: null};
 		self.ncounter = 0;
+		self.last_background_sound_time = 0;
 		
 		self.top_notif_queue = [];
 		self.top_notif_queue_lock = false;
@@ -309,6 +311,7 @@ var Notifications = Class({
 	
 	onFocusWindow: function () {
 		var self = this;
+		self.last_background_sound_time = 0;
 		self.titleBlink(false);
 		cookie.set('spacesactive', 'true', {expires: 7 * 24 * 3600});
 		self.showBackgroundNotifications();
@@ -695,8 +698,15 @@ var Notifications = Class({
 	
 	playSoundInBg: function (force_sound) {
 		var winner = parseInt(cookie.get('pageLoadTime') || 0);
-		if ((this.page_load_time == winner || force_sound))
-			this.playSound();
+		if (this.page_load_time != winner && !force_sound)
+			return this;
+
+		const now = Date.now();
+		if (now - this.last_background_sound_time < BACKGROUND_SOUND_INTERVAL)
+			return this;
+
+		this.last_background_sound_time = now;
+		this.playSound();
 		return this;
 	},
 	

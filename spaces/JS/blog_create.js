@@ -107,6 +107,9 @@ module.on("componentpage", function () {
 		if (link.data('canceled'))
 			return;
 		e.preventDefault();
+		// l10n context="draft-action"
+		if (!confirm(L('Отменить создание записи? Текст и вложения будут удалены.')))
+			return;
 		const form = $('.js-blog_create_form');
 		form.find('textarea[name="subject"]').val("").trigger("change");
 		form.find('input[name="headeR"]').val("").trigger("change");

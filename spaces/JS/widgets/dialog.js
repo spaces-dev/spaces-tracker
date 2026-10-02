@@ -60,8 +60,10 @@ export class Dialog {
 		this.dialogElement = dialogElement;
 		this.setOptions({
 			minWidth: 320,
+			minHeight: 320,
 			width: 360,
 			height: 640,
+			preserveAspectRatio: true,
 			title: "",
 			...parseDialogOptions(this.element()),
 			...options,
@@ -300,32 +302,35 @@ export class Dialog {
 			}
 		});
 
+		const restrictResizeEdges = interact.modifiers.restrictEdges({
+			inner: (_x, _y, self) => {
+				const rect = self.element.getBoundingClientRect();
+				return {
+					left: rect.right + window.scrollX - this.options.minWidth,
+					right: rect.left + window.scrollX + this.options.minWidth,
+					top: rect.bottom + window.scrollY - this.options.minHeight,
+					bottom: rect.top + window.scrollY + this.options.minHeight,
+				};
+			},
+			outer: () => ({
+				left: window.scrollX,
+				right: window.scrollX + getViewportWidth(),
+				top: window.scrollY,
+				bottom: window.scrollY + getViewportHeight(),
+			})
+		});
+		const resizeModifiers = this.options.preserveAspectRatio ? [
+			interact.modifiers.aspectRatio({
+				ratio: 'preserve',
+				modifiers: [restrictResizeEdges]
+			})
+		] : [restrictResizeEdges];
+
 		this.interactInstance.resizable({
 			inertia: false,
 			edges: { top: true, left: true, bottom: true, right: true },
 			margin: 8,
-			modifiers: [
-				interact.modifiers.aspectRatio({
-					ratio: 'preserve',
-					modifiers: [
-						interact.modifiers.restrictEdges({
-							inner: (_x, _y, self) => {
-								const rect = self.element.getBoundingClientRect();
-								return {
-									left: rect.right + window.scrollX - this.options.minWidth,
-									right: rect.left + window.scrollX + this.options.minWidth,
-								};
-							},
-							outer: () => ({
-								left: window.scrollX,
-								right: window.scrollX + getViewportWidth(),
-								top: window.scrollY,
-								bottom: window.scrollY + getViewportHeight(),
-							})
-						}),
-					]
-				}),
-			],
+			modifiers: resizeModifiers,
 			listeners: {
 				start: () => {
 					this.dialogElement.classList.add('dialog--is-interacting');
@@ -472,6 +477,7 @@ function parseDialogOptions(element) {
 		minHeight: "number",
 		width: "number",
 		height: "number",
+		preserveAspectRatio: "bool",
 		clickedClass: "string",
 		title: "string",
 	}, 'dialog');

@@ -700,15 +700,15 @@ var Chat = {
 					var cnt = 0;
 					for (var i = 0; i < messages.length; ++i) {
 						var mid = messages[i];
-						if (self.showMessage(mid, res.widgets[mid]))
+						if (self.showMessage(mid, res.widgets[mid]) && !notifications.isWindowActive())
 							++cnt;
 					}
 					self.cutMessages();
 					
-					if (!notifications.isWindowActive()) {
+					if (cnt) {
 						new_messages_cnt += cnt;
 						notifications.showNewEvent(tpl.title(new_messages_cnt), { oneTab: true, type: EVENT_TYPE.CHAT });
-					} else {
+					} else if (notifications.isWindowActive()) {
 						new_messages_cnt = 0;
 					}
 					
