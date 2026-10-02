@@ -22,6 +22,15 @@ let resizeObserver;
 
 const popperTypes = {
 	custom: {},
+	popover: {
+		placement: "top",
+		offsetTop: 20,
+		padding: 30,
+		autoClose: 5000,
+		arrow: true,
+		flip: true,
+		exclusive: true,
+	},
 	spoiler: {
 		floating: false,
 		closeOnBodyClick: false,
@@ -72,6 +81,7 @@ export class Popper {
 	ignoreBodyClick = false;
 	scrollTopBeforeOpen;
 	eventHandlers = [];
+	autoCloseTimer;
 
 	constructor(popperElement, options = {}) {
 		this.popperElement = popperElement;
@@ -87,6 +97,7 @@ export class Popper {
 			offsetLeft: 0,
 			offsetTop: 0,
 			autoScroll: false,
+			autoClose: 0,
 			fixed: false,
 			padding: 5,
 			fullWidth: false,
@@ -105,6 +116,8 @@ export class Popper {
 		popperInstances.set(popperElement, this);
 		this.popperElement.dataset.popperType = popperType;
 		this.popperElement.addEventListener('click', () => this._startIgnoreBodyClick());
+		this.popperElement.addEventListener('mouseenter', () => this._clearAutoClose());
+		this.popperElement.addEventListener('mouseleave', () => this._scheduleAutoClose());
 		this.popperElement.classList.add('js-popper_element');
 
 		if (!popperElement.id)
@@ -196,6 +209,7 @@ export class Popper {
 
 		this._triggerEvent("afterOpen");
 		popperOpenInstances.push(this);
+		this._scheduleAutoClose();
 
 		if (this.options.autoScroll) {
 			if (this.engine)
@@ -351,6 +365,7 @@ export class Popper {
 
 		if (!this._triggerEvent("beforeClose"))
 			return;
+		this._clearAutoClose();
 
 		const lastReferenceElement = this.referenceElement;
 		if (this.options.clickedClass)
@@ -466,6 +481,19 @@ export class Popper {
 		setTimeout(() => this.ignoreBodyClick = false, 0);
 	}
 
+	_scheduleAutoClose() {
+		this._clearAutoClose();
+		if (this.isOpen() && this.options.autoClose > 0)
+			this.autoCloseTimer = setTimeout(() => this.close(), this.options.autoClose);
+	}
+
+	_clearAutoClose() {
+		if (this.autoCloseTimer) {
+			clearTimeout(this.autoCloseTimer);
+			this.autoCloseTimer = undefined;
+		}
+	}
+
 	_triggerEvent(eventName, data = {}) {
 		const event = new CustomEvent(`popper:${eventName}`, { detail: { popper: this, ...data }, bubbles: true, cancelable: true });
 		this.popperElement.dispatchEvent(event);
@@ -485,6 +513,8 @@ export class Popper {
 	getType() {
 		if (this.popperElement.dataset.popperType)
 			return this.popperElement.dataset.popperType;
+		if (this.popperElement.classList.contains("popper-popover"))
+			return "popover";
 		if (this.popperElement.classList.contains("popper-dropdown")) {
 			// FIXME: Мощнейший костыль для спойлеров
 			const ddSpoiler = this.element().closest('.js-dd_spoiler');
@@ -579,6 +609,7 @@ function parsePopperOptions(element) {
 		group: "string",
 		offsetLeft: "number",
 		offsetTop: "number",
+		autoClose: "number",
 		padding: "number",
 		autoScroll: "bool",
 		fixed: "bool",

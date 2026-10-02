@@ -60,7 +60,7 @@ export class Dialog {
 		this.dialogElement = dialogElement;
 		this.setOptions({
 			minWidth: 320,
-			minHeight: 320,
+			minHeight: 480,
 			width: 360,
 			height: 640,
 			preserveAspectRatio: true,

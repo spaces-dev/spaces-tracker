@@ -4,15 +4,18 @@ import { useIframePort } from "./iframePort";
 import { useMiniGamesPayment } from "./payment";
 
 const DEFAULT_MENU_HEIGHT = 360;
+const CHAT_HINT_STORAGE_KEY = `mini-games-chat-hint:${Spaces.params.nid}`;
 
-module.on("componentpage", async () => {
-	const popper = getPopperById("mini_games_selector");
+module.on("componentpage", () => {
+	const gameSelector = getPopperById("mini_games_selector");
+	const hint = getPopperById("mini_games_chat_hint");
+	const gameButton = document.querySelector('[data-popper-id="mini_games_selector"]');
 	const port = useIframePort((payload) => {
 		switch (payload.type) {
 			case "REQUEST_AUTH_TOKEN": {
 				port.send({
 					type: 'AUTH_TOKEN',
-					token: popper.element().dataset.token,
+					token: gameSelector.element().dataset.token,
 					context: 'spaces',
 					lang: Spaces.params.lang,
 				});
@@ -20,17 +23,17 @@ module.on("componentpage", async () => {
 			}
 
 			case "MINI_GAMES_WIDGET_READY": {
-				popper.element().classList.remove('mini-games-selector--is-loading');
+				gameSelector.element().classList.remove('mini-games-selector--is-loading');
 				break;
 			}
 
 			case "MINI_GAMES_SELECTED": {
-				popper.close();
+				gameSelector.close();
 				break;
 			}
 
 			case "MINI_GAMES_WIDGET_CLOSE": {
-				popper.close();
+				gameSelector.close();
 				break;
 			}
 
@@ -51,20 +54,26 @@ module.on("componentpage", async () => {
 		}
 	}, "MINI_GAMES_WIDGET");
 
-	const paymentForm = useMiniGamesPayment(port, popper.$content());
+	const paymentForm = useMiniGamesPayment(port, gameSelector.$content());
+	if (!localStorage.getItem(CHAT_HINT_STORAGE_KEY)) {
+		gameButton.addEventListener('click', () => hint.close());
+		hint.element().addEventListener('click', () => gameSelector.open({}, gameButton));
+		gameSelector.on('afterOpen', () => localStorage.setItem(CHAT_HINT_STORAGE_KEY, '1'));
+		hint.open({}, gameButton);
+	}
 
 	const updateMenuHeight = () => {
-		const iframe = popper.content().querySelector('iframe');
+		const iframe = gameSelector.content().querySelector('iframe');
 		const iframeHeight = Math.min(DEFAULT_MENU_HEIGHT, window.innerHeight - 50);
 		iframe.height = `${iframeHeight}px`;
 	};
 
-	popper.on('beforeOpen', () => {
-		const excludeGames = JSON.parse(popper.opener().dataset.excludeGames ?? `[]`);
-		const includeGames = JSON.parse(popper.opener().dataset.includeGames ?? `[]`);
-		const hideOffline = JSON.parse(popper.opener().dataset.hideOffline ?? `[]`);
+	gameSelector.on('beforeOpen', () => {
+		const excludeGames = JSON.parse(gameSelector.opener().dataset.excludeGames ?? `[]`);
+		const includeGames = JSON.parse(gameSelector.opener().dataset.includeGames ?? `[]`);
+		const hideOffline = JSON.parse(gameSelector.opener().dataset.hideOffline ?? `[]`);
 
-		const iframeUrl = new URL(`${popper.element().dataset.url}/activity-starter-widget.html`);
+		const iframeUrl = new URL(`${gameSelector.element().dataset.url}/activity-starter-widget.html`);
 		iframeUrl.searchParams.set("lang", Spaces.params.lang);
 
 		for (const game of excludeGames)
@@ -74,7 +83,7 @@ module.on("componentpage", async () => {
 		for (const game of hideOffline)
 			iframeUrl.searchParams.append("hideOffline", game);
 
-		popper.element().classList.add('mini-games-selector--is-loading');
+		gameSelector.element().classList.add('mini-games-selector--is-loading');
 		const iframe = document.createElement('iframe');
 		iframe.src = iframeUrl.toString();
 		iframe.width = '100%';
@@ -82,14 +91,14 @@ module.on("componentpage", async () => {
 		iframe.allow = "clipboard-write; clipboard-read; camera; microphone; geolocation; accelerometer; gyroscope; magnetometer; device-orientation; autoplay;"
 		iframe.setAttribute('allowfullscreen', '');
 		port.bind(iframe);
-		popper.content().appendChild(iframe);
+		gameSelector.content().appendChild(iframe);
 		updateMenuHeight();
 		window.addEventListener('resize', updateMenuHeight);
 	});
-	popper.on("afterClose", () => {
+	gameSelector.on("afterClose", () => {
 		paymentForm.cancel();
 		port.unbind();
-		popper.content().innerHTML = '';
+		gameSelector.content().innerHTML = '';
 		window.removeEventListener('resize', updateMenuHeight);
 	});
 });

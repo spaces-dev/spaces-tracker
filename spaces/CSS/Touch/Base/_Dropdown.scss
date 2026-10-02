@@ -368,6 +368,64 @@
 	}
 }
 
+.popper-popover {
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	position: absolute;
+	z-index: 1101;
+	max-width: 280px;
+	padding: 10px;
+	color: $default-text-color;
+	background-color: $popover-bg;
+	border-radius: 6px;
+	box-sizing: border-box;
+	filter: drop-shadow($popover-shadow);
+	font-size: 1rem;
+	text-align: left;
+	white-space: normal;
+	transition: opacity 0.2s ease;
+
+	&[data-popper-open="true"] {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
+
+	&::after {
+		position: absolute;
+		z-index: -1;
+		width: 14px;
+		height: 14px;
+		background-color: $popover-bg;
+		content: '';
+	}
+
+	&[data-popper-placement^='top']::after {
+		bottom: -7px;
+		left: var(--popper-arrow-offset);
+		transform: translateX(-50%) rotate(45deg);
+	}
+
+	&[data-popper-placement^='bottom']::after {
+		top: -7px;
+		left: var(--popper-arrow-offset);
+		transform: translateX(-50%) rotate(45deg);
+	}
+
+	&[data-popper-placement^='left']::after {
+		right: -7px;
+		top: var(--popper-arrow-offset);
+		transform: translateY(-50%) rotate(45deg);
+	}
+
+	&[data-popper-placement^='right']::after {
+		left: -7px;
+		top: var(--popper-arrow-offset);
+		transform: translateY(-50%) rotate(45deg);
+	}
+}
+
 .popper-spoiler {
 	display: none;
 

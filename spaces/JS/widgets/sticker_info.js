@@ -1,62 +1,42 @@
-import "Common/Popover.css";
 import module from "module";
-import { createPopper } from '@popperjs/core/lib/popper-lite';
-import flip from '@popperjs/core/lib/modifiers/flip';
-import preventOverflow from '@popperjs/core/lib/modifiers/preventOverflow';
-import arrow from '@popperjs/core/lib/modifiers/arrow';
-import { debounce } from 'throttle-debounce';
+import { Popper } from "./popper";
 import { L } from "../core/l10n";
 
-let closePrevPopper;
+let stickerPopper;
+
+function getStickerPopper() {
+	if (stickerPopper)
+		return stickerPopper;
+
+	const popperElement = document.createElement("div");
+	popperElement.className = "popper-popover t_center";
+	document.body.appendChild(popperElement);
+	stickerPopper = new Popper(popperElement);
+	return stickerPopper;
+}
+
+function destroyStickerPopper() {
+	if (!stickerPopper)
+		return;
+
+	const popperElement = stickerPopper.element();
+	stickerPopper.destroy();
+	popperElement.remove();
+	stickerPopper = undefined;
+}
 
 function initStickerPopover(el) {
-	let popperInstance;
-	let popperBlock;
-
-	const onBodyClick = (e) => {
-		if (popperBlock && !popperBlock.contains(e.target) && e.target !== popperBlock)
-			hidePopper();
-	};
-
-	const hidePopper = () => {
-		if (popperInstance) {
-			popperBlock.classList.remove("popover--visible");
-			popperBlock.addEventListener("transitionend", (e) => e.currentTarget.remove(), false);
-			popperInstance.destroy();
-			popperInstance = undefined;
-			popperBlock = undefined;
-			closePrevPopper = undefined;
-			autoHide.cancel({ upcomingOnly: true });
-			document.body.removeEventListener("click", onBodyClick, false);
-		}
-	};
-	const autoHide = debounce(5000, hidePopper);
-
 	el.addEventListener("click", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
 
-		if (popperInstance) {
-			hidePopper();
+		const popper = getStickerPopper();
+		if (popper.opener() === el) {
+			popper.close();
 			return;
 		}
 
-		if (closePrevPopper)
-			closePrevPopper();
-
-		autoHide();
-
-		closePrevPopper = () => {
-			closePrevPopper = undefined;
-			hidePopper();
-		};
-
-		document.body.addEventListener("click", onBodyClick, false);
-
-		popperBlock = document.createElement("div");
-		popperBlock.className = "popover popover--visible t_center";
-		popperBlock.setAttribute("data-popper-placement", "top");
-		popperBlock.innerHTML = `
+		popper.element().innerHTML = `
 			<div class="text-list">
 				<div class="text-list__item">
 					<span class="ico_xlarge ico_xlarge_magic"></span>
@@ -73,31 +53,9 @@ function initStickerPopover(el) {
 					</a>
 				</div>
 			</div>
-			<div data-popper-arrow class="popover__arrow"></div>
 		`;
 
-		popperBlock.addEventListener("mouseover", () => autoHide.cancel({ upcomingOnly: true }), false);
-		popperBlock.addEventListener("mouseout", () => autoHide(), false);
-		document.body.appendChild(popperBlock);
-
-		popperInstance = createPopper(e.currentTarget, popperBlock, {
-			modifiers: [
-				flip, preventOverflow, arrow,
-				{
-					name: 'offset',
-					options: {
-						offset: [0, 30],
-					},
-				},
-				{
-					name: 'preventOverflow',
-					options: {
-						padding: 30,
-					},
-				},
-			],
-			placement: "top",
-		});
+		popper.open({}, el);
 	});
 }
 
@@ -110,6 +68,5 @@ module.on("component", () => {
 });
 
 module.on("componentpagedone", () => {
-	if (closePrevPopper)
-		closePrevPopper();
+	destroyStickerPopper();
 });
