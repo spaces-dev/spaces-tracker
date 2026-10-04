@@ -96,9 +96,8 @@ $('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
 
 	const likeOffer = $('#like_offer_' + current_data.ot + '_' + current_data.oid);
 	const updateOffer = () => {
-		const shareOffer = likeOffer.find('.js-share_buttons');
 		const subscribeOffer = likeOffer.find('.js-subscribe_offer');
-		const isVisible = shareOffer.length > 0 || !subscribeOffer.hasClass('hide');
+		const isVisible = !subscribeOffer.hasClass('hide');
 		likeOffer.toggleClass('hide', !isVisible);
 		
 		// Костыль!

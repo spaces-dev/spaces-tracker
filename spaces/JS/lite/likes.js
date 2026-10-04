@@ -48,9 +48,8 @@ export function initLikes(id) {
 
 	const likeOffer = ge('#like_offer_' + ot + '_' + oid);
 	const updateOffer = () => {
-		const shareOffer = likeOffer && ge('.js-share_buttons', likeOffer)[0];
 		const subscribeOffer = likeOffer && ge('.js-subscribe_offer', likeOffer)[0];
-		const isVisible = !!shareOffer || (subscribeOffer && !hasClass(subscribeOffer, 'hide'));
+		const isVisible = subscribeOffer && !hasClass(subscribeOffer, 'hide');
 		if (likeOffer)
 			toggleClass(likeOffer, 'hide', !isVisible);
 
