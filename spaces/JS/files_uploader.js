@@ -43,7 +43,7 @@ var tpl = {
 						'<table class="table__wrap table_progress table_progress-full">' + 
 							'<tr>' + 
 								'<td class="table__cell hide" id="upload_spinner_' + data.id + '"></td>' + 
-								'<td class="table__cell hide" id="upload_err_' + data.id + '"></td>' + 
+								'<td class="table__cell hide js-upload_error" id="upload_err_' + data.id + '"></td>' +
 								'<td class="table__cell table__cell_progress hide" id="upload_pb_wrap_' + data.id + '"></td>' + 
 								'<td class="table__cell">' + 
 									'<div class="progress-item__num" id="upload_pb_pct_' + data.id + '"></div>' + 
@@ -111,7 +111,7 @@ var tpl = {
 									</tr>
 								</table>
 							</div>
-							<div id="upload_err_${data.id}" class="hide pad_t_a"></div>
+							<div id="upload_err_${data.id}" class="hide pad_t_a js-upload_error"></div>
 						</div>
 					</div>
 				</td>
@@ -400,6 +400,8 @@ var FileUploader = new (Class({
 				})).show();
 				
 				var upload_file = $('#upload_file_' + file.id);
+				upload_file.removeClass('js-upload_has_error');
+				upload_file.find('.js-upload_error').hide();
 				upload_file.find('.js-upload_pb_ui').removeClass('hide');
 				upload_file.find('.js-upload_no_pb_ui').addClass('hide');
 				

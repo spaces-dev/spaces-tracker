@@ -711,6 +711,8 @@
   "/js/touch/pages/ai/photo-motion.js",
   "/js/touch/pages/ai/photo-style.js",
   "/js/touch/pages/ai/stickers.js",
+  "/js/touch/pages/chat/miniGames/activityParticipants.js",
+  "/js/touch/pages/chat/miniGames/activityTimer.js",
   "/js/touch/pages/chat/miniGames/iframePort.js",
   "/js/touch/pages/chat/miniGames/miniGamesDialog.js",
   "/js/touch/pages/chat/miniGames/miniGamesSelector.js",

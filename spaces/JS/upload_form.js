@@ -124,6 +124,7 @@ function initUploader() {
 	let select_btn = $('#upload_select_btn');
 	let save_btn = $('#upload_save_btn');
 	let last_redirect;
+	let upload_completed = false;
 	
 	FileUploader.init({
 		autoSubmit: false,
@@ -133,6 +134,7 @@ function initUploader() {
 			FileUploader.setPostData(serializeForm(file));
 		},
 		onUploadStart() {
+			upload_completed = false;
 			state = STATE_UPLOADING;
 			updateFormState();
 			
@@ -143,7 +145,10 @@ function initUploader() {
 			// form.find('.js-upload_file_fields').addClass('hide');
 		},
 		onUploadComplete() {
-			if (success_uploaded) {
+			upload_completed = true;
+			if (FileUploader.getUploader().total()) {
+				state = STATE_IDLE;
+			} else if (success_uploaded) {
 				state = STATE_COMPLETE;
 				
 				if (notifications && !notifications.isWindowActive()) {
@@ -223,6 +228,19 @@ function initUploader() {
 		},
 		onHideError() {
 			Spaces.clearError("upload_err");
+		},
+		onFilesChunkStart() {
+			if (!upload_completed)
+				return;
+
+			FileUploader.getUploader().reset();
+			files_place.empty();
+			current_files = {};
+			success_uploaded = 0;
+			last_redirect = undefined;
+			upload_completed = false;
+			state = STATE_IDLE;
+			save_btn.removeAttr('href');
 		},
 		onFilesChunkEnd() {
 			updateFormState();
@@ -488,6 +506,8 @@ function initDragAndDrop() {
 	
 	// Показываем или скрывание сообщение про DND
 	$('#main').on('dragGlobalStart', function () {
+		if (state == STATE_UPLOADING)
+			return;
 		drag_place.addClass('upload-dnd_msg_show');
 	}).on('dragGlobalEnd', function () {
 		drag_place.removeClass('upload-dnd_msg_show');
@@ -527,13 +547,14 @@ function updateFormState() {
 	form.find('.js-upload_state-preupload').toggle(selected_files > 0 && state == STATE_IDLE);
 	form.find('.js-upload_state-uploading').toggle(state == STATE_UPLOADING || state == STATE_COMPLETE);
 	
-	let disable_select_btn = (state != STATE_IDLE);
+	let disable_select_btn = state == STATE_UPLOADING;
 	
 	// Блокируем кнопку выбора файла
 	select_btn.toggleClass('disabled', disable_select_btn);
 	
 	// Блокируем кнопку загрузки
-	let can_upload = selected_files > 0 && selected_files > invalid_files;
+	let can_upload = selected_files > 0 &&
+		(selected_files > invalid_files || FileUploader.getUploader().total() > 0);
 	$('#upload_start_btn').toggleClass('disabled', !can_upload);
 	
 	// Кнопки сохранения и отмены

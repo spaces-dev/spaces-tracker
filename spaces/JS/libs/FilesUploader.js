@@ -326,7 +326,7 @@ $.extend(FilesUploader.prototype, {
 	},
 	addFiles: function (files, name_prefix) {
 		var self = this;
-		if (self._in_upload && self.params.maxFiles == 1)
+		if (self._in_upload && (self.params.maxFiles == 1 || !self.params.autoSubmit))
 			return;
 
 		var mime2ext = {
@@ -435,20 +435,26 @@ $.extend(FilesUploader.prototype, {
 		return null;
 	},
 	submit: function () {
-		var self = this, next_file = function () {
-			if (self.files.length > 0 && (!self._current_file || !self._current_file.abort)) {
+		const self = this;
+		const failed_files = [];
+		const next_file = () => {
+			const file = self.files.find((file) => failed_files.indexOf(file) == -1);
+			if (file && (!self._current_file || !self._current_file.abort)) {
 				self._in_upload = true;
-				self._current_file = self.files[0];
-				self._submit(function () {
-					if (self._current_file == self.files[0])
-						self.files.shift();
+				self._current_file = file;
+				self._submit((success) => {
+					const file_index = self.files.indexOf(file);
+					if (success === false && !self.params.autoSubmit && file_index != -1) {
+						failed_files.push(file);
+					} else if (file_index != -1) {
+						self.files.splice(file_index, 1);
+					}
 					next_file();
 				});
 			} else {
 				self._current_file = null;
 				self._in_upload = false;
 				self._trigger('complete');
-				self.files = [];
 			}
 		};
 		if (self._in_upload)
@@ -475,10 +481,12 @@ $.extend(FilesUploader.prototype, {
 		return this;
 	},
 	_submit: function (callback) {
-		var self = this, file = self._current_file;
+		const self = this;
+		const file = self._current_file;
+		const finish = (success) => setTimeout(() => callback(success), 0);
 
 		if (!self._trigger('submit', [file])) {
-			setTimeout(callback, 0);
+			finish();
 			return;
 		}
 
@@ -491,11 +499,12 @@ $.extend(FilesUploader.prototype, {
 			SpacesApp.on('uploadProgress', function (offset, size) {
 				self._trigger('progress', [file, (offset / size) * 100, offset, size]);
 			}).on('uploadSuccess', function (res) {
-				self._onDone(file, res);
-				setTimeout(callback, 0);
+				delete file._request;
+				finish(self._onDone(file, res));
 			}).on('uploadError', function (status) {
+				delete file._request;
 				self._trigger('error', [file, status, Spaces.getHttpError(status), '']);
-				setTimeout(callback, 0);
+				finish(false);
 			});
 
 			SpacesApp.exec('upload', {
@@ -530,17 +539,21 @@ $.extend(FilesUploader.prototype, {
 							try { status = xhr.status; } catch (e) { }
 							try { statusText = xhr.statusText; } catch (e) { }
 
+							let success;
 							if (status >= 200 && status < 300) {
-								self._onDone(file, xhr.responseText);
+								success = self._onDone(file, xhr.responseText);
 							} else {
 								self._trigger('error', [file, status, Spaces.getHttpError(status), xhr.responseText]);
+								success = false;
 							}
+							finish(success);
+						} else {
+							finish();
 						}
-						setTimeout(callback, 0);
 					}
 				} catch (e) {
 					self._trigger('error', [file, -1, e.stack || e.message]);
-					setTimeout(callback, 0);
+					finish(false);
 				}
 			};
 
@@ -593,7 +606,7 @@ $.extend(FilesUploader.prototype, {
 			};*/
 			iframe.onload = function (e) {
 				if (e === false) {
-					setTimeout(callback, 0);
+					finish();
 					return;
 				}
 
@@ -604,7 +617,7 @@ $.extend(FilesUploader.prototype, {
 				setTimeout(function () {
 					if (!request_loaded) {
 						self._trigger('error', [file, -1, L("Сервер ответил неожиданным ответом. (iframe)")]);
-						setTimeout(callback, 0);
+						finish(false);
 						_frame_cleanup();
 					}
 				}, 800);
@@ -619,18 +632,20 @@ $.extend(FilesUploader.prototype, {
 			$(window).on('message.' + file_id, function (e) {
 				delete file._request;
 
-				var evt = e.originalEvent;
+				const evt = e.originalEvent;
+				let success;
 				try {
 					if (form_action_url.indexOf(evt.origin) != 0) {
 						console.log("[uploader] non matched origin: ", form_action_url, e.originalEvent.origin);
 						return;
 					}
 					request_loaded = true;
-					self._onDone(file, evt.data);
+					success = self._onDone(file, evt.data);
 				} catch (e) {
 					self._trigger('error', [file, -1, e.stack || e.message, evt.data]);
+					success = false;
 				}
-				setTimeout(callback, 0);
+				finish(success);
 				_frame_cleanup();
 			});
 
@@ -774,10 +789,11 @@ $.extend(FilesUploader.prototype, {
 
 		if (res) {
 			self._trigger('uploaded', [file, res]);
-			return;
+			return true;
 		}
 
 		self._trigger('error', [file, -1, L("Сервер ответил неожиданным результатом.")]);
+		return false;
 	},
 	// TODO: вынести костылеивенты в интерфейс
 	on: function (event, callback) {

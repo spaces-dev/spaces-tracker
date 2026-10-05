@@ -5,6 +5,7 @@ import { useIframePort } from "./iframePort";
 import { snakeToCamelCase } from "../../../utils/string";
 import { useMiniGamesPayment } from "./payment";
 import { L } from "../../../core/l10n";
+import { showToast } from "../../../widgets/toaster";
 
 let miniGamesDialog;
 let dialogCloseTimer;
@@ -12,6 +13,7 @@ let allowCloseDialog;
 let paymentForm;
 
 module.on("componentpage", async () => {
+	const main = $('#main');
 	if (miniGamesDialog) {
 		if (hasInviteCode()) {
 			await miniGamesDialog.expand();
@@ -21,7 +23,7 @@ module.on("componentpage", async () => {
 		initMiniGames();
 	}
 
-	$('#main').action('mini_game_open', function (e) {
+	main.action('mini_game_open', function (e) {
 		e.preventDefault();
 		if (miniGamesDialog) {
 			port.send({
@@ -36,7 +38,7 @@ module.on("componentpage", async () => {
 		}
 	});
 
-	$('#main').action('mini_games_profile_open', function (e) {
+	main.action('mini_games_profile_open', function (e) {
 		e.preventDefault();
 		if (miniGamesDialog) {
 			port.send(JSON.parse(this.dataset.gamePayload));
@@ -44,6 +46,34 @@ module.on("componentpage", async () => {
 		} else {
 			const dialog = getDialogById("mini_games_dialog");
 			dialog.open({}, this);
+		}
+	});
+
+	main.action('mini_game_request', async function (e) {
+		e.preventDefault();
+		const button = this;
+		const request = JSON.parse(button.dataset.miniGamesRequest);
+		const widget = document.getElementById('mini_games_dialog');
+		const widgetUrl = new URL(widget.dataset.url);
+		const requestUrl = new URL(request.path, widgetUrl);
+
+		button.disabled = true;
+		try {
+			const response = await fetch(requestUrl, {
+				method: request.method,
+				credentials: 'omit',
+				referrerPolicy: 'no-referrer',
+				headers: { Authorization: `Bearer ${widget.dataset.token}` },
+			});
+			if (!response.ok)
+				throw new Error('Mini-games activity action failed');
+		} catch (error) {
+			button.disabled = false;
+			showToast({
+				severity: "error",
+				// l10n context="game-activity-action"
+				text: L('Не удалось выполнить действие.')
+			});
 		}
 	});
 });

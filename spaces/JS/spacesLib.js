@@ -478,6 +478,7 @@ extend(Spaces, {
 	},
 
 	PREVIEW: {
+		SIZE_41_40: 8,
 		SIZE_81_80: 14
 	},
 
