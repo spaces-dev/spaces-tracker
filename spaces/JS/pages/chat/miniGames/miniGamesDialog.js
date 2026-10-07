@@ -7,8 +7,11 @@ import { useMiniGamesPayment } from "./payment";
 import { L } from "../../../core/l10n";
 import { showToast } from "../../../widgets/toaster";
 
+const CLOSE_TIMEOUT = 1500;
+
 let miniGamesDialog;
 let dialogCloseTimer;
+let dialogCloseRequested;
 let allowCloseDialog;
 let paymentForm;
 
@@ -100,20 +103,18 @@ const port = useIframePort((payload) => {
 		}
 
 		case "IFRAME_CLOSE_RECEIVED": {
-			if (dialogCloseTimer) {
-				clearTimeout(dialogCloseTimer);
-				dialogCloseTimer = undefined;
-			}
+			clearDialogCloseTimer();
 			break;
 		}
 
 		case "IFRAME_CLOSE_CONFIRMED": {
-			allowCloseDialog = true;
-			miniGamesDialog.close();
+			closeDialogImmediately();
 			break;
 		}
 
 		case "IFRAME_CLOSE_CANCELLED": {
+			clearDialogCloseTimer();
+			dialogCloseRequested = false;
 			allowCloseDialog = false;
 			miniGamesDialog.expand();
 			break;
@@ -143,6 +144,7 @@ const port = useIframePort((payload) => {
 });
 
 function initMiniGames() {
+	dialogCloseRequested = false;
 	allowCloseDialog = false;
 
 	const dialogElement = document.querySelector('#mini_games_dialog_template');
@@ -182,25 +184,41 @@ function handleDialogBeforeClose(e) {
 	if (allowCloseDialog)
 		return;
 	e.preventDefault();
+	if (dialogCloseRequested)
+		return;
 
+	dialogCloseRequested = true;
 	paymentForm.cancel();
 
 	dialogCloseTimer = setTimeout(() => {
 		console.warn(`[mini-games] IFRAME_CLOSE timeout`);
-		dialogCloseTimer = undefined;
-		allowCloseDialog = true;
-		miniGamesDialog.close();
-	}, 200);
+		closeDialogImmediately();
+	}, CLOSE_TIMEOUT);
 	port.send({ type: 'IFRAME_CLOSE' });
 }
 
 function handleDialogClose() {
+	clearDialogCloseTimer();
 	port.unbind();
 	$(miniGamesDialog.content()).html('');
 	miniGamesDialog.setCollapsible(true);
 	miniGamesDialog = undefined;
 	paymentForm = undefined;
+	dialogCloseRequested = false;
 	allowCloseDialog = false;
+}
+
+function clearDialogCloseTimer() {
+	if (!dialogCloseTimer)
+		return;
+	clearTimeout(dialogCloseTimer);
+	dialogCloseTimer = undefined;
+}
+
+function closeDialogImmediately() {
+	clearDialogCloseTimer();
+	allowCloseDialog = true;
+	miniGamesDialog.close();
 }
 
 function hasInviteCode() {

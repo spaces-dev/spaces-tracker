@@ -4,12 +4,30 @@ import { useIframePort } from "./iframePort";
 import { useMiniGamesPayment } from "./payment";
 
 const DEFAULT_MENU_HEIGHT = 360;
+const CLOSE_TIMEOUT = 1500;
 const CHAT_HINT_STORAGE_KEY = `mini-games-chat-hint:${Spaces.params.nid}`;
 
 module.on("componentpage", () => {
 	const gameSelector = getPopperById("mini_games_selector");
 	const hint = getPopperById("mini_games_chat_hint");
 	const gameButton = document.querySelector('[data-popper-id="mini_games_selector"]');
+	let closeTimer;
+	let closeRequested = false;
+	let allowClose = false;
+
+	const clearCloseTimer = () => {
+		if (!closeTimer)
+			return;
+		clearTimeout(closeTimer);
+		closeTimer = undefined;
+	};
+
+	const closeImmediately = () => {
+		clearCloseTimer();
+		allowClose = true;
+		gameSelector.close();
+	};
+
 	const port = useIframePort((payload) => {
 		switch (payload.type) {
 			case "REQUEST_AUTH_TOKEN": {
@@ -28,12 +46,29 @@ module.on("componentpage", () => {
 			}
 
 			case "MINI_GAMES_SELECTED": {
-				gameSelector.close();
+				closeImmediately();
 				break;
 			}
 
 			case "MINI_GAMES_WIDGET_CLOSE": {
-				gameSelector.close();
+				closeImmediately();
+				break;
+			}
+
+			case "IFRAME_CLOSE_RECEIVED": {
+				clearCloseTimer();
+				break;
+			}
+
+			case "IFRAME_CLOSE_CONFIRMED": {
+				closeImmediately();
+				break;
+			}
+
+			case "IFRAME_CLOSE_CANCELLED": {
+				clearCloseTimer();
+				closeRequested = false;
+				allowClose = false;
 				break;
 			}
 
@@ -95,10 +130,34 @@ module.on("componentpage", () => {
 		updateMenuHeight();
 		window.addEventListener('resize', updateMenuHeight);
 	});
+	gameSelector.on("beforeClose", (e) => {
+		if (allowClose)
+			return;
+		e.preventDefault();
+		if (closeRequested)
+			return;
+
+		closeRequested = true;
+		paymentForm.cancel();
+		closeTimer = setTimeout(() => {
+			console.warn(`[mini-games-selector] IFRAME_CLOSE timeout`);
+			closeImmediately();
+		}, CLOSE_TIMEOUT);
+		port.send({ type: 'IFRAME_CLOSE' });
+	});
 	gameSelector.on("afterClose", () => {
+		clearCloseTimer();
+		closeRequested = false;
+		allowClose = false;
 		paymentForm.cancel();
 		port.unbind();
 		gameSelector.content().innerHTML = '';
 		window.removeEventListener('resize', updateMenuHeight);
 	});
+
+	return () => {
+		closeImmediately();
+		port.unbind();
+		window.removeEventListener('resize', updateMenuHeight);
+	};
 });
