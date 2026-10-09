@@ -31,7 +31,7 @@
 
 	&__sticky {
 		position: sticky;
-		top: var(--table-sticky-offset, 0);
+		top: var(--table-sticky-offset, var(--page-header-offset));
 		z-index: 100000;
 
 		th, td {

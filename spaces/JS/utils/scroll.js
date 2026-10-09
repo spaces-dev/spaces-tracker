@@ -10,6 +10,10 @@ export function preventScrollShifting(fn) {
 		window.scrollTo(0, prevY + delta);
 }
 
+export function getPageHeaderOffset() {
+	return parseFloat(document.documentElement.style.getPropertyValue('--page-header-offset') || '0');
+}
+
 export function scrollIntoViewIfNotVisible(target, options = {}) {
 	options = {
 		start: "start",
@@ -18,9 +22,10 @@ export function scrollIntoViewIfNotVisible(target, options = {}) {
 		...options,
 	};
 	const rect = target.getBoundingClientRect();
+	const headerOffset = getPageHeaderOffset();
 	if (rect.bottom > window.innerHeight) {
 		target.scrollIntoView({ block: options.end, inline: "nearest", behavior: options.behavior });
-	} else if (rect.top < 0) {
+	} else if (rect.top < headerOffset) {
 		target.scrollIntoView({ block: options.start, inline: "nearest", behavior: options.behavior });
 	}
 }

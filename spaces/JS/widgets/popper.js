@@ -332,8 +332,7 @@ export class Popper {
 
 		this._startIgnoreBodyClick();
 
-		if (resizeObserver)
-			resizeObserver.observe(this.popperElement);
+		resizeObserver.observe(this.popperElement);
 	}
 
 	toggle(openerOptions = {}, referenceElement = undefined) {
@@ -386,8 +385,7 @@ export class Popper {
 
 		fixPageHeight();
 
-		if (resizeObserver)
-			resizeObserver.unobserve(this.popperElement);
+		resizeObserver.unobserve(this.popperElement);
 
 		if (closeOptions.closedByUser && this.options.restoreScrollAfterClose) {
 			if (!isVisibleOnScreen(lastReferenceElement))
@@ -596,9 +594,9 @@ function handleBodyClick(e) {
 }
 
 function getDefaultContainer(el) {
-	if (document.querySelector('#sidebar')?.contains(el))
-		return `#sidebar`;
-	return `#siteContent`;
+	if (document.querySelector('#sidebar_panel')?.contains(el))
+		return `#sidebar_panel`;
+	return `#site_content`;
 }
 
 function parsePopperOptions(element) {
@@ -625,8 +623,7 @@ function parsePopperOptions(element) {
 }
 
 function initPopperWidget() {
-	if (window.ResizeObserver)
-		resizeObserver = new ResizeObserver(throttleRaf(handleResize));
+	resizeObserver = new ResizeObserver(throttleRaf(handleResize));
 
 	document.body.addEventListener("click", handleBodyClick, { passive: true });
 

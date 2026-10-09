@@ -942,7 +942,7 @@ extend(Spaces, {
 		$('#' + id).remove();
 	},
 	clearErrors: function () {
-		$('#siteContent').find('.js-alert_message').remove();
+		$('#site_content').find('.js-alert_message').remove();
 	},
 	showError: function (msg, id, params) {
 		params = $.extend({
@@ -1164,7 +1164,7 @@ Spaces.view = {
 			container = $('#' + id);
 		if (!container.length) {
 			container = $('<div id="' + id + '" class="relative">');
-			$(persist ? '#content_wrap_move' : '#main').prepend($('<div id="' + id + '_wrap">').append(container));
+			$(persist ? '#site_content' : '#main').prepend($('<div id="' + id + '_wrap">').append(container));
 		}
 		container.append(el);
 	},

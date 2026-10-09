@@ -11,7 +11,7 @@ import page_loader from './ajaxify';
 import * as sidebar from './widgets/swiper';
 import notifications from './notifications';
 import DdMenu from './dd_menu';
-import { html_wrap, tick } from './utils';
+import { html_wrap, throttleRaf, tick } from './utils';
 import { L } from './core/l10n';
 
 import "Files/Player.css";
@@ -285,12 +285,20 @@ var MusicPlayer = {
 		
 		initialized = true;
 		
-		$('body').on('spUpdatePart', function (e, parts) {
-			if (parts[Spaces.WIDGETS.SIDEBAR] && !render_mode.flying_btn)
+		document.body.addEventListener('ajaxify:updateWidgets', function (e) {
+			var widgets = e.detail;
+			if (widgets[Spaces.WIDGETS.SIDEBAR] && !render_mode.flying_btn)
 				self.switchRenderMode(false, true);
 		});
-		// #main_wrap ниже body, плееру нужен приоритет
-		$('#main_wrap')
+		var layout = document.getElementById('page_layout');
+		if (layout) {
+			layout.addEventListener('header:offsetChange', throttleRaf(() => {
+				if (render_mode.dev == 'desktop' && !render_mode.flying_btn && DdMenu.isOpen('gp_window'))
+					self.fixScrollPL();
+			}));
+		}
+		// #page ниже body, плееру нужен приоритет
+		$('#page')
 		.on('click', '.js-music_repeat', function (e) {
 			e.preventDefault(); e.stopPropagation();
 			e.stopImmediatePropagation();
@@ -1142,7 +1150,7 @@ var MusicPlayer = {
 					padding = gp_window.outerHeight(true) - gp_playlist.height();
 				new_height = Math.min(400, $(window).innerHeight() - (offset_y + padding)) + "px";
 			} else {
-				var offset_y = gp_window.offset().top,
+				var offset_y = gp_window[0].getBoundingClientRect().top,
 					padding = gp_window.outerHeight() - gp_playlist.height();
 				new_height = Math.min(400, $(window).innerHeight() - (offset_y + padding)) + "px";
 			}
@@ -1158,7 +1166,7 @@ var MusicPlayer = {
 	
 	switchRenderMode: function (resize_event, force) {
 		var self = this,
-			wrap_all = $('#wrap_all');
+			page = $('#page');
 		
 		if (!$global_player)
 			return;
@@ -1183,7 +1191,7 @@ var MusicPlayer = {
 					if (render_mode.dev === 'desktop') {
 						$global_player.offset({left: ''});
 					} else {
-						$('#wrap_all').removeClass('hide');
+						page.removeClass('hide');
 					}
 				}
 				
@@ -1191,22 +1199,22 @@ var MusicPlayer = {
 				self.setDeviceClass(tmp_device);
 				
 				$global_player.data({
-					position: tmp_device == 'desktop' ? (tmp_can_flying_btn ? "top" : "abs_val") : 
+					position: tmp_device == 'desktop' ? (tmp_can_flying_btn ? "top" : "fixed_top") :
 						(use_native_scroll ? "page_top" : "fullpage_top"),
 					position_method: tmp_device == 'desktop' ? 'fixed' : '',
-					position_top_val: $('#navi').outerHeight()
+					fixed_top: 'var(--page-header-offset)'
 				});
 				
 				// Окно плеера
 				if (tmp_device == 'desktop') {
 					Spaces.view.pushWidget($global_player_win, true);
 				} else {
-					$global_player_win.insertAfter(wrap_all);
+					$global_player_win.insertAfter(page);
 				}
 				
 				// Кнопка плеера
 				if (tmp_can_flying_btn) {
-					$('#main_wrap').append($global_player);
+					$('#page').append($global_player);
 					$('#sidebar_player').addClass('hide');
 				} else {
 					$('#sidebar_player').append($global_player).removeClass('hide');
@@ -1223,7 +1231,7 @@ var MusicPlayer = {
 		if (render_mode.dev == 'desktop') {
 			if ($global_player && render_mode.flying_btn) {
 				$global_player.offset({
-					left: wrap_all.offset().left + wrap_all.outerWidth()
+					left: page.offset().left + page.outerWidth()
 				});
 			}
 		}
@@ -1309,7 +1317,7 @@ var MusicPlayer = {
 		var track = playlist.get(current.index),
 			main_player = $('#gp_main_player');
 		if (!$global_player) {
-			var wrap_all = $('#wrap_all');
+			var page = $('#page');
 			
 			$global_player = $(tpl.globalPlayerButton());
 			$global_player_win = $(tpl.globalPlayerWindow());
@@ -1321,7 +1329,7 @@ var MusicPlayer = {
 					$('html, body').scrollTop(0)
 				}
 				if (render_mode.dev == 'mobile')
-					$('#wrap_all').addClass('hide');
+					page.addClass('hide');
 				
 				if (render_mode.dev == 'desktop' && !render_mode.flying_btn)
 					$('html, body').scrollTop(0)
@@ -1367,7 +1375,7 @@ var MusicPlayer = {
 				gp_state.gp_menu_open = false;
 				
 				if (render_mode.dev == 'mobile')
-					$('#wrap_all').removeClass('hide');
+					page.removeClass('hide');
 				
 				// Отключаем глобальный скроллинг
 				if (!use_native_scroll) {
@@ -2230,7 +2238,7 @@ $.fn.progressControl = function (val, opts) {
 };
 
 function android_app_player() {
-	return Device.android_app && window.SpacesApp.params.nativeMusicPlayer;
+	return Device.android_app;
 }
 
 function pad_duration(d) {

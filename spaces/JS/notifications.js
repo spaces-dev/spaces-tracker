@@ -24,6 +24,7 @@ export const TOP_COUNTER_TYPE = {
 
 var BEACON_INTERVAL = 1000 * 60 * 4; // Интервал маячка
 const BACKGROUND_SOUND_INTERVAL = 30 * 1000;
+const TOP_NOTIFICATIONS_ENABLED = false;
 
 var interactive = Spaces.params.nid > 0,
 	beacon_extra = {},
@@ -434,7 +435,7 @@ var Notifications = Class({
 		
 		if (spacesactive == 'true') {
 			if (self.window_active) {
-				if (opts.opts)
+				if (opts.notif)
 					self.pushTopNotification({text: title});
 			} else if (opts.oneTab) {
 				self._bgNotif(title, opts.oneTab);
@@ -607,6 +608,9 @@ var Notifications = Class({
 	
 	// Мелкие нотификации
 	pushTopNotification: function (data) {
+		if (!TOP_NOTIFICATIONS_ENABLED)
+			return this;
+
 		var scroll = $(window).scrollTop();
 		if (scroll <= 50) {
 			return this;

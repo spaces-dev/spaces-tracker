@@ -2,7 +2,7 @@
 @use "./Base" as *;
 
 /* Сайдбар */
-$sidebar-shadow:					theme(0 0 4px 1px rgba(#474f57, 0.35),	0px 3px 3px rgba(#111113, 0.3));
+$sidebar-shadow:					theme(inset -5px 0 4px -4px rgba(#474f57, 0.35),	inset -4px 0 3px -3px rgba(#111113, 0.3));
 $sidebar-overlay:					#000000;
 
 $sidebar-left-border:				theme(#D8D0D0,	#2d2e30);

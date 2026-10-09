@@ -2330,9 +2330,38 @@ input[type="submit"].link {
 	}
 }
 
-.header{
-	text-align: center;
+.sub-title {
+	color: $default-text-color;
+	font-weight: bold;
 	margin: if($LITE, 13px 5px 11px 5px, 10px 5px);
+	text-align: center;
+	text-transform: uppercase;
+
+	&--left {
+		text-align: left
+	}
+
+	&_large {
+		margin-bottom: -4px
+	}
+
+	&_sbottom {
+		margin-bottom: 7px
+	}
+
+	&_main {
+		margin: if($LITE, 13px 5px 11px 5px, 10px 5px);
+
+		& + & {
+			margin-top: -10px
+		}
+	}
+
+	&_edit {
+		margin: if($LITE, 13px 5px 11px 5px, 10px 5px);
+		overflow: hidden;
+		text-align: left
+	}
 }
 
 .title{

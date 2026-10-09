@@ -154,5 +154,5 @@ module.on("componentpage", function() {
 	});
 	
 	document.body.appendChild(gebi('webapp_telemetry'));
-	gebi('main_wrap').style.display = 'none';
+	gebi('page').style.display = 'none';
 });

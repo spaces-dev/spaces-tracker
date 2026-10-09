@@ -17,9 +17,6 @@ class VideoJsTimelineHeatmap extends Plugin {
 	constructor(player, options) {
 		super(player, options);
 
-		if (!window.ResizeObserver)
-			return;
-
 		this.options = options;
 		this.normalizedData = this.options.heatmap;
 

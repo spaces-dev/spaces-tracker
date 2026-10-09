@@ -878,6 +878,7 @@
   "/js/touch/widgets/dialog.js",
   "/js/touch/widgets/files/thumb-guard.js",
   "/js/touch/widgets/fragments/simplePagination.js",
+  "/js/touch/widgets/layout/stickyNavigation.js",
   "/js/touch/widgets/legacy_tabs.js",
   "/js/touch/widgets/loadable_item.js",
   "/js/touch/widgets/loadable_list.js",

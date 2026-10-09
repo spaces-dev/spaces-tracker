@@ -12,28 +12,38 @@ const SIDEBAR_NO_SWIPE = (
 
 const SIDEBAR_GESTURE_MIN_X = 50;
 const SIDEBAR_GESTURE_MAX_Y = 60;
+const body = $(document.body);
+const layout = $('#page_layout');
 
 let locked = false;
-let lastScroll = 0;
 
 init();
 
 function init() {
-	let handleClick = (e) => {
+	if (!layout.length)
+		return;
+
+	const handleClick = () => {
 		toggle();
 		return false;
 	};
 
-	let handleResize = (e) => {
-		if ($('body').hasClass('root--is-sidebar-open') && $(window).innerWidth() >= 900)
+	const handleLayoutChange = () => {
+		if (layout.hasClass('page-layout--sidebar-open') && isInlineSidebar())
 			toggle(false);
 	};
 
-	$('#header_elements').on('click', '#home_link', handleClick);
-	$('#js-root-overlay').on('click', handleClick);
+	layout.on('click', '#sidebar_toggle', handleClick);
+	layout.on('click', '#header_elements', (e) => {
+		if (e.target == e.currentTarget && layout.hasClass('page-layout--sidebar-open'))
+			return handleClick();
+	});
+	$('#sidebar_container').on('click', function (e) {
+		if (e.target == this)
+			handleClick();
+	});
 
-	window.addEventListener('resize', handleResize, { passive: true });
-	window.addEventListener('orientationchange', handleResize, { passive: true });
+	window.addEventListener('resize', handleLayoutChange, { passive: true });
 
 	initSwipe();
 }
@@ -49,11 +59,11 @@ function initSwipe() {
 	document.body.addEventListener('touchstart', (e) => {
 		gesture = false;
 
-		if (locked)
+		if (locked || isInlineSidebar())
 			return;
 
 		const activeElement = document.activeElement;
-		if (activeElement && ["TEXTAREA", "INPUT"].includes(activeElement.nodeName))
+		if (activeElement && ['TEXTAREA', 'INPUT'].includes(activeElement.nodeName))
 			return;
 
 		if (e.target.closest('.vjs-control-bar'))
@@ -73,55 +83,49 @@ function initSwipe() {
 		const dX = Math.abs(x - startX);
 		const dY = Math.abs(y - startY);
 
-		if (dY > SIDEBAR_GESTURE_MAX_Y) {
+		if (dY > SIDEBAR_GESTURE_MAX_Y || dX * 0.66 < dY) {
 			gesture = false;
-		} else {
-			if (dX * 0.66 >= dY) {
-				if (dX >= SIDEBAR_GESTURE_MIN_X) {
-					const isOpen = startX <= x;
-					gesture = false;
-					if (!locked) {
-						setTimeout(() => toggle(isOpen), 0);
-					}
-				}
-			} else {
-				gesture = false;
-			}
+			return;
 		}
+
+		if (dX < SIDEBAR_GESTURE_MIN_X)
+			return;
+
+		const isOpen = startX <= x;
+		gesture = false;
+		if (!locked)
+			setTimeout(() => toggle(isOpen), 0);
 	}, { passive: true });
 }
 
 export function toggle(state) {
-	const body = $("body");
-	const sidebar = $('#sidebar_wrap');
-	const sidebarBg = $('#js-sidebar-bg');
+	if (!layout.length)
+		return;
+
+	const sidebar = $('#sidebar_panel');
+	const isOpen = layout.hasClass('page-layout--sidebar-open');
 
 	if (state == null)
-		state = !body.hasClass('root--is-sidebar-open');
-
-	if (Device.android_app) {
-		if (state) {
-			lastScroll = $(window).scrollTop();
-			$('html, body').scrollTop(0);
-			$('#siteContent').css({marginTop: -lastScroll});
-		} else {
-			$('#siteContent').css({marginTop: 0});
-			$('html, body').scrollTop(lastScroll);
-		}
-	}
+		state = !isOpen;
+	if (state == isOpen || (state && isInlineSidebar()))
+		return;
 
 	if (!sidebar.data('noDark')) {
-		sidebarBg.toggleClass('sidebar--dark', sidebar.data('dark') == 1 || state);
 		sidebar.toggleClass('sidebar--dark', sidebar.data('dark') == 1 || state);
 	}
 
-	body.toggleClass("root--is-sidebar-open", state);
-	$('#home_link').toggleClass("horiz-menu__link_no_hover", state);
+	body.toggleClass('root--sidebar-open', state);
+	layout.toggleClass('page-layout--sidebar-open', state);
+	layout[0].dispatchEvent(new Event('sidebar:toggle'));
+}
+
+function isInlineSidebar() {
+	return getComputedStyle(layout[0]).getPropertyValue('--layout-sidebar-mode').trim() === 'inline';
 }
 
 export function lock(flag) {
 	locked = flag;
 
 	if (Device.android_app)
-		SpacesApp.exec('sidebar', {enable: !flag});
+		SpacesApp.exec('sidebar', { enable: !flag });
 }

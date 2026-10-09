@@ -22,6 +22,10 @@ import './widgets/loadable_item';
 
 // Переключатор темы
 import './core/theme';
+
+// Фиксированная навигация
+import './widgets/layout/stickyNavigation';
+
 import SPACES_PARAMS from './core/env';
 
 if (cookie.get("spaces_js_console")) {

@@ -96,7 +96,7 @@ function showHotInfo(widget) {
 	if (!hotInfoPopper) {
 		const popperElement = document.createElement('div');
 		popperElement.className = 'popper-dropdown popper-dropdown--with-opacity-animation';
-		document.getElementById('siteContent').appendChild(popperElement);
+		document.getElementById('site_content').appendChild(popperElement);
 
 		popperElement.addEventListener('mouseover', () => cancelHiding());
 		popperElement.addEventListener('mouseout', () => hideHotInfo(true));

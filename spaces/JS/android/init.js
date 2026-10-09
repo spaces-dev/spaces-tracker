@@ -1,26 +1,16 @@
 (function (window) {
-	var params = {};
-	
 	if (document.cookie.indexOf('android_api_test=1') >= 0) {
 		window.prompt = console.log;
-		params.nativeMusicPlayer = true;
 	}
 	
 	window.SpacesApp = {
-		params: params,
-		init: function () {
-			if (this.params.hideHeader)
-				document.body.className = document.body.className += " navi-hide";
-			this.inited = true;
-		},
+		params: {},
 		appInit: function (params) {
 			window.prompt('init', JSON.stringify(params)); /* old android bug */
 			window.prompt('init', JSON.stringify(params));
 		},
 		onParams: function (params) {
 			this.params = params;
-			if (this.inited)
-				this.init();
 		},
 		back: function () {
 			var e = 1, o = function () { e = 0 };

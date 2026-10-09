@@ -1,6 +1,7 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 .tile-menu{
 	margin: 0 5px 0 5px
@@ -45,7 +46,7 @@
 			box-shadow: $default-clicked-shadow;
 }
 
-@media all and (min-width: 900px){
+@media all and (min-width: breakpoint.$wide-screen){
 	.pc .tile-menu__wrap{
 		width: 25%;
 	}

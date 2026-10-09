@@ -321,7 +321,7 @@ function _openMenu(e, extra) {
 		menu_calculated = false,
 		menu_before = el.data('menu_pos') == 'before',
 		content = menu.find('.js-ddmenu_content'),
-		site_content = $('#siteContent'),
+		site_content = $('#site_content'),
 		alt_place = menu.data('place');
 	
 	if (alt_place) {
@@ -343,7 +343,7 @@ function _openMenu(e, extra) {
 	if (position_method == "fixed") {
 		on_shutdown.push(function () {
 			menu.css({
-				position: '', height: '',
+				position: '', height: '', top: '',
 				left: '', width: ''
 			});
 		});
@@ -440,7 +440,7 @@ function _openMenu(e, extra) {
 			pad = -menu_opener.height();
 		} else if (position == "top") {
 			pad = 0;
-		} else if (position == "abs_val") {
+		} else if (position == "fixed_top") {
 			pad = 0;
 		}
 		
@@ -475,11 +475,12 @@ function _openMenu(e, extra) {
 					height: '',
 					left: site_content.offset().left + 'px',
 					width: menu.parent().parent().innerWidth() - menu_padding
-				}).show().offset({
-					top: 
-						position == "abs_val" ? menu_opener.data('position_top_val') : 
-							menu_opener.offset().top + menu_opener.height() + fix_position + pad
-				});
+				}).show();
+				if (position == "fixed_top") {
+					menu.css('top', menu_opener.data('fixed_top'));
+				} else {
+					menu.offset({ top: menu_opener.offset().top + menu_opener.height() + fix_position + pad });
+				}
 			} else {
 				if (el.data('global')) {
 					var pad = 20;

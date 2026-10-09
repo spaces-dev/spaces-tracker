@@ -1,0 +1,32 @@
+@use "Common/Theme" as *;
+@use "spacepack/build/variables" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
+
+.ajax-loader {
+	background: $ajax-lodader-bg url(/i/progress.gif?r=1) repeat-x;
+	height: 5px;
+	left: 0;
+	margin: 0 auto;
+	max-width: breakpoint.$wide-screen;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: 999999;
+
+	@if ($DARK_MODE) {
+		background-image: url(/i/progress_dark.gif?r=1)
+	}
+
+	&__cancel {
+		float: right;
+		padding: 15px 10px 10px;
+
+		@if ($PC) {
+			cursor: pointer
+		}
+	}
+
+	.page-layout--with-rightbar & {
+		max-width: 1110px
+	}
+}

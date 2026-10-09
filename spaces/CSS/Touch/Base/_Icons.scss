@@ -66,7 +66,12 @@
 @include define-sprite("ico_panel") {
 	/*!__PURE__*/ display: inline-block;
 }
-.footer_edit .footer__links-wrapper .footer__link:after, .horiz-menu__link-ico, .location-bar__sep, .location-bar__home-link {
+@include define-sprite("ico_header") {
+	/*!__PURE__*/ display: inline-block;
+}
+.footer_edit .footer__links-wrapper .footer__link:after,
+.location-bar__sep,
+.location-bar__home-link {
 	/*!__PURE__*/ display: inline-block;
 	@include use-sprite("ico_panel");
 }
@@ -282,6 +287,7 @@ only screen and (min-device-pixel-ratio: 1.5) {
 	@include define-sprite-2x("ico_gallery");
 	@include define-sprite-2x("tile_main");
 	@include define-sprite-2x("ico_panel");
+	@include define-sprite-2x("ico_header");
 	@include define-sprite-2x("ico_cats");
 	@include define-sprite-2x("ico_cats_sz");
 	@include define-sprite-2x("ico_acl");
@@ -296,7 +302,9 @@ only screen and (min-device-pixel-ratio: 1.5) {
 		@include use-sprite-2x("ico");
 	}
 	
-	.footer_edit .footer__links-wrapper .footer__link:after, .horiz-menu__link-ico, .location-bar__sep, .location-bar__home-link {
+	.footer_edit .footer__links-wrapper .footer__link:after,
+	.location-bar__sep,
+	.location-bar__home-link {
 		@include use-sprite-2x("ico_panel");
 	}
 	

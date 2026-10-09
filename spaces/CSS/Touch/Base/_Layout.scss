@@ -1,0 +1,193 @@
+@use "Common/Theme" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
+
+.page-layout {
+	--layout-header-height: 45px;
+	--layout-header-mode: autohide;
+	--layout-sidebar-mode: overlay;
+	--layout-sidebar-width: 70%;
+
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	position: relative;
+
+	&__header {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		min-width: 0;
+		position: sticky;
+		top: 0;
+		/* Шапка должна оставаться под диалогами и другими оверлеями с z-index: 10000. */
+		z-index: 9999;
+	}
+
+	&__content {
+		background: $body-bg;
+		grid-column: 1;
+		grid-row: 2;
+		min-width: 0;
+		position: relative;
+	}
+
+	&__main {
+		display: flow-root;
+		position: relative;
+	}
+
+	&__footer, &__tail {
+		grid-column: 1 / -1;
+		min-width: 0;
+	}
+
+	&__footer {
+		grid-row: 3;
+	}
+
+	&__tail {
+		grid-row: 4;
+	}
+
+	&__sidebar {
+		display: none;
+		grid-column: 1;
+		grid-row: 2;
+		min-height: 0;
+		min-width: 0;
+		position: relative;
+		width: var(--layout-sidebar-width);
+		z-index: 100;
+	}
+
+	&__rightbar {
+		display: none
+	}
+
+	&__rightbar-content .widgets-group_top {
+		margin-top: 10px
+	}
+
+	&--header-hidden &__header {
+		display: none
+	}
+
+	&--sidebar-open &__sidebar {
+		display: flex
+	}
+
+	&--sidebar-open &__content-top-info {
+		display: none
+	}
+}
+
+@media all and (max-width: breakpoint.$wide-screen - 1px) {
+	.page-layout {
+		--layout-header-height: 48px;
+
+		&--sidebar-open {
+			min-height: 100vh;
+
+			@supports (height: 100dvh) {
+				min-height: var(--100dvh)
+			}
+		}
+
+		&--sidebar-open &__sidebar {
+			height: calc(100vh - var(--layout-header-height));
+			overflow-y: auto;
+			position: sticky;
+			top: var(--layout-header-height);
+			width: 100%;
+
+			@supports (height: 100dvh) {
+				height: calc(var(--100dvh) - var(--layout-header-height))
+			}
+
+			&::after {
+				align-self: flex-start;
+				background: $sidebar-overlay;
+				content: "";
+				cursor: pointer;
+				flex: 1 1 auto;
+				height: 100%;
+				opacity: 0.5;
+				position: sticky;
+				top: 0;
+			}
+		}
+
+		&--sidebar-open &__content,
+		&--sidebar-open &__footer,
+		&--sidebar-open &__tail {
+			transform: translateX(var(--layout-sidebar-width))
+		}
+	}
+}
+
+/* Для широких экранов сразу показываем сайдбар */
+@media all and (min-width: breakpoint.$wide-screen) {
+	.page-layout {
+		--layout-header-mode: sticky;
+		--layout-sidebar-mode: inline;
+		--layout-sidebar-width: 218px;
+
+		&--with-sidebar {
+			border-left: 1px solid $sidebar-left-border;
+			grid-template-columns: var(--layout-sidebar-width) minmax(0, 1fr);
+
+			.page-layout__content {
+				grid-column: 2
+			}
+
+			.page-layout__sidebar {
+				display: flex;
+				width: auto;
+			}
+		}
+
+		&__rightbar-content {
+			--sticky-panel-gap: 10px;
+
+			padding-bottom: 15px;
+			position: sticky;
+			top: var(--sticky-panel-top, calc(var(--layout-header-height) + var(--sticky-panel-gap)));
+		}
+	}
+}
+
+@media all and (min-width: breakpoint.$rightbar) {
+	.page-layout {
+		&--with-rightbar {
+			--layout-sidebar-width: 20%;
+
+			.page-layout__columns {
+				display: grid;
+				grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+			}
+
+			.page-layout__rightbar {
+				display: block;
+				min-height: 10px;
+				min-width: 0;
+			}
+
+			.page-layout__sidebar--condensed {
+				--sidebar-controls-display: none
+			}
+
+			.page-layout__main {
+				min-width: 0
+			}
+		}
+	}
+}
+
+@media all and (min-width: breakpoint.$wide-screen) and
+	(max-height: breakpoint.$short-screen-height) and (hover: hover) {
+	.page-layout {
+		--layout-header-mode: hover-reveal;
+
+		&__rightbar-content {
+			top: var(--sticky-panel-top, var(--sticky-panel-gap))
+		}
+	}
+}

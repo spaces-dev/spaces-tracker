@@ -1,46 +1,47 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
-
-.sidebar-bg {
-	background: $sidebar-bg;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	
-	@if (not $DARK_MODE) {
-		&--dark {
-			background: $sidebar-dark-bg;
-		}
-	}
-}
-
-.sidebar--noicons {
-	.ico_sidebar, .sidebar-item__avatar {
-		display: none
-	}
-}
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 .sidebar {
+	background: $sidebar-bg;
+	flex: 1 1 auto;
+	min-width: 0;
 	position: relative;
-	float: left;
-	overflow: hidden;
-	width: 0;
-	display: none;
-	z-index: 100;
-	
+	overflow: visible;
+
+	&__content {
+		display: flow-root
+	}
+
+	&::after {
+		bottom: 0;
+		box-shadow: $sidebar-shadow;
+		content: "";
+		left: 0;
+		pointer-events: none;
+		position: absolute;
+		right: 0;
+		top: 0;
+		z-index: 1;
+	}
+
+	&--noicons {
+		.ico_sidebar, .sidebar-item__avatar {
+			display: none
+		}
+	}
+
 	@if ($PC) {
 		&__section {
 			margin-bottom: 20px
 		}
 	}
-	
+
 	&__link {
 		color: $sidebar-link;
 	}
-	
+
 	&__avatar-link {
 		height: 40px;
 		line-height: 40px;
@@ -48,18 +49,43 @@
 			font-weight: bold;
 		}
 	}
-	
+
 	&__search {
+		display: var(--sidebar-controls-display, block);
 		padding: 5px;
 		position: relative;
 		@if ($TOUCH) {
 			border-bottom: 1px solid $sidebar-item-bottom-border;
 		}
 	}
-	
-	.root--is-sidebar-open & {
-		display: block;
-		width: if($PC, 218px, 70%);
+
+	&__login-form {
+		display: var(--sidebar-controls-display, block)
+	}
+
+	@media all and (max-width: breakpoint.$wide-screen - 1px) {
+		.page-layout--sidebar-open & {
+			align-self: flex-start;
+			flex: 0 0 var(--layout-sidebar-width);
+			min-height: 100%;
+		}
+	}
+
+	@media all and (min-width: breakpoint.$wide-screen) {
+		&__content {
+			--sticky-panel-gap: 0px;
+
+			padding-bottom: 15px;
+			position: sticky;
+			top: var(--sticky-panel-top, calc(var(--layout-header-height) + var(--sticky-panel-gap)));
+		}
+	}
+
+	@media all and (min-width: breakpoint.$wide-screen) and
+		(max-height: breakpoint.$short-screen-height) and (hover: hover) {
+		&__content {
+			top: var(--sticky-panel-top, var(--sticky-panel-gap))
+		}
 	}
 }
 
@@ -72,7 +98,7 @@
 	background: $sidebar-input-bg;
 	color: $sidebar-input-text;
 	border:1px solid $sidebar-input-border;
-	
+
 	&:focus {
 		outline: none;
 		background: $input-focused-bg;
@@ -84,16 +110,16 @@
 .sidebar-item {
 	position: relative;
 	overflow: hidden;
-	
+
 	@if ($TOUCH) {
 		border-top: 1px solid $sidebar-item-top-border;
 		border-bottom: 1px solid $sidebar-item-bottom-border;
-		
+
 		&:first-child {
 			border-top: none;
 		}
 	}
-	
+
 	&--section {
 		font-weight: bold;
 		@if ($TOUCH) {
@@ -104,7 +130,7 @@
 			text-transform: uppercase;
 		}
 	}
-	
+
 	&__title, &__link {
 		display: block;
 		color: $sidebar-item-color;
@@ -113,30 +139,30 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
-	
+
 	&--with-counter &__link {
 		padding-right: 40px;
 	}
-	
+
 	@if ($PC) {
 		&__link:hover {
 			background: $sidebar-item-hover-bg
 		}
-		
+
 		&__link:active {
 			color: $default-text-color;
 			background: $default-clicked-bg;
 			box-shadow: $default-clicked-shadow;
 		}
 	}
-	
+
 	&__avatar img {
 		width: 16px;
 		height: 16px;
 		@include icon-middle-align(16);
 		margin-right: 6px;
 	}
-	
+
 	&__settings {
 		position: absolute;
 		margin-top: -12px;
@@ -144,7 +170,7 @@
 		right: 11px;
 		top: 50%;
 	}
-	
+
 	&__cnt {
 		position: absolute;
 		padding: 8px 15px;
@@ -162,304 +188,49 @@ a.sidebar-item__cnt:hover .small_cnt {
 	.sidebar--dark {
 		background: $sidebar-dark-bg;
 		@include switch-sprite-color("ico_sidebar", "white");
-		
+
 		.sidebar-input {
 			background: $sidebar-dark-input-bg;
 			border: 1px solid $sidebar-dark-input-border;
 			color: $sidebar-dark-input-color;
 		}
-		
+
 		.sidebar-input:focus {
 			background: $sidebar-dark-input-focus-bg;
 			border: 2px solid $sidebar-dark-input-focus-border;
 		}
-		
+
 		.sidebar-item, .sidebar__search {
 			border-top-color: $sidebar-dark-item-top-border;
 			border-bottom-color: $sidebar-dark-item-bottom-border;
 		}
-		
+
 		@if ($TOUCH) {
 			.sidebar-item--section {
 				background: $sidebar-dark-title-bg;
 			}
 		}
-		
+
 		.sidebar-item__title, .sidebar-item__link {
 			color: $sidebar-dark-item-color;
 			text-shadow: $sidebar-dark-item-shadow;
 		}
-		
+
 		@if ($PC) {
 			.sidebar__link {
 				color: $sidebar-dark-link-color;
 			}
-			
+
 			.sidebar-item__link:hover {
 				background: $sidebar-dark-item-hover-bg
 			}
-			
+
 			.sidebar-item__link:active {
 				color: $sidebar-dark-item-clicked-color;
 				background: $sidebar-dark-item-clicked-bg;
 				box-shadow: $sidebar-dark-item-clicked-shadow;
 			}
 		}
-	}
-}
-
-#main_shadow{
-	position:relative;
-}
-
-.root {
-	&--no-scroll {
-		overflow: hidden;
-	}
-
-	&__overlay {
-		display: none;
-		position: absolute;
-		z-index: 500000;
-		top: 0;
-		bottom: 0;
-		right: 0;
-		cursor: pointer;
-		background: $sidebar-overlay;
-		opacity: 0.5;
-		left: if($PC, 218px, 70%);
-	}
-	
-	&__foreground {
-		display: none;
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		background: $body-bg;
-		left: if($PC, 218px, 70%);
-	}
-	
-	&--is-sidebar-open &__foreground, &--is-sidebar-open &__overlay {
-		display: block
-	}
-	
-	&--is-sidebar-open &__content {
-		margin-right: if($PC, -120%, -240%);
-	}
-	
-	&--is-sidebar-open #top_info_block {
-		display: none
-	}
-}
-
-/* Для широких экранов сразу показываем сайдбар */
-@media all and (min-width: 900px) {
-	.sidebar {
-		display: block;
-		width: if($PC, 24.2%, 272px);
-	}
-	
-	.to {
-		display: none;
-	}
-	
-	#home_link_td {
-		display: none;
-	}
-	
-	.root__foreground {
-		display: block;
-		left: if($PC, 24.2%, 272px);
-		z-index: 101;
-		top: 45px;
-		box-shadow: $sidebar-shadow;
-	}
-
-	#navi_footer_wrap {
-		z-index: 101;
-	}
-
-	#main_content_block {
-		z-index: 102;
-	}
-	
-	.main {
-		border-left: none !important;
-		border-right: none !important;
-	}
-	
-	#wrap_all {
-		max-width: 900px;
-		margin: 0 auto;
-		width: auto;
-		overflow: visible !important;
-	}
-	
-	#main_shadow, #top_info_block {
-		border-left: 1px solid $sidebar-left-border;
-	}
-}
-
-/* ХЗ что это */
-#quick_top_links_menu_link {
-	display: none 
-}
-
-#main_content_block, #wrap_all {
-	overflow:hidden;
-	position:relative;
-}
-
-.bottom_fix {
-	position: relative;
-	background: $bottom-bg;
-	clear: both;
-}
-
-@if ($TOUCH) {
-	#bottom_tools_main {
-		background: $bottom-bg;
-	}
-}
-
-/* Правая панель */
-@if ($PC) {
-	#rightbar {
-		display: none
-	}
-	
-	@media all and (min-width: 1000px) {
-		.rightbar #rightbar {
-			width: 30% !important;
-			display: block;
-			float: right;
-			position: relative;
-			overflow: hidden;
-			min-height: 10px
-		}
-		
-		.rightbar_nav_padding {
-			padding: 5px 10px
-		}
-
-		.rightbar #widgets_pcontainer_wrap {
-			margin-right: 30%;
-		}
-		
-		.rightbar .horiz-menu_search_form {
-			position: absolute;
-			display: block !important;
-			width: 30%;
-			float: right;
-			top: 0;
-			right: 0
-		}
-		
-		.horiz-menu_search_form .search__input {
-			background: $header-search-input-bg;
-			border: 1px solid transparent;
-			box-shadow: none;
-			-webkit-box-shadow: none;
-			-moz-box-shadow: none;
-			font-size: 14px;
-			color: $header-search-input-color;
-			line-height: 16px;
-		}
-		
-		.horiz-menu_search_form .fake-placeholder {
-			line-height: 16px;
-			font-size: 14px
-		}
-		
-		.horiz-menu_search_form .search__input:focus {
-			background: $input-focused-bg;
-			border: 2px solid $input-focused-bg;
-			color: $input-text-color
-		}
-		
-		.rightbar .sidebar-logo {
-			margin-bottom: 5px
-		}
-		
-		#rightbar .widgets-group_top {
-			margin-top: 10px
-		}
-		
-		.rightbar {
-			#page_sidebar .sidebar-loginform, .sidebar__search {
-				display: none
-			}
-			
-			#siteContent {
-				overflow: hidden;
-			}
-			
-			#navi {
-				padding-right: 30%
-			}
-			
-			#wrap_all {
-				max-width: 1110px
-			}
-			
-			.sidebar {
-				width: 20%
-			}
-			
-			.root__foreground {
-				left: 20%
-			}
-			
-			#quick_top_links_menu_link {
-				display: table-cell 
-			}
-		}
-	}
-}
-
-/* Скролл вверх страницы */
-@if ($PC) {
-	#scroll_page{
-		position:fixed;
-		top:0;
-		left:0;
-		bottom:0;
-		overflow:hidden;
-	}
-	
-	#scroll_page_place_wrapper{
-		position:absolute;
-		top:0;
-		left:0;
-		right:0;
-		bottom:0;
-		opacity:0;
-	}
-	
-	#scroll_page_place{
-		background:$scrollbar-bg;
-		position:absolute;
-		top:0;
-		bottom:0;
-		left:0;
-		width:100px;
-		opacity:0;
-	}
-
-	#scroll_page:hover #scroll_page_place_wrapper{
-		opacity:1;
-	}
-	
-	#scroll_page_toTop, #scroll_page_toBottom{
-		opacity:0;
-		position:absolute;
-		top:30px;
-		left:0;
-		z-index:1000;
-		width:100px;
-		text-align:center;
 	}
 }
 
@@ -509,8 +280,4 @@ a.sidebar-item__cnt:hover .small_cnt {
 
 @if ($DARK_MODE) {
 	@include switch-sprite-color("ico_sidebar", "white");
-} @else {
-	.sidebar-bg--dark {
-		@include switch-sprite-color("ico_sidebar", "white");
-	}
 }

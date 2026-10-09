@@ -140,7 +140,7 @@ function init() {
 	}
 	
 	showFilesList(function () {
-		$('#main_wrap').append(tpl.selectorWin());
+		$('#page').append(tpl.selectorWin());
 		$('body')
 			.addClass('gallery__transp_open')
 			.on('keydown.files_selector', function (e) {

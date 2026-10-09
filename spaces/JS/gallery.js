@@ -405,7 +405,7 @@ Gallery = {
 				let gallery_wrap = $('<div id="gallery_wrap">');
 				gallery_wrap.append(gallery);
 				
-				$('#main_wrap').append(gallery_wrap);
+				$('#page').append(gallery_wrap);
 				$('body').addClass('gallery__transp_open');
 				$('html, body').addClass('gallery__doc');
 			}

@@ -1,5 +1,6 @@
 @use "spacepack/build/variables" as *;
 @use "Common/Theme" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 .carousel {
 	position: relative;
@@ -259,7 +260,7 @@
 	white-space: nowrap;
 }
 
-@media all and (max-width: 899px) {
+@media all and (max-width: breakpoint.$wide-screen - 1px) {
 	.carousel-static .carousel-item{
 		width: 12.4%;
 	}

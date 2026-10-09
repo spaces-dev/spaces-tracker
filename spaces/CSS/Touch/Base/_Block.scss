@@ -2,6 +2,15 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
+/* Блок с кнопками модераторов */
+.moders_header_block {
+	background: $header-moders-block-bg;
+	border-right: 1px solid $body-border-color;
+	border-bottom: 1px solid $separator-color;
+	border-left: 1px solid $body-border-color;
+	padding: 3px;
+}
+
 /* Блок с заголовком */
 .b-title{
 	background: $block-title-bg;

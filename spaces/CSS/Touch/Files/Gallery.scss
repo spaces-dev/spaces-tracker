@@ -1,12 +1,13 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 /* Непрозрачная */
 .desktop.gallery__open {
 	overflow:hidden !important;
 }
-.gallery__open #scroll_page, .gallery__open #wrap_all, .gallery__open #debug {
+.gallery__open #scroll_page, .gallery__open #page, .gallery__open #debug {
 	display:none;
 }
 .gallery__open .gallery {
@@ -55,8 +56,8 @@
     -webkit-user-select: none;
 }
 .pc .gallery {
-	max-width: 900px;
-	max-height: 800px;
+	max-width: breakpoint.$wide-screen;
+	max-height: breakpoint.$short-screen-height;
 	margin: auto;
 }
 
@@ -66,7 +67,7 @@
 }
 
 .pc.msie .gallery{
-	width: 900px;
+	width: breakpoint.$wide-screen;
 }
 
 #gallery_img_z {

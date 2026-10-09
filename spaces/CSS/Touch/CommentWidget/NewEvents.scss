@@ -22,7 +22,7 @@
 
 	&--is-sticky {
 		position: fixed;
-		top: 14px;
+		top: calc(var(--page-header-offset) + 14px);
 		transform: translateX(-50%);
 	}
 

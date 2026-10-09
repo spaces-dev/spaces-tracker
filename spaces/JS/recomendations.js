@@ -29,7 +29,7 @@ var queue, ns = '.recomendations',
 var main;
 
 module.on("componentpage", function () {
-	main = $('#siteContent');
+	main = $('#site_content');
 	
 	if (pushstream) {
 		pushstream.on('message', 'recomendations', function (res) {

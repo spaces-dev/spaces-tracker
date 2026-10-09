@@ -281,8 +281,6 @@ export function startSortable(container, options) {
 			let screen_y = y - scroll_y;
 			
 			if (options.autoScroll) {
-				let scroll_threshold = 0.01;
-				let scroll_trigger_area = window.innerHeight * scroll_threshold;
 				let min_screen_y = window.innerHeight * 0.01;
 				let max_screen_y = window.innerHeight;
 				let min_speed = 100;

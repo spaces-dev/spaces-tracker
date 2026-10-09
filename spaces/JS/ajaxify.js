@@ -21,9 +21,9 @@ var ADS_BLOCKS = ['reklama', 'sidebar_reklama', 'rightbar_reklama', 'rightbar_ap
 
 var tpl = {
 	ajaxLoader: function () {
-		var html = 
-			'<div id="ajax_loader" style="display: none">' + 
-				'<div class="ajax-loader__cancel" id="ajax_cancel"><span class="ico ico_remove"></span></div>' + 
+		var html =
+			'<div class="ajax-loader" id="ajax_loader" style="display: none">' +
+				'<div class="ajax-loader__cancel" id="ajax_cancel"><span class="ico ico_remove"></span></div>' +
 			'</div>';
 		return html;
 	}
@@ -476,7 +476,7 @@ var PageLoader = Class({
 			}
 			
 		//	self._proccessInternalCb(location.hash.substr(1));
-			$('#main_shadow').prepend(tpl.ajaxLoader());
+			$('#page_layout').prepend(tpl.ajaxLoader());
 			$('#ajax_cancel').click(function (e) {
 				e.preventDefault();
 				self.cancel();
@@ -894,7 +894,7 @@ var PageLoader = Class({
 							'#bottomToolsBlock a',
 							'#navi_footer_wrap a',
 							'#header_elements a',
-							'#page_sidebar a',
+							'#sidebar_container a',
 							'#bottom_tools_main a',
 							'#rightbar a'
 						].join(', '));
@@ -907,7 +907,7 @@ var PageLoader = Class({
 								this.setAttribute('data-url-params', url_params);
 							}
 						});
-						$('#page_sidebar, #rightbar')
+						$('#sidebar_container, #rightbar')
 							.find('input[name="link_id"], input[name="Link_id"]')
 							.val(res.copy_link_id);
 					}
@@ -1087,10 +1087,9 @@ var PageLoader = Class({
 	},
 	
 	updateWidgets: function (res, from_load_page) {
-		var self = this,
-			elements = [], type_to_container = {}, names = {};
+		var type_to_container = {}, names = {};
 		type_to_container[Spaces.WIDGETS.HEADER] = 'header_elements';
-		type_to_container[Spaces.WIDGETS.SIDEBAR] = 'page_sidebar';
+		type_to_container[Spaces.WIDGETS.SIDEBAR] = 'sidebar_container';
 		type_to_container[Spaces.WIDGETS.RIGHTBAR] = 'rightbar';
 		
 		names[Spaces.WIDGETS.FOOTER] = 'footer';
@@ -1108,8 +1107,12 @@ var PageLoader = Class({
 			console.error("Обновляем: " + names[id]);
 			
 			if (type_to_container[id] !== undefined) {
-				var el = $('#' + type_to_container[id])
-				el.fastHtml(res[id]);
+				var el = $('#' + type_to_container[id]);
+				if (id == Spaces.WIDGETS.HEADER) {
+					el.replaceWith(res[id]);
+				} else {
+					el.fastHtml(res[id]);
+				}
 			} else if (id == Spaces.WIDGETS.FOOTER) {
 				import('./footer').then(function ({default: Footer}) {
 					Footer.update(res[id]);
@@ -1191,7 +1194,9 @@ var PageLoader = Class({
 				}
 			}
 		}
-		$('body').trigger('spUpdatePart', updated);
+		document.body.dispatchEvent(new CustomEvent('ajaxify:updateWidgets', {
+			detail: updated
+		}));
 	},
 	
 	updateSettings: function (settings) {
@@ -1223,9 +1228,7 @@ var PageLoader = Class({
 	showLoading: function () {
 		var self = this;
 		if (!self.active_reqs) {
-			var $main_shadow = $('#main_shadow');
-			$('#ajax_loader').css({top: 0, left: $main_shadow.offset().left,
-					width: $main_shadow.outerWidth()}).visible(true);
+			$('#ajax_loader').visible(true);
 			$('#top_info_block img.right').css('opacity', 0);
 		}
 	},

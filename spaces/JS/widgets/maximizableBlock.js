@@ -51,6 +51,6 @@ module.on('componentpage', () => {
 
 	return () => {
 		if (currentMaximizedBlock)
-			setFullscreen(false);
+			setFullscreen(currentMaximizedBlock, false);
 	};
 });

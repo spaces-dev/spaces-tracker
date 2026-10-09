@@ -7,8 +7,6 @@ let current_sort = 'real_time';
 let current_order = 'DESC';
 
 module.on("componentpage", () => {
-	toggleFullscreenMode(true);
-	
 	loadCheckpoints($('<div>'), $('#telemetry_checkpoints'), 0, 0, false);
 	loadCheckpoints($('<div>'), $('#telemetry_checkpoints_flat'), 0, 0, true);
 	
@@ -31,22 +29,6 @@ module.on("componentpage", () => {
 		updateSort();
 	});
 });
-
-module.on("componentpagedone", () => {
-	toggleFullscreenMode(false);
-});
-
-function toggleFullscreenMode(enable) {
-	if (enable) {
-		$('#page_sidebar').css("display", "none");
-		$('#rightbar').css("display", "none");
-		$('#wrap_all').css('max-width', '100%');
-	} else {
-		$('#page_sidebar').css("display", "");
-		$('#rightbar').css("display", "");
-		$('#wrap_all').css('max-width', "");
-	}
-}
 
 function loadCheckpoints(el, parent, hcid, depth, flat) {
 	if (el.data('disabled'))

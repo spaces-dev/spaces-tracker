@@ -5,7 +5,7 @@ import { throttleRaf } from "../utils";
 import { waitTransitionEnd } from '../utils/dom';
 import pageLoader from '../ajaxify';
 import { getVisibleUnreadReactionsCount, isReactionsVisible } from '../widgets/reactions';
-import { scrollIntoViewIfNotVisible } from "../utils/scroll";
+import { getPageHeaderOffset, scrollIntoViewIfNotVisible } from "../utils/scroll";
 import { getVisibleUnreadMentionsCount, isMentionsVisible } from "./mentions";
 
 const EVENT_TYPES = {
@@ -183,24 +183,26 @@ module.on("componentpage", () => {
 });
 
 function useFloating(container, { topAnchor, bottomAnchor, stickyClass, stickyMargin }) {
+	const layout = document.getElementById('page_layout');
 	const handleScroll = throttleRaf(() => {
 		const buttonRect = container.getBoundingClientRect();
 		const topAnchorRect = topAnchor.getBoundingClientRect();
 		const bottomAnchorRect = bottomAnchor.getBoundingClientRect();
 		const buttonHeight = buttonRect.height;
 		const alignOffset = buttonHeight / 2;
+		const stickyTop = getPageHeaderOffset() + stickyMargin;
 
 		let position = "sticky";
-		if (topAnchorRect.top >= alignOffset + stickyMargin) {
+		if (topAnchorRect.top >= alignOffset + stickyTop) {
 			position = "top";
-		} else if (bottomAnchorRect.bottom <= alignOffset + stickyMargin) {
+		} else if (bottomAnchorRect.bottom <= alignOffset + stickyTop) {
 			position = "bottom";
 		}
 
 		container.classList.toggle(stickyClass, position == "sticky");
 
 		if (position == "sticky") {
-			const siteContentRect = document.getElementById('siteContent').getBoundingClientRect();
+			const siteContentRect = document.getElementById('site_content').getBoundingClientRect();
 			const offset = Math.round(siteContentRect.left + siteContentRect.width / 2);
 			container.style.left = `${offset}px`;
 		} else {
@@ -220,6 +222,7 @@ function useFloating(container, { topAnchor, bottomAnchor, stickyClass, stickyMa
 				return;
 			window.addEventListener('scroll', handleScroll, { passive: true });
 			window.addEventListener('resize', handleScroll);
+			layout.addEventListener('header:offsetChange', handleScroll);
 			handleScroll();
 			initialized = true;
 		},
@@ -228,6 +231,7 @@ function useFloating(container, { topAnchor, bottomAnchor, stickyClass, stickyMa
 				return;
 			window.removeEventListener('scroll', handleScroll);
 			window.removeEventListener('resize', handleScroll);
+			layout.removeEventListener('header:offsetChange', handleScroll);
 			initialized = false;
 		},
 		update() {

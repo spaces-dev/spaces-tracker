@@ -11,7 +11,7 @@ let steps_to_system = 1;
 
 onThemeChange(() => syncCurrentTheme());
 
-$('#page_sidebar').on('click', '.js-site-theme', function (e) {
+$('#sidebar_container').on('click', '.js-site-theme', function (e) {
 	e.preventDefault();
 	
 	if (getCurrentTheme() == 'system')
@@ -35,8 +35,8 @@ $('#page_sidebar').on('click', '.js-site-theme', function (e) {
 
 function syncCurrentTheme() {
 	const currentTheme = getCurrentTheme();
-	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-title'))
+	for (const block of document.querySelectorAll('#sidebar_container .js-site-theme-title'))
 		block.textContent = THEME2TITLE[currentTheme];
-	for (const block of document.querySelectorAll('#page_sidebar .js-site-theme-state'))
+	for (const block of document.querySelectorAll('#sidebar_container .js-site-theme-state'))
 		block.classList.toggle('hide', block.dataset.theme !== currentTheme);
 }

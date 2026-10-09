@@ -34,11 +34,8 @@ module.on("componentpage", () => {
 	coin.classList.remove('bonus-coin--hidden');
 	updatePosition();
 
-	let resizeObserver;
-	if (window.ResizeObserver) {
-		resizeObserver = new window.ResizeObserver(updatePosition);
-		resizeObserver.observe(content);
-	}
+	const resizeObserver = new ResizeObserver(updatePosition);
+	resizeObserver.observe(content);
 	window.addEventListener('resize', handleResize, false);
 
 	coin.addEventListener('click', async (e) => {
@@ -91,8 +88,7 @@ module.on("componentpage", () => {
 	}
 
 	return () => {
-		if (resizeObserver)
-			resizeObserver.disconnect();
+		resizeObserver.disconnect();
 		window.removeEventListener('resize', handleResize, false);
 		coin.remove();
 	};

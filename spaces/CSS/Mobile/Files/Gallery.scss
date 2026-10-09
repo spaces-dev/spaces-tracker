@@ -2,7 +2,7 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
-.gallery__open #main_wrap, .gallery__open #debug {
+.gallery__open #page, .gallery__open #debug {
 	display:none;
 }
 .gallery__open .gallery {

@@ -1,6 +1,7 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 /* Базовые стили HTML элементов */
 @if ($TOUCH) {
@@ -22,7 +23,10 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 :root {
+	--page-header-offset: 0px;
+
 	color-scheme: if($DARK_MODE, only dark, only light);
+	scroll-padding-top: var(--page-header-offset);
 }
 
 html, body {
@@ -43,6 +47,22 @@ html, body, button, textarea {
 
 body {
 	min-height: 100vh;
+}
+
+.root {
+	&--no-scroll {
+		overflow: hidden;
+	}
+
+	&--sidebar-open .top-info {
+		display: none
+	}
+
+	@media all and (max-width: breakpoint.$wide-screen - 1px) {
+		&--sidebar-open {
+			overflow: hidden
+		}
+	}
 }
 
 uc-click {
@@ -111,12 +131,15 @@ button, input[type="button"], input[type="submit"], input[type="reset"], .button
 	cursor:pointer;
 	outline:0;
 	
+}
+
+input[type="button"], input[type="submit"], input[type="reset"], .button {
 	@if ($PC) {
 		&:hover {
 			background-color: $unstyled-button-hover-bg;
 		}
 	}
-	
+
 	&:active {
 		background-color: $unstyled-button-clicked-bg;
 	}
@@ -343,14 +366,10 @@ body .link-darkred {
 
 /* Разметка главного шаблона */
 @if ($PC) {
-	div.main, #{mangle("#ads_upk")}, #logo_panel, #navi_footer{
+	#{mangle("#ads_upk")}, #logo_panel, #navi_footer{
 		border-left: 1px solid $body-border-color;
 		border-right: 1px solid $body-border-color;
 	}
-}
-
-#siteContent {
-	position: relative;
 }
 
 .main {

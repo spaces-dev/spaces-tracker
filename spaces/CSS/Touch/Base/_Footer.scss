@@ -2,6 +2,53 @@
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
 
+.footer {
+	background: var(--header-background, #{$header-bg});
+	color: $header-text-color;
+
+	a, a:visited {
+		color: $header-text-color;
+	}
+}
+
+.footer-menu {
+	background: var(--header-background, #{$header-bg});
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	text-align: center;
+
+	&__link {
+		box-sizing: border-box;
+		color: $header-text-color;
+		display: block;
+		font-weight: bold;
+		min-width: 0;
+		padding: 19px 10px 15px;
+		text-transform: uppercase;
+	}
+
+	@media all and (min-width: 400px) and (max-width: 479px) {
+		&__link {
+			flex: 0 0 24%;
+			padding-right: 1px;
+			padding-left: 1px;
+
+			&--optional {
+				display: none
+			}
+		}
+	}
+
+	@media all and (min-width: 480px) {
+		&__link {
+			flex: 0 0 19%;
+			padding-right: 1px;
+			padding-left: 1px;
+		}
+	}
+}
+
 .footer__link_colors, .footer__link_edit {
 	display: none
 }
@@ -216,6 +263,23 @@
 	margin: 0 2px -6px 0;
 }
 
-#navi_footer{
+#navi_footer {
+	border-top: none;
+	border-right: none;
+	border-left: none;
 	padding: 4px 2px 5px 4px;
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+
+		td {
+			width: 20%;
+		}
+	}
+}
+
+.page-bottom {
+	background: $bottom-bg;
+	position: relative
 }

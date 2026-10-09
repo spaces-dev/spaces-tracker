@@ -1,6 +1,7 @@
 @use "Common/Theme" as *;
 @use "Common/Utils" as *;
 @use "spacepack/build/variables" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
 
 @if ($PC) {
 	.tabs__item:hover {
@@ -104,7 +105,7 @@
 	color: $disabled-text-color !important;
 }
 
-@media all and (min-width:900px){
+@media all and (min-width: breakpoint.$wide-screen){
 	.min_screen_width_900{
 		display: none;
 	}

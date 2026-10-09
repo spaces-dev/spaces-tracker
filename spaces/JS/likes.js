@@ -75,7 +75,7 @@ const tpl = {
 
 let hide_err_timeout;
 
-$('#main_wrap').on('click', '.js-vote_btn', function (e, extra) {
+$('#page').on('click', '.js-vote_btn', function (e, extra) {
 	e.stopImmediatePropagation(); e.preventDefault();
 	e.stopPropagation();
 	

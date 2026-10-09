@@ -1,0 +1,19 @@
+@use "Common/Theme" as *;
+@use "Touch/Base/Breakpoints" as breakpoint;
+
+.site-page {
+	@media all and (min-width: breakpoint.$wide-screen) {
+		margin: 0 auto;
+		max-width: breakpoint.$wide-screen;
+
+		.top-info {
+			border-left: 1px solid $sidebar-left-border;
+		}
+	}
+
+	@media all and (min-width: breakpoint.$rightbar) {
+		&--with-rightbar {
+			max-width: 1110px
+		}
+	}
+}

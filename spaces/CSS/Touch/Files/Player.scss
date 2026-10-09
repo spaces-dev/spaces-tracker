@@ -146,7 +146,7 @@
 /* Плавающая справа кнопочка */
 .gp-right_btn .gp {
 	width: 154px;
-	top: 49px;
+	top: if($PC, calc(var(--page-header-offset) + 4px), 49px);
 	position: fixed;
 	bottom: auto;
 }

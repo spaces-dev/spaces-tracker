@@ -16,9 +16,13 @@
 
 @forward "Base/Icons";
 @forward "Base/Sidebar";
+@forward "Base/SitePage";
+@forward "Base/Layout";
 @forward "Base/Header";
+@forward "Base/AjaxLoader";
 @forward "Base/Footer";
 @forward "Base/LocationBar";
+@forward "Base/ScrollPage";
 
 @forward "Base/Range";
 @forward "Base/ProgressBar";
@@ -1434,24 +1438,6 @@ a.link-blue:active {
 	border-bottom: none;
 }
 
-.ajax-loader__cancel{
-	@if ($PC) {cursor: pointer;}
-	padding: 15px 10px 10px 10px;
-	float: right;
-}
-
-#ajax_loader {
-	position: fixed;
-	z-index: 999999;
-	top: 0;
-	@if ($DARK_MODE) {
-		background: $ajax-lodader-bg url(/i/progress_dark.gif?r=1) repeat-x;
-	} @else {
-		background: $ajax-lodader-bg url(/i/progress.gif?r=1) repeat-x;
-	}
-	height: 5px
-}
-
 #sandbox_loader {
 	position: fixed;
 	z-index: 999998;
@@ -1537,8 +1523,7 @@ a.link-blue:active {
 }
 
 .no-shadow,
-.no-shadow .system-message,
-body #wrap_all .horiz-menu__link_no_hover{
+.no-shadow .system-message {
 	-webkit-box-shadow: none !important;
 	   -moz-box-shadow: none !important;
 			box-shadow: none !important;
