@@ -232,38 +232,6 @@ function handleGamePayload() {
 		port.send(JSON.parse(gamePayload));
 }
 
-export async function loadMiniGamesRating(ratingElement) {
-	if (ratingElement.dataset.busy)
-		return;
-	ratingElement.dataset.busy = true;
-	const ratingText = ratingElement.querySelector('.js-text');
-
-	const miniGamesWidget = document.getElementById('mini_games_dialog');
-	const url = ratingElement.dataset.ratingUrl + ratingElement.dataset.userId;
-	let rating;
-	try {
-		const response = await fetch(url, {
-			headers: {
-				Authorization: `Bearer ${miniGamesWidget.dataset.token}`,
-			},
-		});
-		if (response.status === 404) {
-			rating = 0;
-		} else {
-			if (!response.ok)
-				throw new Error(`Mini Games rating request failed: ${response.status}`);
-			rating = (await response.json()).rating;
-		}
-	} catch (e) {
-		rating = '?';
-	} finally {
-		delete ratingElement.dataset.busy;
-	}
-
-	ratingText.textContent = L('Рейтинг в Мини-играх: {rating}', { rating });
-	ratingText.classList.remove('skeleton', 'skeleton--bordered');
-}
-
 function handleInviteCode() {
 	// Инвайт из кнопки
 	if (miniGamesDialog.opener().dataset.miniGamesInvite) {

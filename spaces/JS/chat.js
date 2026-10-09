@@ -12,7 +12,6 @@ import { L, plural } from './core/l10n';
 import { closeAllPoppers, getNearestPopper, getPopperById, hasOpenPoppers } from './widgets/popper';
 import { isFullyVisibleOnScreen, waitTransitionEnd } from './utils/dom';
 import { showToast } from './widgets/toaster';
-import { loadMiniGamesRating } from './pages/chat/miniGames/miniGamesDialog';
 
 let focusIntersectionObserver;
 
@@ -250,9 +249,6 @@ var Chat = {
 		// Показ селектора реакций
 		$('#main').on('popper:beforeOpen', '.js-chat_message_menu', function (e) {
 			const message = $(this).parents('.js-message');
-			const ratingElement = this.querySelector('[data-action="mini_games_profile_open"]');
-			if (ratingElement)
-				loadMiniGamesRating(ratingElement);
 			const reactionsList = message.find('.js-reactions_list');
 			if (!reactionsList.length || reactionsList.data('disabled'))
 				return;
