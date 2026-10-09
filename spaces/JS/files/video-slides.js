@@ -59,12 +59,13 @@ module.on("componentpagedone", () => {
 });
 
 function initVideoSlides(item) {
-	const wrap = item.parentNode;
-	if (item.dataset.blurred)
+	const previewWrap = item.closest('.js-preview_wrap');
+	if (previewWrap.classList.contains('preview-wrap--blurred'))
 		return;
-	wrap.addEventListener("mouseenter", () => startSlides(item), { passive: true });
-	wrap.addEventListener("mouseleave", () => stopSlides(), { passive: true });
-	wrap.addEventListener("touchstart", () => startSlides(item), { passive: true });
+
+	previewWrap.addEventListener("mouseenter", () => startSlides(item), { passive: true });
+	previewWrap.addEventListener("mouseleave", () => stopSlides(), { passive: true });
+	previewWrap.addEventListener("touchstart", () => startSlides(item), { passive: true });
 }
 
 function startSlides(preview) {
@@ -143,7 +144,7 @@ function loadSlides(preview, callback) {
 
 		if (slidesLoaded >= animationSlides1x.length) {
 			state.loadState = STATE_LOADED;
-			preview.parentNode.querySelector('.js-vap-spinner').remove();
+			preview.closest('.js-preview_clip').querySelector('.js-vap-spinner').remove();
 			state.slides = state.slides.filter((img) => img.width && img.height && img.src != preview.src);
 			state.callback && state.callback();
 			state.callback = null;
@@ -164,7 +165,7 @@ function loadSlides(preview, callback) {
 		state.slides.push(img);
 	}
 
-	preview.insertAdjacentHTML("afterend", tpl.spinner());
+	preview.closest('.js-preview_clip').insertAdjacentHTML("beforeend", tpl.spinner());
 }
 
 export function stopSlides() {

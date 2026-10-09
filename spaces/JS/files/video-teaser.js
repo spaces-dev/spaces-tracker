@@ -53,16 +53,17 @@ module.on("componentpagedone", () => {
 function initVideoTeaser(preview) {
 	if (!window.IntersectionObserver)
 		return;
-	if (preview.dataset.blurred)
+
+	const previewWrap = preview.closest('.js-preview_wrap');
+	if (previewWrap.classList.contains('preview-wrap--blurred'))
 		return;
 
 	if (preview.dataset.vtAutoplay === "true") {
 		observer.observe(preview);
 	} else {
-		const wrap = preview.parentNode;
-		wrap.addEventListener("mouseenter", () => startTeaser(preview), { passive: true });
-		wrap.addEventListener("mouseleave", () => stopTeaser(preview), { passive: true });
-		wrap.addEventListener("touchstart", () => startTeaser(preview), { passive: true });
+		previewWrap.addEventListener("mouseenter", () => startTeaser(preview), { passive: true });
+		previewWrap.addEventListener("mouseleave", () => stopTeaser(preview), { passive: true });
+		previewWrap.addEventListener("touchstart", () => startTeaser(preview), { passive: true });
 	}
 }
 
@@ -91,8 +92,6 @@ function stopTeaser(preview) {
 	video.load();
 	video.remove();
 
-	preview.parentNode.querySelector('.js-vapt-spinner')?.remove();
-
 	toggleSpinner(preview, false);
 	toggleAnimation(preview, false);
 
@@ -108,9 +107,10 @@ export function stopAllTeasers() {
 }
 
 function toggleSpinner(preview, flag) {
-	preview.parentNode.querySelector('.js-vapt-spinner')?.remove();
+	const previewClip = preview.closest('.js-preview_clip');
+	previewClip.querySelector('.js-vapt-spinner')?.remove();
 	if (flag)
-		preview.insertAdjacentHTML("afterend", tpl.spinner());
+		previewClip.insertAdjacentHTML("beforeend", tpl.spinner());
 }
 
 function toggleAnimation(preview, flag) {
@@ -143,7 +143,7 @@ function renderVideoTeaser(preview, source) {
 	} else {
 		video.classList.add('video-teaser--contain');
 	}
-	preview.parentNode.appendChild(video);
+	preview.closest('.js-preview_clip').appendChild(video);
 
 	const handleCanPlay = () => {
 		toggleSpinner(preview, false);
