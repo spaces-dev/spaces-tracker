@@ -118,6 +118,10 @@
 		&--sidebar-open &__content,
 		&--sidebar-open &__footer,
 		&--sidebar-open &__tail {
+			overflow: hidden
+		}
+
+		&--sidebar-open &__sidebar-shift {
 			transform: translateX(var(--layout-sidebar-width))
 		}
 	}
