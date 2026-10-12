@@ -847,8 +847,7 @@ var PageLoader = Class({
 						div.visible(!!value);
 				});
 				
-				var $main_content = $('#main_content').fastHtml('<div id="main">' + (res.game_motivator ? res.game_motivator : "") + res.content + '</div>');
-				$main_content.css('min-height', 0);
+				$('#main_content').fastHtml('<div id="main">' + (res.game_motivator ? res.game_motivator : "") + res.content + '</div>');
 				
 				// Ноги
 				$('#main_page_footer, #bottom_tools_main, #main_page_footer, #index_counters').visible(is_main_page);

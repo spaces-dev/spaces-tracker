@@ -6,7 +6,6 @@ import {Class} from '../class';
 import * as pushstream from '../core/lp';
 import {Spaces, Codes, Url} from '../spacesLib';
 import page_loader from '../ajaxify';
-import fixPageHeight from '../min_height';
 import FilesMonitor from '../files_monitor';
 
 // Загрузчик файлов загрузить позже
@@ -1004,7 +1003,6 @@ MAttachSelector = Class({
 				self.saveAttaches(self.new_attaches);
 			
 			self.free();
-			fixPageHeight();
 			
 			MAttachSelector.active(null);
 			

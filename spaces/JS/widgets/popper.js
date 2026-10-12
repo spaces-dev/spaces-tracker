@@ -8,7 +8,6 @@ import popperOffset from '@popperjs/core/lib/modifiers/offset';
 import popperEventListeners from '@popperjs/core/lib/modifiers/eventListeners';
 import { isVisibleOnScreen, parseDataset, waitTransitionEnd } from "../utils/dom";
 import { throttleRaf } from "../utils";
-import fixPageHeight from "../min_height";
 import pageLoader from '../ajaxify';
 import { scrollIntoViewIfNotVisible } from '../utils/scroll';
 
@@ -219,9 +218,6 @@ export class Popper {
 	}
 
 	_initPopperJs() {
-		// FIXME: ДИЧЬ
-		const fixPageHeightThrottled = throttleRaf(() => fixPageHeight($(this.popperElement)));
-
 		let offsetTop = this.options.offsetTop;
 		if (this.options.arrow) {
 			const computedStyles = getComputedStyle(this.referenceElement);
@@ -295,14 +291,6 @@ export class Popper {
 				{
 					name: 'flip',
 					enabled: this.options.flip,
-				},
-				{
-					name: 'fixPageHeight',
-					enabled: true,
-					phase: 'afterWrite',
-					fn() {
-						fixPageHeightThrottled();
-					}
 				},
 				{
 					name: "arrow",
@@ -382,8 +370,6 @@ export class Popper {
 
 		this._triggerEvent("afterClose");
 		popperOpenInstances = popperOpenInstances.filter((instance) => instance !== this);
-
-		fixPageHeight();
 
 		resizeObserver.unobserve(this.popperElement);
 

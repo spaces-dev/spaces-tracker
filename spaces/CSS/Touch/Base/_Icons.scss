@@ -235,8 +235,6 @@
 
 @include define-sprite("ico_sidebar") {
 	/*!__PURE__*/ display: inline-block;
-	/*!__PURE__*/ margin-right: 6px;
-	@include icon-middle-align(16);
 }
 
 .root--bg-ny {

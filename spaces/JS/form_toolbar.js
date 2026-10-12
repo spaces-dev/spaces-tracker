@@ -3,7 +3,6 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
-import fixPageHeight from './min_height';
 import AttachSelector from './widgets/attach_selector';
 
 import './form_tools';
@@ -654,7 +653,6 @@ function Toolbar(el, opts) {
 			bb_menu.hide();
 			current_menu_opener.removeClass('js-clicked');
 			current_menu_opener = current_menu = null;
-			fixPageHeight();
 			$('body').off('click.sp_toolbar');
 		}
 
@@ -676,7 +674,6 @@ function Toolbar(el, opts) {
 				});
 			});
 			closeAllPoppers();
-			fixPageHeight(current_menu);
 
 			onAfterCreateMenu(current_menu, tag);
 		}

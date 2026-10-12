@@ -3,7 +3,6 @@ import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
 import page_loader from './ajaxify';
-import fixPageHeight from './min_height';
 
 import './select_item';
 import {html_wrap} from './utils';
@@ -265,7 +264,6 @@ var SearchSuggests = {
 	hideSuggests: function () {
 		var self = this;
 		state.list.empty().removeClass('suggest__list_on');
-		fixPageHeight();
 		self.cancelRequest();
 	},
 	submitForm: function () {
@@ -344,7 +342,6 @@ var SearchSuggests = {
 						
 						if (results.length > 0) {
 							state.list.html(html).addClass('suggest__list_on');
-							fixPageHeight(state.list);
 						} else {
 							self.hideSuggests();
 						}

@@ -4,7 +4,6 @@ import cookie from './cookie';
 import {Class} from './class';
 import * as pushstream from './core/lp';
 import Spaces from './spacesLib';
-import fixPageHeight from './min_height';
 import { extend, tick, updateUrl, html_wrap } from './utils';
 import { L } from './core/l10n';
 
@@ -47,13 +46,12 @@ const tpl = {
 
 		return `
 			<div
-				data-ypad="10"
 				id="notif_${data.id}"
 				data-id="${data.id}"
 				${data.api ? `data-action="global_notification_click"` : ``}
 				${data.api ? `data-api="${html_wrap(JSON.stringify(data.api))}"` : ''}
 				class="
-					oh system-message notification_item js-fix_height
+					oh system-message notification_item
 					${data.link || data.api ? `system-message--clickable js-action_link` : ``}
 					${data.n || data.delayed ? 'hide ' : ''}
 					${data.delayed ? 'js-notif_to_show ' : ''}
@@ -585,8 +583,6 @@ var Notifications = Class({
 			return $(this).isVisible();
 		}).length > 0;
 		$('#header_path').toggleClass('no-shadow', has_notif);
-		
-		fixPageHeight();
 	},
 	
 	showBackgroundNotifications: function (data) {

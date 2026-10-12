@@ -3,7 +3,6 @@ import $ from './jquery';
 import Device from './device';
 import {Class} from './class';
 import Spaces from './spacesLib';
-import fixPageHeight from './min_height';
 import require from 'require';
 import {debounce} from './utils';
 import './search_form';
@@ -346,7 +345,6 @@ var UniversalSearch = Class({
 		self.wrap.toggle(!!show);
 		if (self.render.inputActiveClass)
 			self.el.parent().toggleClass(self.render.inputActiveClass, !!show);
-		fixPageHeight(self.wrap);
 	},
 	toggleList: function () {
 		var self = this;
@@ -364,7 +362,6 @@ var UniversalSearch = Class({
 		}
 		
 		if (self.render.showOnFocus || !self.empty.length) {
-			fixPageHeight(self.wrap);
 			self.showList(!empty);
 		} else {
 			if (empty) {

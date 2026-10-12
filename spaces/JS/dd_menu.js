@@ -3,7 +3,6 @@ import module from 'module';
 import $ from './jquery';
 import Device from './device';
 import Spaces from './spacesLib';
-import fixPageHeight from './min_height';
 import {Class} from './class';
 import {tick} from './utils';
 
@@ -91,24 +90,8 @@ var DdMenu = Class({
 	Static: {
 		fixSize: function () {
 			var cur_menu = _getCurrent();
-			if (cur_menu) {
+			if (cur_menu)
 				DdMenu.fixPos();
-				/*
-				var ypad = 0;
-				cur_menu.find('textarea').each(function () {
-					var el = this, $el = $(el), max_h, h = $el.height();
-					if (!(max_h = $el.data("max_textarea_h"))) {
-						var ih = $el.innerHeight();
-						max_h = ih / el.rows * 6 + (h - ih);
-						el.style.maxHeight = max_h + "px";
-						$el.data("max_textarea_h", max_h)
-					}
-					ypad += $el.data("max_textarea_h") - h;
-				});
-				fixPageHeight(cur_menu.data('ypad', ypad));
-				*/
-				fixPageHeight(cur_menu.data('ypad', 0));
-			}
 		},
 		fixPos: function () {
 			$(window).trigger('fixDdMenuPos');
@@ -234,7 +217,6 @@ function _openMenu(e, extra) {
 		el_id = el.attr('id'),
 		inner_id = el.data('inner'),
 		city_prefix = el.data('city_prefix') || false,
-		no_bottom_fix = el.data('no_bottom_fix') || false,
 		allow_only = el.data('allow_only') || false,
 		add_friend_link = el.hasClass('js-add-friend'),
 		all_menu_buttons = $('.js-dd_menu_link'),
@@ -555,13 +537,6 @@ function _openMenu(e, extra) {
 		}
 	}
 	
-	/*
-	if (no_bottom_fix === false){
-		var $main_content = $('#main_content');
-		$main_content.css('min-height', $main_content.height() + 150 + 'px');
-	}
-	*/
-	
 	current_menu.trigger($.Event("dd_menu_opened"));
 	menu_opener.trigger('dd_menu_opened');
 	
@@ -612,8 +587,6 @@ function _ddMenuClose(id) {
 	
 	_openerState(current_menu, false);
 	
-	$('#main_content').css('min-height', 0);
-	
 	var event = $.Event("dd_menu_close");
 	current_menu.trigger(event);
 	if (event.isDefaultPrevented())
@@ -654,8 +627,6 @@ function _ddMenuClose(id) {
 	on_shutdown = [];
 	
 	current_menu = null;
-
-	fixPageHeight();
 	
 	return true;
 }
