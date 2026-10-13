@@ -1,7 +1,58 @@
 @use "Common/Theme" as *;
 /* Фон */
-.site-page {
+#wrap_all {
 	background: $body-bg
+}
+
+/* Верхняя панель */
+.not_auth .horiz-menu__link {
+	height: auto;
+}
+
+.touch.not_auth .horiz-menu__link {
+	height: auto;
+}
+
+.horiz-menu__link.current {
+	position: relative;
+	background-color: $header-link-selected-bg;
+}
+
+.horiz-menu__link.current:after{
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background-color: $header-link-selected-border;
+}
+
+.text_logo {
+	text-transform: none;
+	position: absolute;
+	top: 50%;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	line-height: 2em;
+	font-size: 22px;
+	margin-top: -1em;
+}
+
+.horiz-menu__link.current {
+	position: relative;
+	background-color: $header-link-selected-bg;
+}
+
+.horiz-menu__link.current:after{
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background-color: $header-link-selected-border;
 }
 
 .l-bord {
@@ -134,3 +185,4 @@
 	right: 0;
 	bottom: 0;
 }
+
