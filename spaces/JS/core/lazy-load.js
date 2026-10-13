@@ -51,7 +51,7 @@ function nextSerialLoad() {
 	}
 }
 
-export function loadLazyItem(el) {
+function loadLazyItem(el) {
 	if (el.tagName == "IMG") {
 		if (el.dataset.s) {
 			if (el.dataset.s2)

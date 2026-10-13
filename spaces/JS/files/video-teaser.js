@@ -17,7 +17,7 @@ const tpl = {
 };
 
 module.on("component", () => {
-	// js-vap - video animated preview (teaser)
+	// js-vapt - video teaser
 	for (const item of document.querySelectorAll('.js-vapt')) {
 		item.classList.remove('js-vapt');
 		initVideoTeaser(item);
@@ -73,7 +73,6 @@ function startTeaser(preview) {
 
 	if (preview.dataset.vtAutoplay !== "true") {
 		stopAllTeasers();
-		import("./video-slides").then(({ stopSlides }) => stopSlides());
 	}
 
 	const sources = JSON.parse(preview.dataset.vt);
@@ -101,7 +100,7 @@ function stopTeaser(preview) {
 	currentTeasers.delete(preview);
 }
 
-export function stopAllTeasers() {
+function stopAllTeasers() {
 	for (const preview of currentTeasers.keys())
 		stopTeaser(preview);
 }
