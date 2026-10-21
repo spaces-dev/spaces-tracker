@@ -883,7 +883,7 @@ var PageLoader = Class({
 					
 					if (form_state) {
 						// Восстанавливаем состояние форм
-						FormState.restore($main_content[0], form_state);
+						FormState.restore(document.getElementById('main_content'), form_state);
 					}
 					
 					// Ссылка на страницу и link_id

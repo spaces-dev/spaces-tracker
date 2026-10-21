@@ -235,6 +235,7 @@
 
 @include define-sprite("ico_sidebar") {
 	/*!__PURE__*/ display: inline-block;
+	/*!__PURE__*/ flex-shrink: 0;
 }
 
 .root--bg-ny {

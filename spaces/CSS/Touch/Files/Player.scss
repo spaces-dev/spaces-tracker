@@ -36,7 +36,11 @@
 }
 
 .gp-window {
-	z-index: 200000
+	z-index: 200000;
+
+	.root--header-animated & {
+		transition: top 0.2s ease
+	}
 }
 .rightbar.gp-right_btn .gp-window {
 	margin-left: 13.95%;
@@ -149,6 +153,10 @@
 	top: if($PC, calc(var(--page-header-offset) + 4px), 49px);
 	position: fixed;
 	bottom: auto;
+
+	.root--header-animated & {
+		transition: top 0.2s ease
+	}
 }
 .gp-right_btn .gp-content {
 	position: absolute;

@@ -81,9 +81,9 @@
 	display: none;
 	position: absolute;
 	top: 0;
-	right: -1px;
+	right: 0;
 	bottom: -1px;
-	left: -1px;
+	left: 0;
 	z-index: 1;
 	background: $footer-link-clicked-bg;
 	-webkit-box-shadow: $footer-link-clicked-shadow;
@@ -119,9 +119,11 @@
 }
 
 .footer__name{
-	margin: 0 10px;
+	padding: 0 10px;
 	overflow: hidden;
 	white-space: nowrap;
+	-webkit-mask-image: linear-gradient(to right, #000 calc(100% - 10px), transparent);
+	mask-image: linear-gradient(to right, #000 calc(100% - 10px), transparent);
 }
 
 .footer_text-hide .footer__links-wrapper .footer__name { 
@@ -130,6 +132,7 @@
 	width: 1px;
 	height: 1px;
 	margin: -1px;
+	padding: 0;
 }
 
 .footer_edit .footer__links-wrapper .footer__name{
@@ -137,6 +140,7 @@
 	width: auto;
 	height: auto;
 	margin: 0;
+	padding: 0;
 }
 
 .footer__name,
@@ -238,6 +242,7 @@
 .footer__link_tool .footer__name,
 .footer__link_moder .footer__name{
 	margin: 0;
+	padding: 0;
 }
 
 .footer__link_tool {

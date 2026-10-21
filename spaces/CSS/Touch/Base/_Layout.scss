@@ -21,12 +21,25 @@
 		z-index: 9999;
 	}
 
+	&__header-placeholder {
+		display: none
+	}
+
 	&__content {
 		background: $body-bg;
 		grid-column: 1;
-		grid-row: 2;
+		grid-row: 3;
 		min-width: 0;
 		position: relative;
+	}
+
+	&__clock {
+		background: $header-clock-bg;
+		border-bottom: 1px solid $separator-color;
+		color: $default-text-color;
+		min-width: 0;
+		padding: 4px;
+		text-align: right;
 	}
 
 	&__main {
@@ -40,17 +53,17 @@
 	}
 
 	&__footer {
-		grid-row: 3;
+		grid-row: 4;
 	}
 
 	&__tail {
-		grid-row: 4;
+		grid-row: 5;
 	}
 
 	&__sidebar {
 		display: none;
 		grid-column: 1;
-		grid-row: 2;
+		grid-row: 3;
 		min-height: 0;
 		min-width: 0;
 		position: relative;
@@ -66,7 +79,7 @@
 		margin-top: 10px
 	}
 
-	&--header-hidden &__header {
+	&--header-hidden &__header, &--header-hidden &__header-placeholder {
 		display: none
 	}
 
@@ -83,24 +96,44 @@
 	.page-layout {
 		--layout-header-height: 48px;
 
-		&--sidebar-open {
-			min-height: 100vh;
+		&--header-labeled {
+			--layout-header-height: 73px
+		}
 
-			@supports (height: 100dvh) {
-				min-height: var(--100dvh)
+		&--header-minimal {
+			--layout-header-height: 44px
+		}
+
+		&__header {
+			align-self: start;
+			position: relative;
+
+			&.header--sticky {
+				position: sticky
 			}
 		}
 
-		&--sidebar-open &__sidebar {
-			height: calc(100vh - var(--layout-header-height));
-			overflow-y: auto;
-			position: sticky;
-			top: var(--layout-header-height);
-			width: 100%;
+		&__header-placeholder {
+			background: var(--header-background, #{$header-bg});
+			display: block;
+			grid-column: 1 / -1;
+			grid-row: 1;
+			height: var(--layout-header-height)
+		}
 
-			@supports (height: 100dvh) {
-				height: calc(var(--100dvh) - var(--layout-header-height))
-			}
+		&--sidebar-open {
+			align-content: start;
+			min-height: var(--100dvh);
+		}
+
+		&--sidebar-open &__sidebar {
+			height: calc(var(--100dvh) - var(--page-header-offset));
+			left: 0;
+			overflow-y: auto;
+			position: fixed;
+			right: 0;
+			top: var(--page-header-offset);
+			width: auto;
 
 			&::after {
 				align-self: flex-start;
@@ -124,6 +157,12 @@
 		&--sidebar-open &__sidebar-shift {
 			transform: translateX(var(--layout-sidebar-width))
 		}
+	}
+}
+
+@media all and (min-width: 480px) and (max-width: breakpoint.$wide-screen - 1px) {
+	.page-layout {
+		--layout-sidebar-width: 320px
 	}
 }
 

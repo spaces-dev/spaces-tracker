@@ -24,6 +24,14 @@
 		position: fixed;
 		top: calc(var(--page-header-offset) + 14px);
 		transform: translateX(-50%);
+
+		.root--header-animated & {
+			transition:
+			opacity 0.3s,
+			visibility 0.3s,
+			bottom 0.3s,
+			top 0.2s ease;
+		}
 	}
 
 	&--is-hidden {

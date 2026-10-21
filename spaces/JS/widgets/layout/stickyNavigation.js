@@ -1,8 +1,14 @@
 import { Spaces } from '../../spacesLib';
 
-const AUTOHIDE_VIEWPORT_RATIO = 0.3;
 const SHOW_SCROLL_DELTA = 30;
+// Длительность transition шапки в _Header.scss
+const HEADER_SHOW_DURATION = 200;
+// scroll приходит раз в кадр, поэтому первое событие после паузы накопило не больше кадра
+const MAX_SCROLL_EVENT_INTERVAL = 16;
+const HEADER_SHOW_IDLE_DELAY = 100;
 const TOP_EDGE_REVEAL_DISTANCE = 2;
+// Firefox до 75
+const HAS_GET_ANIMATIONS = 'getAnimations' in Element.prototype;
 
 const layout = document.getElementById('page_layout');
 const topInfo = document.getElementById('top_info_block');
@@ -11,6 +17,8 @@ const openHeaderMenus = new Set();
 let headerMode = getHeaderMode();
 let layoutStartScroll;
 let lastScroll = Math.max(0, window.scrollY);
+let lastScrollTime = 0;
+let viewportWidth = window.innerWidth;
 let updateScheduled = false;
 let resizePending = false;
 
@@ -20,8 +28,8 @@ let headerCollapseSize = 0;
 let headerHeight = 0;
 let renderedHeaderCollapse;
 let renderedHeaderOffset;
-let headerOffsetAnimationFrame;
-let headerTransitionVersion = 0;
+let headerShowAnimationFrame;
+let headerShowIdleTimer;
 
 let stickyPanels = [];
 let stickyPanelsNeedClear = false;
@@ -34,7 +42,7 @@ function init() {
 	window.addEventListener('scroll', handleScroll, { passive: true });
 	window.addEventListener('resize', handleResize, { passive: true });
 	layout.addEventListener('sidebar:toggle', () => syncHeader());
-	layout.addEventListener('animationend', handleHeaderAnimationEnd);
+	layout.addEventListener('transitionend', handleHeaderTransitionEnd);
 	document.body.addEventListener('ajaxify:updateWidgets', handleWidgetsUpdate);
 
 	syncTopEdgeListener();
@@ -42,9 +50,8 @@ function init() {
 
 	if (headerMode !== 'autohide')
 		refreshStickyPanels();
-	refreshHeaderCollapseMetrics();
+	refreshHeaderMetrics();
 	syncHeader();
-	animateInitialHeaderCollapse(lastScroll);
 }
 
 function handleScroll() {
@@ -53,7 +60,6 @@ function handleScroll() {
 		return;
 	}
 
-	header.classList.remove('header--initial-collapse');
 	const scroll = Math.max(0, window.scrollY);
 	const delta = scroll - lastScroll;
 
@@ -94,6 +100,10 @@ function update() {
 }
 
 function handleResize() {
+	if (headerMode === 'autohide' && viewportWidth === window.innerWidth)
+		return;
+
+	viewportWidth = window.innerWidth;
 	resetHeaderScroll(Math.max(0, window.scrollY));
 	resizePending = true;
 	scheduleUpdate();
@@ -102,7 +112,6 @@ function handleResize() {
 function updateAfterResize() {
 	const previousHeaderMode = headerMode;
 
-	header.classList.remove('header--initial-collapse');
 	layoutStartScroll = undefined;
 	headerMode = getHeaderMode();
 	if (previousHeaderMode !== headerMode) {
@@ -113,17 +122,16 @@ function updateAfterResize() {
 		}
 
 		syncTopEdgeListener();
-		refreshHeaderCollapseMetrics();
+		refreshHeaderMetrics();
 		stickyPanelsNeedClear = headerMode !== 'autohide';
 		syncHeader();
 		return;
 	}
 
-	headerHeight = header.offsetHeight + (renderedHeaderCollapse || 0);
+	refreshHeaderHeight();
 	stickyPanelsNeedClear = headerMode !== 'autohide';
 	if (headerMode !== 'autohide')
 		refreshStickyPanelHeights();
-	syncSidebarHeaderHeight();
 }
 
 function handleWidgetsUpdate(event) {
@@ -145,59 +153,82 @@ function getHeaderMode() {
 }
 
 function updateHeader(scroll, delta) {
+	header.classList.toggle('header--stuck', headerMode === 'sticky' && scroll > getLayoutStartScroll());
+
 	if (headerMode === 'autohide') {
-		updateHeaderCollapse(scroll);
 		updateAutohideHeader(scroll, delta);
 	} else if (headerMode === 'hover-reveal') {
 		updateFloatingHeader(scroll);
 	}
 
-	if (headerOffsetAnimationFrame === undefined)
-		updatePageHeaderOffset(scroll);
+	updatePageHeaderOffset(scroll);
 }
 
 function updateAutohideHeader(scroll, delta) {
-	if (scroll === 0) {
+	if (scroll <= getLayoutStartScroll()) {
 		layoutStartScroll = undefined;
-		if (header.classList.contains('header--hidden') && !header.classList.contains('header--instant'))
-			skipHeaderTransition();
-		if (showHeader())
-			updateHeaderCollapse(scroll);
+		// Пока шапка анимируется, sticky не снимаем, иначе иконки дёргаются
+		if (isHeaderTransformAnimating()) {
+			showHeader();
+		} else {
+			deactivateStickyHeader(true);
+		}
 		resetHeaderScroll(scroll);
 		return;
 	}
 
 	if (layout.classList.contains('page-layout--sidebar-open')) {
-		if (showHeader())
-			updateHeaderCollapse(scroll);
+		showStickyHeader();
 		resetHeaderScroll(scroll);
 		return;
 	}
 
+	updateHeaderCollapse(scroll);
 	if (!delta)
 		return;
 
-	const isHidden = header.classList.contains('header--hidden');
-	accumulatedHeaderScroll = isHidden ?
-		Math.min(0, accumulatedHeaderScroll + delta) :
-		Math.max(0, accumulatedHeaderScroll + delta);
+	const now = performance.now();
+	const scrollInterval = Math.min(now - lastScrollTime, MAX_SCROLL_EVENT_INTERVAL);
+	lastScrollTime = now;
+
+	const isSticky = header.classList.contains('header--sticky');
+	const isHidden = !isSticky || header.classList.contains('header--hidden');
 
 	if (isHidden) {
-		if (accumulatedHeaderScroll <= -SHOW_SCROLL_DELTA) {
-			showHeader();
-			updateHeaderCollapse(scroll);
+		if (headerShowAnimationFrame !== undefined && delta > 0) {
+			deactivateStickyHeader();
 			accumulatedHeaderScroll = 0;
+			return;
 		}
+
+		accumulatedHeaderScroll = Math.min(0, accumulatedHeaderScroll + delta);
+		const timeToStaticHeader = (scroll - getLayoutStartScroll() - headerHeight) * scrollInterval / -delta;
+		if (delta < 0 && timeToStaticHeader < HEADER_SHOW_DURATION) {
+			// Статичная шапка появится раньше, чем sticky доедет. Если скролл остановится, событий больше не будет
+			clearTimeout(headerShowIdleTimer);
+			headerShowIdleTimer = setTimeout(() => revealHeader(lastScroll), HEADER_SHOW_IDLE_DELAY);
+			return;
+		}
+		revealHeader(scroll);
 		return;
 	}
 
-	const scrollAfterSticky = Math.max(0, scroll - getLayoutStartScroll());
-	const hideDistance = Math.min(accumulatedHeaderScroll, scrollAfterSticky);
-
-	if (hideDistance >= window.innerHeight * AUTOHIDE_VIEWPORT_RATIO) {
+	if (delta > 0) {
 		hideHeader();
 		accumulatedHeaderScroll = 0;
 	}
+}
+
+function revealHeader(scroll) {
+	if (accumulatedHeaderScroll > -SHOW_SCROLL_DELTA || scroll < getLayoutStartScroll() + headerHeight)
+		return;
+
+	if (header.classList.contains('header--sticky')) {
+		showHeader();
+	} else {
+		showStickyHeader();
+	}
+	accumulatedHeaderScroll = 0;
 }
 
 function updateFloatingHeader(scroll) {
@@ -207,45 +238,88 @@ function updateFloatingHeader(scroll) {
 	if (isFloating) {
 		if (!header.classList.contains('header--floating'))
 			header.classList.add('header--floating');
+		if (openHeaderMenus.size)
+			header.classList.add('header--revealed');
 	} else if (header.classList.contains('header--floating')) {
 		resetFloatingHeader();
 	}
 }
 
 function refreshHeader() {
-	const wasHidden = header.classList.contains('header--hidden');
-
 	stopHeaderOffsetAnimation();
+	cancelStickyHeaderShow();
 	header = document.getElementById('header_elements');
 	openHeaderMenus.clear();
 	bindHeaderMenuEvents();
-	refreshHeaderCollapseMetrics();
-	skipHeaderTransition();
-	syncHeader(wasHidden);
-	animateInitialHeaderCollapse(Math.max(0, window.scrollY));
+	refreshHeaderMetrics();
+	syncHeader();
 }
 
-function syncHeader(keepHidden) {
+function syncHeader() {
 	const scroll = Math.max(0, window.scrollY);
-	const shouldKeepHidden = keepHidden && headerMode === 'autohide' && scroll > 0 &&
-		!layout.classList.contains('page-layout--sidebar-open');
-
-	if (shouldKeepHidden) {
-		updateHeaderCollapse(scroll);
-		hideHeader();
+	if (headerMode !== 'autohide' || scroll <= getLayoutStartScroll()) {
+		deactivateStickyHeader();
+	} else if (layout.classList.contains('page-layout--sidebar-open')) {
+		showStickyHeader();
 	} else {
 		showHeader();
 	}
 	resetFloatingHeader();
 	resetHeaderScroll(scroll);
 	updateHeader(scroll, 0);
-	syncSidebarHeaderHeight();
 	scheduleUpdate();
 }
 
 function resetHeaderScroll(scroll) {
 	lastScroll = scroll;
 	accumulatedHeaderScroll = 0;
+}
+
+function showStickyHeader() {
+	if (header.classList.contains('header--sticky')) {
+		if (headerShowAnimationFrame === undefined)
+			showHeader();
+		return;
+	}
+
+	header.classList.add('header--instant', 'header--sticky', 'header--hidden');
+	refreshHeaderHeight();
+	headerShowAnimationFrame = requestAnimationFrame(() => {
+		header.classList.remove('header--instant');
+		headerShowAnimationFrame = requestAnimationFrame(() => {
+			headerShowAnimationFrame = undefined;
+			if (header.classList.contains('header--sticky'))
+				showHeader();
+		});
+	});
+}
+
+function cancelStickyHeaderShow() {
+	if (headerShowAnimationFrame === undefined)
+		return false;
+
+	cancelAnimationFrame(headerShowAnimationFrame);
+	headerShowAnimationFrame = undefined;
+	return true;
+}
+
+function deactivateStickyHeader(animateLabels = false) {
+	cancelStickyHeaderShow();
+	if (!header.classList.contains('header--sticky')) {
+		showHeader();
+		return;
+	}
+
+	const shouldAnimateLabels = animateLabels && !header.classList.contains('header--hidden');
+	if (!shouldAnimateLabels)
+		header.classList.add('header--instant');
+	header.classList.remove('header--sticky', 'header--hidden');
+	clearHeaderCollapse();
+	refreshHeaderHeight();
+	if (!shouldAnimateLabels) {
+		header.getBoundingClientRect();
+		header.classList.remove('header--instant');
+	}
 }
 
 function showHeader() {
@@ -264,100 +338,71 @@ function hideHeader() {
 	startHeaderOffsetAnimation();
 }
 
-function refreshHeaderCollapseMetrics() {
-	renderedHeaderCollapse = undefined;
-	header.style.removeProperty('--header-collapse-offset');
-	header.style.removeProperty('--header-label-offset');
-	header.style.removeProperty('--header-label-opacity');
+function refreshHeaderHeight() {
 	headerHeight = header.offsetHeight;
+}
 
-	if (headerMode !== 'autohide' || !header.classList.contains('header--labeled')) {
-		headerCollapseSize = 0;
-		return;
-	}
-
+function refreshHeaderMetrics() {
+	clearHeaderCollapse();
 	const style = getComputedStyle(header);
-	const expandedHeight = parseFloat(style.getPropertyValue('--header-expanded-height'));
-	headerCollapseSize = expandedHeight - parseFloat(style.getPropertyValue('--header-compact-height'));
+	headerCollapseSize = parseFloat(style.getPropertyValue('--layout-header-height')) -
+		parseFloat(style.getPropertyValue('--header-compact-height')) || 0;
+	refreshHeaderHeight();
 }
 
 function updateHeaderCollapse(scroll) {
-	if (!headerCollapseSize)
-		return;
-	if (scroll > 0 && header.classList.contains('header--hidden'))
+	if (!headerCollapseSize || !header.classList.contains('header--sticky'))
 		return;
 
-	const scrollAfterSticky = scroll === 0 ? 0 : Math.max(0, scroll - getLayoutStartScroll());
-	const collapse = Math.min(headerCollapseSize, scrollAfterSticky);
+	const collapse = Math.min(headerCollapseSize, Math.max(0, scroll - getLayoutStartScroll()));
+	if (collapse === renderedHeaderCollapse)
+		return;
 
-	if (collapse !== renderedHeaderCollapse) {
-		const progress = collapse / headerCollapseSize;
-		const visibility = 1 - progress;
-
-		renderedHeaderCollapse = collapse;
-		header.style.setProperty('--header-collapse-offset', `${collapse}px`);
-		header.style.setProperty('--header-label-offset', `${progress * -50}%`);
-		header.style.setProperty('--header-label-opacity', visibility * visibility);
-	}
+	renderedHeaderCollapse = collapse;
+	header.style.setProperty('--header-collapse-offset', `${collapse}px`);
+	refreshHeaderHeight();
 }
 
-function updatePageHeaderOffset(scroll, notify = true) {
-	setPageHeaderOffset(getHeaderOffset(scroll), notify);
+function clearHeaderCollapse() {
+	renderedHeaderCollapse = undefined;
+	header.style.removeProperty('--header-collapse-offset');
 }
 
-function setPageHeaderOffset(offset, notify = true) {
-	offset = Math.round(offset);
+function updatePageHeaderOffset(scroll) {
+	const offset = Math.round(getHeaderOffset(scroll));
 	if (offset === renderedHeaderOffset)
 		return;
 
 	renderedHeaderOffset = offset;
 	document.documentElement.style.setProperty('--page-header-offset', `${offset}px`);
-	if (notify)
-		layout.dispatchEvent(new Event('header:offsetChange'));
+	layout.dispatchEvent(new Event('header:offsetChange'));
 }
 
 function startHeaderOffsetAnimation() {
-	if (headerOffsetAnimationFrame !== undefined)
-		return;
-
-	headerOffsetAnimationFrame = requestAnimationFrame(updateAnimatedHeaderOffset);
+	document.body.classList.add('root--header-animated');
+	updatePageHeaderOffset(lastScroll);
+	// Без перехода transitionend не придёт
+	if (!isHeaderTransformAnimating())
+		stopHeaderOffsetAnimation();
 }
 
 function stopHeaderOffsetAnimation() {
-	if (headerOffsetAnimationFrame === undefined)
-		return;
-
-	cancelAnimationFrame(headerOffsetAnimationFrame);
-	headerOffsetAnimationFrame = undefined;
-}
-
-function updateAnimatedHeaderOffset() {
-	headerOffsetAnimationFrame = undefined;
-	const isRunning = header.getAnimations().some((animation) => {
-		return animation.playState === 'pending' || animation.playState === 'running';
-	});
-	if (!isRunning) {
-		updatePageHeaderOffset(lastScroll, false);
-		layout.dispatchEvent(new Event('header:offsetChange'));
-		return;
-	}
-
-	const rect = header.getBoundingClientRect();
-	setPageHeaderOffset(rect.top > 0 ? 0 : Math.max(0, rect.bottom), false);
-	startHeaderOffsetAnimation();
+	document.body.classList.remove('root--header-animated');
 }
 
 function getHeaderOffset(scroll) {
-	if (header.classList.contains('header--hidden'))
-		return 0;
-
-	const visibleHeight = headerHeight - (renderedHeaderCollapse || 0);
+	const visibleHeight = headerHeight;
+	// При открытом сайдбаре header--hidden не сдвигает шапку
 	if (layout.classList.contains('page-layout--sidebar-open'))
 		return visibleHeight;
+	if (header.classList.contains('header--hidden'))
+		return 0;
 
 	const scrollAfterLayoutStart = scroll - getLayoutStartScroll();
 	if (scrollAfterLayoutStart < 0)
 		return 0;
+	if (headerMode === 'autohide' && !header.classList.contains('header--sticky'))
+		return Math.max(0, visibleHeight - scrollAfterLayoutStart);
 	if (headerMode !== 'hover-reveal' || header.classList.contains('header--revealed'))
 		return visibleHeight;
 	if (header.classList.contains('header--floating'))
@@ -365,19 +410,24 @@ function getHeaderOffset(scroll) {
 	return Math.max(0, visibleHeight - scrollAfterLayoutStart);
 }
 
-function animateInitialHeaderCollapse(scroll) {
-	if (!headerCollapseSize || !scroll)
-		return;
-	if (scroll <= getLayoutStartScroll())
+function handleHeaderTransitionEnd(event) {
+	if (event.target !== header || event.propertyName !== 'transform')
 		return;
 
-	header.classList.add('header--initial-collapse');
-	startHeaderOffsetAnimation();
+	stopHeaderOffsetAnimation();
+	if (!header.classList.contains('header--sticky'))
+		return;
+	if (!header.classList.contains('header--hidden') && lastScroll > getLayoutStartScroll())
+		return;
+
+	deactivateStickyHeader(true);
+	updatePageHeaderOffset(lastScroll);
 }
 
-function handleHeaderAnimationEnd(event) {
-	if (event.target === header && event.animationName === 'header-initial-collapse')
-		header.classList.remove('header--initial-collapse');
+function isHeaderTransformAnimating() {
+	if (!HAS_GET_ANIMATIONS)
+		return false;
+	return header.getAnimations().some((animation) => animation.transitionProperty === 'transform');
 }
 
 function resetFloatingHeader() {
@@ -417,19 +467,6 @@ function bindHeaderMenuEvents() {
 	header.addEventListener('popper:afterClose', (event) => openHeaderMenus.delete(event.target));
 }
 
-function skipHeaderTransition() {
-	const currentHeader = header;
-	const version = ++headerTransitionVersion;
-
-	currentHeader.classList.add('header--instant');
-	requestAnimationFrame(() => {
-		requestAnimationFrame(() => {
-			if (version === headerTransitionVersion && header === currentHeader)
-				currentHeader.classList.remove('header--instant');
-		});
-	});
-}
-
 function getLayoutStartScroll() {
 	if (layoutStartScroll === undefined)
 		layoutStartScroll = layout.getBoundingClientRect().top + window.scrollY;
@@ -439,15 +476,6 @@ function getLayoutStartScroll() {
 function invalidateLayoutStart() {
 	layoutStartScroll = undefined;
 	scheduleUpdate();
-}
-
-function syncSidebarHeaderHeight() {
-	if (!layout.classList.contains('page-layout--sidebar-open')) {
-		layout.style.removeProperty('--layout-header-height');
-		return;
-	}
-
-	layout.style.setProperty('--layout-header-height', `${header.offsetHeight}px`);
 }
 
 function refreshStickyPanels() {

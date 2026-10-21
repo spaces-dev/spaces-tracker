@@ -1,4 +1,6 @@
 @use "Common/Theme" as *;
+@use "spacepack/build/variables" as *;
+
 .comm{
 	padding: 12px 10px;
 	background: $content-bg;
@@ -90,9 +92,9 @@
 
 .comm-sub_sep {
 	border-top: 1px solid $separator-color;
-	margin-right: -15px;
-	padding-top: 12px;
+	margin-right: if($PC, -15px, -10px);
 	margin-top: -12px;
+	padding-top: 12px;
 }
 
 .comm-sep {
