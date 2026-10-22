@@ -1,6 +1,7 @@
 import { Spaces } from '../../spacesLib';
 
 const SHOW_SCROLL_DELTA = 30;
+const HIDE_SCROLL_DELTA = 30;
 // Длительность transition шапки в _Header.scss
 const HEADER_SHOW_DURATION = 200;
 // scroll приходит раз в кадр, поэтому первое событие после паузы накопило не больше кадра
@@ -100,11 +101,13 @@ function update() {
 }
 
 function handleResize() {
+	// У конца страницы панель браузера сдвигает scrollY без прокрутки
+	lastScroll = Math.max(0, window.scrollY);
 	if (headerMode === 'autohide' && viewportWidth === window.innerWidth)
 		return;
 
 	viewportWidth = window.innerWidth;
-	resetHeaderScroll(Math.max(0, window.scrollY));
+	resetHeaderScroll(lastScroll);
 	resizePending = true;
 	scheduleUpdate();
 }
@@ -195,9 +198,12 @@ function updateAutohideHeader(scroll, delta) {
 	const isHidden = !isSticky || header.classList.contains('header--hidden');
 
 	if (isHidden) {
-		if (headerShowAnimationFrame !== undefined && delta > 0) {
-			deactivateStickyHeader();
-			accumulatedHeaderScroll = 0;
+		if (headerShowAnimationFrame !== undefined) {
+			accumulatedHeaderScroll = Math.max(0, accumulatedHeaderScroll + delta);
+			if (accumulatedHeaderScroll >= HIDE_SCROLL_DELTA) {
+				deactivateStickyHeader();
+				accumulatedHeaderScroll = 0;
+			}
 			return;
 		}
 
@@ -213,10 +219,13 @@ function updateAutohideHeader(scroll, delta) {
 		return;
 	}
 
-	if (delta > 0) {
+	accumulatedHeaderScroll = Math.max(0, accumulatedHeaderScroll + delta);
+	if (accumulatedHeaderScroll < HIDE_SCROLL_DELTA)
+		return;
+
+	if (!isHeaderTransformAnimating())
 		hideHeader();
-		accumulatedHeaderScroll = 0;
-	}
+	accumulatedHeaderScroll = 0;
 }
 
 function revealHeader(scroll) {
@@ -246,7 +255,6 @@ function updateFloatingHeader(scroll) {
 }
 
 function refreshHeader() {
-	stopHeaderOffsetAnimation();
 	cancelStickyHeaderShow();
 	header = document.getElementById('header_elements');
 	openHeaderMenus.clear();
@@ -256,6 +264,8 @@ function refreshHeader() {
 }
 
 function syncHeader() {
+	// Переход мог оборваться без transitionend
+	stopHeaderOffsetAnimation();
 	const scroll = Math.max(0, window.scrollY);
 	if (headerMode !== 'autohide' || scroll <= getLayoutStartScroll()) {
 		deactivateStickyHeader();
@@ -381,9 +391,13 @@ function updatePageHeaderOffset(scroll) {
 function startHeaderOffsetAnimation() {
 	document.body.classList.add('root--header-animated');
 	updatePageHeaderOffset(lastScroll);
-	// Без перехода transitionend не придёт
-	if (!isHeaderTransformAnimating())
-		stopHeaderOffsetAnimation();
+	// Без перехода transitionend не придёт. Сразу getAnimations пересчитал бы стили всей страницы
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+			if (!isHeaderTransformAnimating())
+				stopHeaderOffsetAnimation();
+		});
+	});
 }
 
 function stopHeaderOffsetAnimation() {
@@ -412,6 +426,9 @@ function getHeaderOffset(scroll) {
 
 function handleHeaderTransitionEnd(event) {
 	if (event.target !== header || event.propertyName !== 'transform')
+		return;
+	// Chrome на Android шлёт лишний transitionend посреди перехода
+	if (isHeaderTransformAnimating())
 		return;
 
 	stopHeaderOffsetAnimation();

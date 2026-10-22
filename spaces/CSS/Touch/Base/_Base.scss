@@ -491,8 +491,8 @@ hr {
 	&--blurred {
 		.preview,
 		.video-teaser {
-			filter: blur(12px);
-			transform: scale(1.1);
+			filter: blur(8px);
+			transform: scale(1.25);
 		}
 
 		.preview-wrap__adult-label {
