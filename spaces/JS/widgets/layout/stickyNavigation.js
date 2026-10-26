@@ -31,6 +31,7 @@ let renderedHeaderCollapse;
 let renderedHeaderOffset;
 let headerShowAnimationFrame;
 let headerShowIdleTimer;
+let textFieldFocused = false;
 
 let stickyPanels = [];
 let stickyPanelsNeedClear = false;
@@ -45,6 +46,8 @@ function init() {
 	layout.addEventListener('sidebar:toggle', () => syncHeader());
 	layout.addEventListener('transitionend', handleHeaderTransitionEnd);
 	document.body.addEventListener('ajaxify:updateWidgets', handleWidgetsUpdate);
+	document.addEventListener('focusin', handleFocusIn);
+	document.addEventListener('focusout', handleFocusOut);
 
 	syncTopEdgeListener();
 	bindHeaderMenuEvents();
@@ -229,7 +232,7 @@ function updateAutohideHeader(scroll, delta) {
 }
 
 function revealHeader(scroll) {
-	if (accumulatedHeaderScroll > -SHOW_SCROLL_DELTA || scroll < getLayoutStartScroll() + headerHeight)
+	if (textFieldFocused || accumulatedHeaderScroll > -SHOW_SCROLL_DELTA || scroll < getLayoutStartScroll() + headerHeight)
 		return;
 
 	if (header.classList.contains('header--sticky')) {
@@ -238,6 +241,24 @@ function revealHeader(scroll) {
 		showStickyHeader();
 	}
 	accumulatedHeaderScroll = 0;
+}
+
+function handleFocusIn(event) {
+	textFieldFocused = isTextField(event.target);
+	if (textFieldFocused && headerMode === 'autohide' && header.classList.contains('header--sticky'))
+		hideHeader();
+}
+
+function handleFocusOut(event) {
+	textFieldFocused = isTextField(event.relatedTarget);
+}
+
+function isTextField(element) {
+	if (!element)
+		return false;
+	if (element.isContentEditable || element.tagName === 'TEXTAREA')
+		return true;
+	return element.type === 'text' || element.type === 'password';
 }
 
 function updateFloatingHeader(scroll) {
