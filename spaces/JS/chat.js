@@ -132,13 +132,7 @@ var Chat = {
 			$('#text').focus();
 		};
 
-		$('body').on('click.onRequest', '.js-personal_answer', function (e) {
-			if (e.ajaxify || e.isDefaultPrevented())
-				return;
-			e.preventDefault();
-			handlePrivateAnswer($(this));
-		});
-		$('body').on('click.onRequest', '.js-private_answer', function (e) {
+		$('body').on('click.onRequest', '.js-personal_answer, .js-private_answer', function (e) {
 			e.preventDefault();
 			handlePrivateAnswer($(this));
 		});

@@ -1,0 +1,289 @@
+@use "Common/Theme" as *;
+@use "Common/Utils" as *;
+@use "spacepack/build/variables" as *;
+
+#chat_msg_form {
+	background: $content-bg;
+	padding-top: 7px;
+}
+
+.chat-room {
+	&__events-counter {
+		float: right;
+		display: flex;
+		gap: 3px;
+		color: $blue-text-color;
+		align-items: center;
+		padding-left: 5px;
+
+		svg {
+			color: $icon-blue-color;
+		}
+	}
+}
+
+.chat-messages-list {
+	display: flex;
+	gap: 15px;
+	flex-direction: column;
+	padding: 15px;
+	background: $content-bg;
+}
+
+.message {
+	position: relative;
+	scroll-margin: 100px;
+
+	&__more {
+		display: inline-block;
+		position: relative;
+		margin-right: -5px;
+		cursor: pointer;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: -15px;
+			right: -15px;
+			bottom: -15px;
+			top: -15px;
+			z-index: 1;
+		}
+	}
+
+	&--focused {
+		&::before {
+			content: '';
+			background: rgba($accent-blue-color, 0.5);
+			transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+			position: absolute;
+			top: -6px;
+			bottom: -6px;
+			left: -15px;
+			right: -15px;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: -6px;
+			bottom: -6px;
+			left: -15px;
+			width: 4px;
+			background: $accent-blue-color;
+		}
+	}
+
+	&--focused.message--seen {
+		&::before {
+			background: transparent;
+		}
+	}
+
+	a[name^="com"] {
+		scroll-margin: 100px;
+	}
+}
+
+.message__wrapper{
+	position: relative
+}
+
+.message__wrapper .att_wrap {
+	border: 1px solid $default-border-color
+}
+
+.message__avatar{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 40px;
+	height: 40px;
+	overflow: hidden
+}
+
+.message__description {
+	background: $chat-message-in-bg;
+	padding: 10px 10px;
+	box-sizing: border-box;
+	position: relative;
+	margin-left: 55px;
+	cursor: pointer;
+	@include reactions-use-theme($reactions-theme-chat-in);
+
+	&::before {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 12px;
+		height: 0;
+		width: 0;
+		right: 100%;
+		border: 8px solid transparent;
+		border-right-color: $chat-message-in-bg;
+	}
+}
+
+.message-block_my .message__description {
+	background: $chat-message-out-bg;
+	cursor: default;
+	@include reactions-use-theme($reactions-theme-chat-out);
+
+	&::before {
+		border-right-color: $chat-message-out-bg;
+	}
+}
+
+.message-block_system .message__description {
+	background: $chat-message-system-bg;
+	cursor: default;
+
+	&::before {
+		border-right-color: $chat-message-system-bg;
+	}
+}
+
+.message-block_private .message__description {
+	background: $chat-message-private-bg;
+	@include reactions-use-theme($reactions-theme-chat-private);
+
+	&::before {
+		border-right-color: $chat-message-private-bg;
+	}
+}
+
+.message-block_personal .message__description {
+	background: $chat-message-answer-bg;
+	@include reactions-use-theme($reactions-theme-chat-answer);
+
+	&::before {
+		border-right-color: $chat-message-answer-bg;
+	}
+}
+
+.message-block_znayko .message__description{
+	background: $chat-message-quest-bg;
+	cursor: default;
+
+	&::before {
+		border-right-color: $chat-message-quest-bg;
+	}
+}
+
+.message__user,
+.message__text{
+	color: $default-text-color
+}
+
+.message__user {
+	margin-bottom: 7px;
+	padding-right: 10px;
+}
+
+.message__date,
+.message__place{
+	color: $secondary-text-color
+}
+
+.message__place{
+	padding-bottom: 6px;
+}
+
+.message__text{
+	white-space: normal;
+	word-wrap: break-word;
+}
+
+.message-block_system .message__text{
+	color: $secondary-text-color
+}
+
+.message-block_foreign .message__date{
+	margin-right: 5px
+}
+
+.message__right-buttons {
+	float: right
+}
+
+.message__flag {
+	margin-left: 5px
+}
+
+.message .online-status {
+	margin-right: 3px
+}
+
+.message__inner-message{
+	margin-left: 50px;
+	min-height: 40px
+}
+
+.message-block_no-avatar .message__description{
+	margin-left: 0;
+	margin-right: 0
+}
+
+.message-block_no-avatar .message__description:before{
+	display: none
+}
+
+.btn-tools .ico_lock,
+.btn-tools .ico_lock_open{
+	margin: 0 auto;
+    display: block;
+}
+
+.chat_recipient{
+	padding-top: 4px;
+}
+
+.firefox.android .btn-tools_centered{
+	    margin-top: -19px;
+}
+
+.marriage__wrap .list-link{
+	border-bottom: 0 !important;
+}
+
+.marriage__wrap .list-link__wrap:first-child .list-link{
+	padding-bottom: 7px;
+}
+
+.marriage__wrap .list-link__wrap:last-child .list-link{
+	padding-top: 8px;
+}
+
+.marriage__date{
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	color: $secondary-text-color;
+	margin-top: -14px;
+	text-align: center;
+	z-index: 10;
+}
+
+.marriage__reg-date{
+	margin-top: 4px;
+}
+
+.cur_default{
+	cursor: default !important;
+}
+
+.item-position{
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	color: $secondary-text-color;
+	margin-top: -10px
+}
+
+@if ($DARK_MODE) {
+	.message__wrapper {
+		.blog-item_short_shared, .quote, .code_tag, .att_wrap {
+			background: $chat-bubble-bg;
+		}
+	}
+}
