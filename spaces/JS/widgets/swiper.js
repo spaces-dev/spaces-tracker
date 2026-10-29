@@ -66,7 +66,7 @@ function initSwipe() {
 		if (activeElement && ['TEXTAREA', 'INPUT'].includes(activeElement.nodeName))
 			return;
 
-		if (e.target.closest('.vjs-control-bar'))
+		if (e.target.closest('.vjs-control-bar') || isInsideHorizontalScroll(e.target))
 			return;
 
 		gesture = !e.touches || e.touches.length == 1;
@@ -117,6 +117,14 @@ export function toggle(state) {
 	body.toggleClass('root--sidebar-open', state);
 	layout.toggleClass('page-layout--sidebar-open', state);
 	layout[0].dispatchEvent(new Event('sidebar:toggle'));
+}
+
+function isInsideHorizontalScroll(el) {
+	for (; el && el != document.body; el = el.parentElement) {
+		if (el.scrollWidth > el.clientWidth && ['auto', 'scroll'].includes(getComputedStyle(el).overflowX))
+			return true;
+	}
+	return false;
 }
 
 function isInlineSidebar() {

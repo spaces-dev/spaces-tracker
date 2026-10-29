@@ -79,13 +79,9 @@ export function setupViewTracker(player, viewToken) {
 
 export function setupStatistic(player) {
 	const cleanup = () => {
-		player.off("firstplay", onFirstPlay);
 		player.off("error", onError);
 		player.off("canplay", onCanPlay);
 		player.off("change-source-on-error", onChangeSourceOnError);
-	};
-	const onFirstPlay = () => {
-		reachGoal("play");
 	};
 	const onError = () => {
 		reachGoal("play_error");
@@ -98,9 +94,16 @@ export function setupStatistic(player) {
 	const onChangeSourceOnError = () => {
 		reachGoal("player_switch_to_fallback");
 	};
+	const onFirstPlay = () => {
+		reachGoal("play");
+		if (player.readyState() >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+			onCanPlay();
+			return;
+		}
+		player.one("canplay", onCanPlay);
+		player.on("error", onError);
+	};
 
 	player.one("firstplay", onFirstPlay);
-	player.one("canplay", onCanPlay);
-	player.on("error", onError);
 	player.on("change-source-on-error", onChangeSourceOnError);
 }

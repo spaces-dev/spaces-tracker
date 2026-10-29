@@ -32,7 +32,7 @@
 	&__sticky {
 		position: sticky;
 		top: var(--table-sticky-offset, var(--page-header-offset));
-		z-index: 100000;
+		z-index: 1;
 
 		.root--header-animated & {
 			transition: top 0.2s ease;

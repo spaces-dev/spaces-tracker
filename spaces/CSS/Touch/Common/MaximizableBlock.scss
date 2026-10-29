@@ -7,8 +7,6 @@
 	box-shadow: $default-block-shadow;
 
 	&--fullscreen {
-		--page-header-offset: 0px;
-
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -20,6 +18,9 @@
 	}
 
 	&__content {
+		// С overflow-x контент прокручивается внутри блока, и шапка сайта его не перекрывает
+		--page-header-offset: 0px;
+
 		overflow-x: scroll;
 		.maximizable-block--fullscreen & {
 			overflow-y: scroll;

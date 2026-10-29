@@ -127,7 +127,7 @@ body {
 		width: 1px;
 	}
 
-	.page-layout--header-minimal &:not(.header--sticky) &__label, .page-layout--header-labeled &__label {
+	.page-layout--header-minimal &__label, .page-layout--header-labeled &__label {
 		clip: auto;
 		height: auto;
 		margin: 0;
