@@ -910,6 +910,7 @@
   "/js/touch/widgets/video/videojs/plugins/fullscreenOnRotate.js",
   "/js/touch/widgets/video/videojs/plugins/heatmap.js",
   "/js/touch/widgets/video/videojs/plugins/hideOnBlur.js",
+  "/js/touch/widgets/video/videojs/plugins/nextVideos.js",
   "/js/touch/widgets/video/videojs/plugins/patchSeekBar.js",
   "/js/touch/widgets/video/videojs/plugins/patchSyncSetSource.js",
   "/js/touch/widgets/video/videojs/plugins/qualitySelector.js",

@@ -10,6 +10,7 @@ videojs.registerPlugin('swipeFromFullscreen', function VideoJsSwipeFromFullscree
 	const playerEl = player.el();
 	const techEl = playerEl.querySelector('.vjs-tech');
 	const posterEl = playerEl.querySelector('.vjs-poster');
+	const getFollowingEls = () => playerEl.querySelectorAll('.vjs-swipe-follow');
 
 	let startY = 0;
 	let startX = 0;
@@ -19,9 +20,14 @@ videojs.registerPlugin('swipeFromFullscreen', function VideoJsSwipeFromFullscree
 
 	const update = (deltaY, withTransition) => {
 		const scale = Math.max(1 - (Math.abs(deltaY) / SCALE_THRESHOLD) * (1 - DRAG_SCALE), DRAG_SCALE);
+		const transition = withTransition ? 'transform 0.2s' : 'none';
 		for (const el of [techEl, posterEl]) {
-			el.style.transition = withTransition ? 'transform 0.2s' : 'none';
+			el.style.transition = transition;
 			el.style.transform = `translateY(${deltaY}px) scale(${scale})`;
+		}
+		for (const el of getFollowingEls()) {
+			el.style.transition = transition;
+			el.style.transform = `translateY(${deltaY}px)`;
 		}
 	};
 
@@ -91,7 +97,7 @@ videojs.registerPlugin('swipeFromFullscreen', function VideoJsSwipeFromFullscree
 		playerEl.removeEventListener('touchend', onTouchEnd);
 		playerEl.removeEventListener('touchcancel', onTouchCancel);
 
-		for (const el of [techEl, posterEl]) {
+		for (const el of [techEl, posterEl, ...getFollowingEls()]) {
 			el.style.transition = '';
 			el.style.transform = '';
 		}

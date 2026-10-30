@@ -23,6 +23,7 @@ import './plugins/fastShowOnHover';
 import './plugins/bigPlayingStatus';
 import './plugins/adsOnPause';
 import './plugins/swipeFromFullscreen';
+import './plugins/nextVideos';
 import './plugins/vast/index';
 
 // Патчим videojs

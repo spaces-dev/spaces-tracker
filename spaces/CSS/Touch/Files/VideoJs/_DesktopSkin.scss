@@ -388,4 +388,31 @@ $vjs-big-play-button-icon-size: 5.4em;
 	.vjs-play-progress {
 		background-color: #ff0033;
 	}
+
+	// Экран выбора следующего видео
+	.vjs-next-videos {
+		padding-bottom: $vjs-control-bar-height + 2em;
+
+		.vjs-next-videos__title {
+			font-size: 2em;
+		}
+
+		.vjs-next-videos__replay {
+			font-size: 1.33em;
+		}
+	}
+
+	&.vjs-has-next-videos.vjs-ended .vjs-control-bar {
+		z-index: 1;
+
+		&::before {
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	&.vjs-has-started.vjs-user-inactive.vjs-paused.vjs-has-next-videos.vjs-ended .vjs-control-bar {
+		opacity: 1;
+		visibility: visible;
+	}
 }

@@ -434,6 +434,30 @@ $vjs-timeline-height: 0.25em;
 	.vjs-big-playing-status {
 		display: none;
 	}
+
+	// Экран выбора следующего видео
+	.vjs-next-videos {
+		padding-bottom: $vjs-control-bar-height + 1em;
+
+		.vjs-next-videos__title {
+			font-size: 1.85em;
+		}
+	}
+
+	&.vjs-has-next-videos.vjs-ended .vjs-control-bar {
+		z-index: 1;
+
+		&::before {
+			opacity: 0;
+			visibility: hidden;
+		}
+
+		> .vjs-play-control,
+		> .vjs-volume-panel,
+		> .vjs-quality-selector {
+			display: none;
+		}
+	}
 }
 
 @keyframes vjs-play-hide {

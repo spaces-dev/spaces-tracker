@@ -228,6 +228,9 @@ class VideoJsDriver extends BaseDriver {
 			});
 		}
 
+		if (this.options.nextVideos)
+			player.nextVideos({ videos: this.options.nextVideos });
+
 		player.ready(callback);
 	}
 
