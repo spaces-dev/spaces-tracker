@@ -20,6 +20,7 @@ export const Config: TrackerConfig = {
       url: 'https://strip2.in',
       // https://strip2.co/js/revisions.json
       revisions: '/js/revisions.json',
+      locale: 'ru',
     },
   ],
   RequestHeaders: {

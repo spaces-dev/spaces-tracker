@@ -14,6 +14,23 @@ import type {
   SourceConfig,
 } from './types.ts'
 
+const LOCALE_PREFIX = /^[a-z]{2}\//
+
+export function filterRevisionJs(
+  js: Record<string, string>,
+  locale?: string,
+): Record<string, string> {
+  if (!locale) return js
+
+  const prefix = `${locale}/`
+  return Object.fromEntries(
+    Object.entries(js).filter(([filePath]) => {
+      if (!LOCALE_PREFIX.test(filePath)) return true
+      return filePath.startsWith(prefix)
+    }),
+  )
+}
+
 class RequestRevisions {
   private async loadJs(source: SourceConfig) {
     const req = await spacesRequest(source.url, source.revisions)
@@ -83,14 +100,19 @@ class RequestRevisions {
 
   private async parseRevisionsRequest(source: SourceConfig, revisions: Revisions) {
     const jsBasePath = source.revisions.replace('revisions.json', '')
+    const jsRevisions = filterRevisionJs(revisions.js, source.locale)
+    const filteredRevisions: Revisions = {
+      js: jsRevisions,
+      css: revisions.css,
+    }
 
-    const js = Object.entries(revisions.js)
-      .filter(([path]) => path.endsWith('.js'))
-      .map(([path, hash]) => [`${jsBasePath}${path}`, hash]) as RevisionAssets
+    const js = Object.entries(jsRevisions)
+      .filter(([filePath]) => filePath.endsWith('.js'))
+      .map(([filePath, hash]) => [`${jsBasePath}${filePath}`, hash]) as RevisionAssets
 
     const css = Object.entries(revisions.css)
-      .filter(([path]) => path.endsWith('.css'))
-      .map(([path, hash]) => [`/css/custom/${path}`, hash]) as RevisionAssets
+      .filter(([filePath]) => filePath.endsWith('.css'))
+      .map(([filePath, hash]) => [`/css/custom/${filePath}`, hash]) as RevisionAssets
 
     const linksGroup: Record<string, string[]> = {}
     for (const [link, hash] of [...js, ...css]) {
@@ -101,7 +123,7 @@ class RequestRevisions {
     const links = Object.values(linksGroup).flat().toSorted()
 
     return {
-      revisions,
+      revisions: filteredRevisions,
       links,
       linksGroup,
     }

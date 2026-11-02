@@ -48,6 +48,7 @@ export interface SourceConfig {
   url: string
   revisions: string
   isPrimary?: boolean
+  locale?: string
 }
 
 export interface TrackerConfig {
