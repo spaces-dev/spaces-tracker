@@ -17,9 +17,9 @@ export const Config: TrackerConfig = {
     },
     {
       name: 'strip2',
-      url: 'https://strip2.co',
-      // https://strip2.co/js/ru/revisions.json
-      revisions: '/js/ru/revisions.json',
+      url: 'https://strip2.in',
+      // https://strip2.co/js/revisions.json
+      revisions: '/js/revisions.json',
     },
   ],
   RequestHeaders: {
