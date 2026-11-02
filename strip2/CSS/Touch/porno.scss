@@ -3,33 +3,13 @@
 @use "spacepack/build/variables" as *;
 
 /* Фон */
-#wrap_all {
+.site-page {
 	background: $body-bg
-}
-
-#home_link img {
-	margin-top: 0
 }
 
 #mobtop {
 	display: inline-block;
 	padding: 4px 0px;
-}
-
-.text_logo {
-	text-transform: none;
-	position: absolute;
-	top: 50%;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	line-height: 2em;
-	font-size: 22px;
-	margin-top: -1em;
-}
-
-.rightbar .sidebar-logo {
-	margin-bottom: 0;
 }
 
 .l-bord {
@@ -68,27 +48,8 @@
 	}
 }
 
-.horiz-menu__link.current {
-	position: relative;
-	background-color: $header-link-selected-bg;
-}
-
-.horiz-menu__link.current:after{
-	content: '';
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 3px;
-	background-color: $header-link-selected-border;
-}
-
 .links-group .online_status_ico{
 	margin: 0 5px 0 1px;
-}
-
-a.horiz-menu__link {
-	font-size: 14px !important;
 }
 
 .drop-down-label_single.js-clicked:hover{

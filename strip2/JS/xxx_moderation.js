@@ -2,6 +2,7 @@ import module from 'module';
 import {Spaces, Codes} from './spacesLib';
 import $ from './jquery';
 import page_loader from './ajaxify';
+import {L} from './core/l10n';
 
 let last_api_req;
 
@@ -69,7 +70,7 @@ function initModule() {
 				initItem( item );
 			
 			this.disabled = false;
-			this.innerText = 'Ещё';
+			this.innerText = L('Ещё'); // l10n context="show-more"
 		}, {
 			onError(err) {
 				console.error('[xxx_moderation] ' + err);

@@ -1,7 +1,7 @@
 import require from 'require';
 import module from 'module';
 import {Spaces, Url} from '../spacesLib';
-import {L} from '../utils';
+import {L} from '../core/l10n';
 
 let tpl = {
 	ok() {
@@ -59,7 +59,11 @@ function toggleExpand(wrap, flag) {
 		.removeClass('ico_arr_down_red')
 		.toggleClass('ico_arr_up_red', flag)
 		.toggleClass('ico_arr_down_blue', !flag);
-	button.find('.js-text').html(flag ? L('Обновить') : L('Подробнее'));
+	button.find('.js-text').html(
+		flag
+			? L('Обновить') // l10n context="moderation-apply"
+			: L('Подробнее') // l10n context="expand text"
+	);
 	
 	wrap.data('expanded', flag);
 	
