@@ -11,11 +11,11 @@ const REPLAY_ICON = `
 `;
 
 const PREVIEW_ASPECT_RATIO = 16 / 9;
+const MIN_PREVIEW_SCALE_WITH_TITLE = 0.8;
 
 const Component = videojs.getComponent('Component');
 
 videojs.registerPlugin('nextVideos', function VideoJsNextVideos(options = {}) {
-	this.addClass('vjs-has-next-videos');
 	this.addChild('NextVideos', options);
 });
 
@@ -36,6 +36,7 @@ class NextVideos extends Component {
 
 		this.on(player, 'ended', () => {
 			reachGoal('player_next_videos_show');
+			player.addClass('vjs-has-next-videos');
 			this.updateLayout();
 		});
 
@@ -53,7 +54,7 @@ class NextVideos extends Component {
 		el.classList.remove('vjs-next-videos--compact');
 		const previewWidth = this.fitList();
 		el.classList.add('vjs-next-videos--compact');
-		if (this.fitList() <= previewWidth) {
+		if (this.fitList() * MIN_PREVIEW_SCALE_WITH_TITLE <= previewWidth) {
 			el.classList.remove('vjs-next-videos--compact');
 			this.fitList();
 		}
@@ -91,7 +92,7 @@ class NextVideos extends Component {
 		const items = this.options_.videos.map((video) => `
 			<div class="vjs-next-videos__item">
 				<div class="vjs-next-videos__preview">${video.preview}</div>
-				<a class="vjs-next-videos__name" href="${video.url}">${video.title}</a>
+				<a class="vjs-next-videos__name" href="${video.url}"${video.targetBlank ? ' target="_blank" rel="noopener"' : ''}>${video.title}</a>
 			</div>
 		`);
 

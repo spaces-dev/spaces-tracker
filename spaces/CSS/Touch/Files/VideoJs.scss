@@ -215,7 +215,7 @@
 	color: #fff;
 	overflow: hidden;
 
-	.vjs-ended & {
+	.vjs-has-next-videos.vjs-ended & {
 		display: flex;
 	}
 
