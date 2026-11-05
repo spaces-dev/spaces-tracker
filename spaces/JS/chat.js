@@ -133,6 +133,8 @@ var Chat = {
 		};
 
 		$('body').on('click.onRequest', '.js-personal_answer, .js-private_answer', function (e) {
+			if (!document.getElementById('chat_msg_form'))
+				return;
 			e.preventDefault();
 			handlePrivateAnswer($(this));
 		});

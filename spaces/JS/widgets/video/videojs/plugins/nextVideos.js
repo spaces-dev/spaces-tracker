@@ -65,7 +65,7 @@ class NextVideos extends Component {
 		});
 
 		const resizeObserver = new ResizeObserver(() => {
-			if (player.ended())
+			if (isShown && player.ended())
 				this.updateLayout();
 		});
 		resizeObserver.observe(player.el());
