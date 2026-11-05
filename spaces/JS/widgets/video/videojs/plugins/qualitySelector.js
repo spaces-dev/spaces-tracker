@@ -147,6 +147,9 @@ class VideoJsQualitySelector extends MenuButton {
 			const currentServer = getServer(getVideoServer());
 			cookie.set(altProxyDomains.cookieName, currentServer.id, { expires: 3600 });
 		});
+		player.on("pause", () => {
+			stopHealthMonitor();
+		});
 		player.on("dispose", () => {
 			stopHealthMonitor();
 		});

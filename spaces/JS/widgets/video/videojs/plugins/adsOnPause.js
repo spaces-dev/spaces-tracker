@@ -14,15 +14,13 @@ class AdsOnPause extends Component {
 
 		const preventAdsEvents = [
 			'waiting', 'seeking', 'error', 'ended', 'play',
-			'adstart', 'adend', 'adskip'
+			'adstart', 'adend'
 		];
 
 		const startAds = debounce(() => {
-			if (player.ads) {
-				if (player.ads.isWaitingForAdBreak() || player.ads.inAdBreak() || player.ads.isContentResuming()) {
-					console.log('[ads-on-pause] skip due vast');
-					return;
-				}
+			if (player.usingPlugin('vast') && player.vast().isAdBreakActive()) {
+				console.log('[ads-on-pause] skip due vast');
+				return;
 			}
 
 			player.off(preventAdsEvents, cancelAds);

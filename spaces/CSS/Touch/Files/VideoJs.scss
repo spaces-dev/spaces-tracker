@@ -1,6 +1,4 @@
 @use "~video.js/dist/video-js";
-@use "~videojs-contrib-ads/dist/videojs-contrib-ads.css";
-// @use "~videojs-ima/dist/videojs.ima";
 
 @use "./VideoJs/TouchSkin";
 @use "./VideoJs/DesktopSkin";
@@ -17,7 +15,8 @@
 	z-index: 10;
 	display: none;
 
-	.vjs-ad-playing & {
+	.vjs-ad-playing &,
+	.vjs-vast-loading & {
 		display: block;
 	}
 

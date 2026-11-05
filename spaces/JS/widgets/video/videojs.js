@@ -67,6 +67,9 @@ class VideoJsDriver extends BaseDriver {
 
 			userActions: {
 				hotkeys: (e) => {
+					if (player.usingPlugin('vast') && player.vast().isAdBreakActive())
+						return;
+
 					if (e.key == 'ArrowRight') {
 						e.preventDefault();
 						e.stopPropagation();

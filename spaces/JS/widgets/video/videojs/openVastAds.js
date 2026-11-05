@@ -3,38 +3,23 @@ import { reachGoal } from "../../../metrics/track";
 import { L } from "../../../core/l10n";
 
 export function setupAds(player, adBreaks) {
-	let currentAdType = undefined;
-
 	reachGoal("player_has_ads");
 
-	player.on("readyforpreroll", () => {
-		currentAdType = "preroll";
-	});
-	player.on("readyforpostroll", () => {
-		currentAdType = "postroll";
-	});
 	player.on("vast.error", (_e, { message }) => {
-		currentAdType = undefined;
 		console.error("[vast] error:", message);
 		reachGoal("player_ads_error");
 	});
-	player.on("vast.complete", () => {
-		currentAdType = undefined;
-	});
-	player.on("vast.playAttempt", () => {
-		const type = currentAdType || "midroll";
+	player.on("vast.playAttempt", (_e, { adBreakType }) => {
 		reachGoal("player_ads_play");
-		reachGoal(`player_ads_play_${type}`);
+		reachGoal(`player_ads_play_${adBreakType}`);
 	});
-	player.on("vast.playSuccess", () => {
-		const type = currentAdType || "midroll";
+	player.on("vast.playSuccess", (_e, { adBreakType }) => {
 		reachGoal("player_ads_play_success");
-		reachGoal(`player_ads_play_success_${type}`);
+		reachGoal(`player_ads_play_success_${adBreakType}`);
 	});
-	player.on("vast.click", () => {
-		const type = currentAdType || "midroll";
+	player.on("vast.click", (_e, { adBreakType }) => {
 		reachGoal("player_ads_click");
-		reachGoal(`player_ads_click_${type}`);
+		reachGoal(`player_ads_click_${adBreakType}`);
 	});
 
 	const vmap = createVmap(adBreaks);

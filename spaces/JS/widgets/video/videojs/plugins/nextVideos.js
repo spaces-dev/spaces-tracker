@@ -34,10 +34,17 @@ class NextVideos extends Component {
 		for (const link of this.el().querySelectorAll('a'))
 			this.on(link, 'click', () => reachGoal('player_next_videos_click'));
 
-		this.on(player, 'ended', () => {
+		const show = () => {
 			reachGoal('player_next_videos_show');
 			player.addClass('vjs-has-next-videos');
 			this.updateLayout();
+		};
+		this.on(player, 'ended', () => {
+			if (player.usingPlugin('vast') && player.vast().isAdBreakActive()) {
+				this.one(player, 'vast.adBreakEnd', show);
+			} else {
+				show();
+			}
 		});
 
 		const resizeObserver = new ResizeObserver(() => {

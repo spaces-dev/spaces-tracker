@@ -1,6 +1,6 @@
 import videojs from 'video.js';
-import 'videojs-contrib-ads';
 import { VASTClient, VASTTracker, VASTParser } from '@dailymotion/vast-client';
+import { silentPromise } from '../utils';
 import {
   injectScriptTag, getLocalISOString, convertTimeOffsetToSeconds, fetchVmapUrl,
 } from './lib';
@@ -18,14 +18,10 @@ const playerEvents = [
   { event: 'adtimeupdate', handler: 'onAdTimeUpdate' },
   { event: 'advolumechange', handler: 'onAdVolumeChange' },
   { event: 'adfullscreen', handler: 'onAdFullScreen' },
-  { event: 'adtimeout', handler: 'onAdTimeout' },
   { event: 'adstart', handler: 'onAdStart' },
   { event: 'aderror', handler: 'onAdError' },
-  { event: 'readyforpreroll', handler: 'onReadyForPreroll' },
-  { event: 'readyforpostroll', handler: 'onReadyForPostroll' },
   { event: 'skip', handler: 'onSkip' },
   { event: 'adended', handler: 'onAdEnded' },
-  { event: 'ended', handler: 'onEnded' },
   { event: 'dispose', handler: 'onDispose' },
 ];
 
@@ -116,43 +112,69 @@ class Vast extends Plugin {
     // array of icons dom containers
     this.iconContainers = [];
 
-    const videojsContribAdsOptions = {
-      debug: this.options.debug,
-      timeout: this.options.timeout,
-      liveCuePoints: false, // fix playback restore on live streams (VAST-70)
-    };
+    this.adBreakType = null;
+    this.isAdPlaying = false;
+    this.isContentStarted = false;
+    this.isContentEnded = false;
+    this.hasPreroll = true;
+    this.postroll = null;
 
-    // initialize videojs-contrib-ads
-    if (!this.player.ads) return;
-    try {
-      this.player.ads(videojsContribAdsOptions);
-    } catch (e) {
-      console.error(e);
+    this.prerollAds = options.vmapUrl ? this.handleVMAP(options.vmapUrl) : this.handleVAST(options.vastUrl);
+    this.addEventsListeners();
+  }
+
+  isAdBreakActive() {
+    return !!this.adBreakType;
+  }
+
+  startAdBreak(type) {
+    this.adBreakType = type;
+    this.player.pause();
+    this.player.addClass('vjs-vast-loading');
+  }
+
+  endAdBreak() {
+    const type = this.adBreakType;
+    this.adBreakType = null;
+    this.player.removeClass('vjs-vast-loading');
+    if (this.isAdPlaying) {
+      this.isAdPlaying = false;
+      this.player.removeClass('vjs-ad-playing');
+      this.player.trigger('adend');
     }
+    this.player.trigger('vast.adBreakEnd');
+    if (type !== 'postroll')
+      silentPromise('[vast] resume content', this.player.play());
+  }
 
-    if (options.vmapUrl) {
-      this.handleVMAP(options.vmapUrl);
+  async playAdBreakWithTimeout(type, adsLoading) {
+    this.startAdBreak(type);
+    const { ads, error } = await Promise.race([
+      adsLoading,
+      new Promise((resolve) => setTimeout(() => resolve({ ads: [], error: 'VastVjs: Timeout' }), this.options.timeout)),
+    ]);
+
+    if (!this.player)
+      return;
+
+    if (error)
+      this.player.trigger('vast.error', { message: error });
+
+    if (ads.length) {
+      this.readAds(ads);
     } else {
-      this.disablePostroll();
-      this.addEventsListeners();
-      this.handleVAST(options.vastUrl, () => {
-        this.disablePreroll();
-      }).then(() => {
-        if (this.adsArray.length > 0) {
-          this.player.trigger('adsready');
-        }
-      });
+      this.endAdBreak();
     }
   }
 
-  disablePreroll() {
-    this.player.trigger('nopreroll');
+  readAds(ads) {
+    this.adsArray = ads;
+    this.totalAdsCount = ads.length;
+    this.readAd();
   }
 
-  disablePostroll() {
-    this.player.on('readyforpostroll', () => {
-      this.player.trigger('nopostroll');
-    });
+  loadAdBreakAds(vastUrl, vastData) {
+    return vastUrl ? this.handleVAST(vastUrl) : this.parseInlineVastData(vastData);
   }
 
   setMacros(newMacros = undefined) {
@@ -182,7 +204,7 @@ class Vast extends Plugin {
     }
   }
 
-  async handleVAST(vastUrl, onError = null) {
+  async handleVAST(vastUrl) {
     // Now let's fetch some adsonp
     this.vastClient = new VASTClient();
     try {
@@ -190,26 +212,17 @@ class Vast extends Plugin {
         allowMultipleAds: true,
         resolveAll: true,
       });
-      this.adsArray = response.ads ?? [];
-      this.totalAdsCount = this.adsArray.length;
-      if (this.adsArray.length === 0) {
-        onError?.();
-        // Deal with the error
-        const message = 'VastVjs: Empty VAST XML';
-        this.player.trigger('vast.error', {
-          message,
-          tag: vastUrl,
-        });
-      }
+      const ads = response.ads ?? [];
+      return {
+        ads,
+        error: ads.length ? null : 'VastVjs: Empty VAST XML',
+      };
     } catch (err) {
       console.error(err);
-      onError?.();
-      // Deal with the error
-      const message = 'VastVjs: Error while fetching VAST XML';
-      this.player.trigger('vast.error', {
-        message,
-        tag: vastUrl,
-      });
+      return {
+        ads: [],
+        error: 'VastVjs: Error while fetching VAST XML',
+      };
     }
   }
 
@@ -307,7 +320,7 @@ class Vast extends Plugin {
         this.playLinearAd(linearCreative);
       }
     } else {
-      this.player.ads.skipLinearAdMode();
+      this.endAdBreak();
     }
     if (currentAd.hasNonlinearCreative()) {
       this.cleanupReadAdListeners();
@@ -433,12 +446,15 @@ class Vast extends Plugin {
       const timeOffsetInSeconds = convertTimeOffsetToSeconds(timeOffset, this.player.duration());
       if (this.player.currentTime() > timeOffsetInSeconds) {
         const nextAd = this.watchForProgress.shift();
-        if (nextAd.vastUrl) {
-          await this.handleVAST(nextAd.vastUrl);
-          this.readAd();
-        } else if (nextAd.vastData) {
-          this.parseInlineVastData(nextAd.vastData, 'midroll');
-        }
+        const { ads, error } = await this.loadAdBreakAds(nextAd.vastUrl, nextAd.vastData);
+        if (!this.player)
+          return;
+        if (error)
+          this.player.trigger('vast.error', { message: error });
+        if (!ads.length || this.adBreakType || this.isContentEnded)
+          return;
+        this.startAdBreak('midroll');
+        this.readAds(ads);
       }
     }
   };
@@ -477,23 +493,6 @@ class Vast extends Plugin {
     this.linearVastTracker.close({
       ...this.macros,
       ADPLAYHEAD: this.linearVastTracker.convertToTimecode(this.vastPlayer.currentTime),
-    });
-    this.removeEventsListeners();
-  };
-
-  // Notify the player if we reach a timeout while trying to load the ad
-  onAdTimeout = () => {
-    this.debug('adtimeout');
-    // trigger a tracker error
-    if (this.linearVastTracker) {
-      this.linearVastTracker.error({
-        ...this.macros,
-        ERRORCODE: 301, // timeout of VAST URI
-      });
-    }
-    console.error('VastVjs: Timeout');
-    this.player.trigger('vast.error', {
-      message: 'VastVjs: Timeout',
     });
     this.removeEventsListeners();
   };
@@ -624,26 +623,21 @@ class Vast extends Plugin {
     }
   };
 
-  onReadyForPreroll = () => {
-    this.debug('readyforpreroll');
-    this.readAd();
-  };
-
-  onReadyForPostroll = async () => {
-    this.debug('readyforpostroll');
-    if (this.postRollUrl) {
-      await this.handleVAST(this.postRollUrl);
-      this.readAd();
-    } else if (this.postRollData) {
-      // handle inline data
-      this.adsArray = this.postRollData;
-      this.totalAdsCount = this.adsArray.length;
-      this.readAd();
+  onContentPlay = () => {
+    if (this.adBreakType) {
+      this.player.pause();
+    } else if (!this.isContentStarted) {
+      this.isContentStarted = true;
+      if (this.hasPreroll)
+        this.playAdBreakWithTimeout('preroll', this.prerollAds);
     }
   };
 
-  onEnded = () => {
-    this.removeEventsListeners();
+  onContentEnded = () => {
+    this.isContentEnded = true;
+    this.player.off('timeupdate', this.onProgress);
+    if (this.postroll)
+      this.playAdBreakWithTimeout('postroll', this.loadAdBreakAds(this.postroll.adSource?.adTagURI?.uri, this.postroll.adSource?.vastAdData));
   };
 
   onSkip = () => {
@@ -697,11 +691,11 @@ class Vast extends Plugin {
     // clear skip button interval
     this.clearSkipInterval();
 
-    // Finish ad mode so that regular content can resume
-    this.player.ads.endLinearAdMode();
-
     // Dispose vast player
     this.disposeVastPlayer();
+
+    // Finish ad mode so that regular content can resume
+    this.endAdBreak();
 
     // Trigger an event when the ad is finished to notify the player consumer
     this.player.trigger('vast.complete');
@@ -718,13 +712,14 @@ class Vast extends Plugin {
     const mediaFile = getBestMediaFile(creative.mediaFiles, Math.round(playerRect.width));
 
     // Start ad mode
-    if (!this.player.ads.inAdBreak()) {
-      this.player.ads.startLinearAdMode();
-      this.player.pause();
+    if (!this.isAdPlaying) {
+      this.isAdPlaying = true;
+      this.player.addClass('vjs-ad-playing');
+      this.player.trigger('adstart');
     }
 
     // Trigger an event when the ad starts playing
-    this.player.trigger('vast.playAttempt');
+    this.player.trigger('vast.playAttempt', { adBreakType: this.adBreakType });
 
     this.setMacros({
       ASSETURI: mediaFile.fileURL,
@@ -763,8 +758,6 @@ class Vast extends Plugin {
     });
 
     this.updateMuteButton();
-
-    this.player.trigger('ads-ad-started');
   }
 
   /**
@@ -925,7 +918,7 @@ class Vast extends Plugin {
         this.vastPlayerStartedPlaying = Date.now();
         this.player.el().classList.remove('vjs-vast-loading');
         clearTimeout(this.vastPlayerTimeoutTimer);
-        this.player.trigger('vast.playSuccess');
+        this.player.trigger('vast.playSuccess', { adBreakType: this.adBreakType });
         this.vastPlayerTimeoutTimer = undefined;
       }
     });
@@ -1010,7 +1003,7 @@ class Vast extends Plugin {
   * This method is responsible for dealing with the click on the ad
   */
   adClickCallback = (ctaUrl) => {
-    this.player.trigger('vast.click');
+    this.player.trigger('vast.click', { adBreakType: this.adBreakType });
     window.open(ctaUrl, '_blank');
     // Track when a user clicks on an ad
     this.linearVastTracker?.click(null, {
@@ -1040,69 +1033,38 @@ class Vast extends Plugin {
   async handleVMAP(vmapUrl) {
     try {
       const vmap = await fetchVmapUrl(vmapUrl, this.options.timeout);
-      if (vmap.adBreaks && vmap.adBreaks.length > 0) {
-        this.addEventsListeners();
-        // handle preroll
-        const preroll = getPreroll(vmap.adBreaks);
-        if (!preroll) {
-          this.disablePreroll();
-        } else if (preroll.adSource?.adTagURI?.uri) {
-          // load vast preroll url
-          await this.handleVAST(preroll.adSource.adTagURI.uri);
-          // a preroll has been found, trigger adsready
-          this.player.trigger('adsready');
-        } else if (preroll.adSource.vastAdData) {
-          this.parseInlineVastData(preroll.adSource?.vastAdData, 'preroll');
-        }
-        // handle postroll
-        const postroll = getPostroll(vmap.adBreaks);
-        if (!postroll) {
-          this.disablePostroll();
-        } else if (postroll.adSource?.adTagURI?.uri) {
-          this.postRollUrl = postroll.adSource.adTagURI.uri;
-        } else if (postroll.adSource?.vastAdData) {
-          this.parseInlineVastData(postroll.adSource?.vastAdData, 'postroll');
-        }
-        this.watchForProgress = getMidrolls(vmap.adBreaks);
-        if (this.watchForProgress.length > 0) {
-          // listen on regular content for midroll handling
-          this.player.on('timeupdate', this.onProgress);
-        }
+      if (!vmap.adBreaks || vmap.adBreaks.length === 0) {
+        this.hasPreroll = false;
+        return { ads: [] };
       }
+
+      this.postroll = getPostroll(vmap.adBreaks);
+      this.watchForProgress = getMidrolls(vmap.adBreaks);
+      if (this.watchForProgress.length > 0) {
+        // listen on regular content for midroll handling
+        this.player.on('timeupdate', this.onProgress);
+      }
+
+      const preroll = getPreroll(vmap.adBreaks);
+      this.hasPreroll = !!preroll;
+      return preroll ? await this.loadAdBreakAds(preroll.adSource?.adTagURI?.uri, preroll.adSource?.vastAdData) : { ads: [] };
     } catch (err) {
       // could not fetch vmap
       console.error(err);
+      this.hasPreroll = false;
+      return { ads: [] };
     }
   }
 
-  parseInlineVastData(vastAdData, adType) {
+  parseInlineVastData(vastAdData) {
     const xmlString = (new XMLSerializer()).serializeToString(vastAdData);
     const vastXml = (new window.DOMParser()).parseFromString(xmlString, 'text/xml');
     const vastParser = new VASTParser();
-    vastParser.parseVAST(vastXml)
-      .then((parsedVAST) => {
-        if (adType === 'postroll') {
-          // store for later use (in readyforpostroll event)
-          this.postRollData = parsedVAST.ads ?? [];
-        } else if (adType === 'preroll') {
-          this.adsArray = parsedVAST.ads ?? [];
-          this.totalAdsCount = this.adsArray.length;
-          this.player.trigger('adsready');
-        } else if (adType === 'midroll') {
-          // store for later use (in readyforpostroll event)
-          this.adsArray = parsedVAST.ads ?? [];
-          this.totalAdsCount = this.adsArray.length;
-          this.readAd();
-        }
-      })
+    return vastParser.parseVAST(vastXml)
+      .then((parsedVAST) => ({ ads: parsedVAST.ads ?? [] }))
       .catch((err) => {
         console.log('error', err);
-        if (adType === 'postroll' || adType === 'midroll') {
-          this.disablePostroll();
-        } else if (adType === 'preroll') {
-          // skip preroll, go ahaed to regular content
-          this.player.ads.skipLinearAdMode();
-        }
+        return { ads: [] };
       });
   }
 
@@ -1170,6 +1132,8 @@ class Vast extends Plugin {
   }
 
   addEventsListeners() {
+    this.player.on('play', this.onContentPlay);
+    this.player.one('ended', this.onContentEnded);
     this.player.one('adplaying', this.onFirstPlay);
     playerEvents.forEach(({ event, handler }) => {
       this.player.on(event, this[handler]);
@@ -1180,6 +1144,8 @@ class Vast extends Plugin {
   removeEventsListeners() {
     this.debug('removeEventsListeners');
     this.cleanupReadAdListeners();
+    this.player.off('play', this.onContentPlay);
+    this.player.off('ended', this.onContentEnded);
     this.player.off('adplaying', this.onFirstPlay);
     playerEvents.forEach(({ event, handler }) => {
       this.player.off(event, this[handler]);
