@@ -31,10 +31,27 @@ class NextVideos extends Component {
 			silentPromise('[next-videos] replay', player.play());
 		});
 
-		for (const link of this.el().querySelectorAll('a'))
-			this.on(link, 'click', () => reachGoal('player_next_videos_click'));
+		let isShown = false;
+		let clicksCount = 0;
+
+		const getClickGoal = (e) => {
+			if (!e.isTrusted)
+				return 'player_next_videos_click_fake';
+			if (!isShown)
+				return 'player_next_videos_click_before_show';
+			clicksCount++;
+			return clicksCount == 1 ? 'player_next_videos_click_first' : 'player_next_videos_click_repeat';
+		};
+
+		for (const link of this.el().querySelectorAll('a')) {
+			this.on(link, 'click', (e) => {
+				reachGoal('player_next_videos_click');
+				reachGoal(getClickGoal(e));
+			});
+		}
 
 		const show = () => {
+			isShown = true;
 			reachGoal('player_next_videos_show');
 			player.addClass('vjs-has-next-videos');
 			this.updateLayout();
