@@ -102,7 +102,8 @@ const port = useIframePort((payload) => {
 			break;
 		}
 
-		case "IFRAME_CLOSE_RECEIVED": {
+		case "IFRAME_CLOSE_RECEIVED":
+		case "IFRAME_CLOSE_AWAITING_USER": {
 			clearDialogCloseTimer();
 			break;
 		}
@@ -117,6 +118,12 @@ const port = useIframePort((payload) => {
 			dialogCloseRequested = false;
 			allowCloseDialog = false;
 			miniGamesDialog.expand();
+			break;
+		}
+
+		case "OPEN_HOST_SIGN_UP": {
+			closeDialogImmediately();
+			pageLoader.loadPage({ url: Spaces.prepareLink('/registration/new/?Link_id=::link_id::') });
 			break;
 		}
 

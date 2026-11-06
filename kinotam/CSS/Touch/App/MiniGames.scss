@@ -172,6 +172,13 @@
 		flex: none;
 	}
 
+	&__badge {
+		width: 24px;
+		height: 24px;
+		object-fit: contain;
+		flex: none;
+	}
+
 	&__name,
 	&__winner-name {
 		min-width: 0;

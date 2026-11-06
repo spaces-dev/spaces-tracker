@@ -79,6 +79,33 @@ module.on("componentpage", async () => {
 			});
 		}
 	});
+
+	main.action('mini_game_start', async function (e) {
+		e.preventDefault();
+		const button = this;
+		button.disabled = true;
+		const error = await requestActivityStart(JSON.parse(button.dataset.miniGamesStart));
+		if (error?.retryAfterMs) {
+			setTimeout(() => {
+				button.disabled = false;
+			}, error.retryAfterMs);
+			showToast({ severity: "error", text: error.error });
+			return;
+		}
+
+		button.disabled = false;
+		if (!error)
+			return;
+		if (error.code === 'E_GUEST_SIGN_UP_REQUIRED') {
+			openSignUp();
+			return;
+		}
+		showToast({
+			severity: "error",
+			// l10n context="game-activity-action"
+			text: L('Не удалось выполнить действие.')
+		});
+	});
 });
 
 const port = useIframePort((payload) => {
@@ -123,7 +150,7 @@ const port = useIframePort((payload) => {
 
 		case "OPEN_HOST_SIGN_UP": {
 			closeDialogImmediately();
-			pageLoader.loadPage({ url: Spaces.prepareLink('/registration/new/?Link_id=::link_id::') });
+			openSignUp();
 			break;
 		}
 
@@ -149,6 +176,33 @@ const port = useIframePort((payload) => {
 		}
 	}
 });
+
+async function requestActivityStart(start) {
+	const widget = document.getElementById('mini_games_dialog');
+	try {
+		const response = await fetch(new URL(`/api/games/${start.activityName}/activity-lobby`, widget.dataset.url), {
+			method: 'POST',
+			credentials: 'omit',
+			referrerPolicy: 'no-referrer',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept-Language': Spaces.params.lang,
+				Authorization: `Bearer ${widget.dataset.token}`,
+			},
+			body: JSON.stringify({
+				createIfMissing: true,
+				activityOptions: start.activityOptions,
+			}),
+		});
+		return response.ok ? undefined : await response.json();
+	} catch {
+		return {};
+	}
+}
+
+function openSignUp() {
+	pageLoader.loadPage({ url: Spaces.prepareLink('/registration/new/?Link_id=::link_id::') });
+}
 
 function initMiniGames() {
 	dialogCloseRequested = false;
