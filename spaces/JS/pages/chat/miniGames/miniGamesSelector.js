@@ -14,6 +14,8 @@ module.on("componentpage", () => {
 	let closeTimer;
 	let closeRequested = false;
 	let allowClose = false;
+	const currentURL = new URL(location.href);
+	const openFromUrl = currentURL.searchParams.has("Mg_launch");
 
 	const clearCloseTimer = () => {
 		if (!closeTimer)
@@ -90,7 +92,7 @@ module.on("componentpage", () => {
 	}, "MINI_GAMES_WIDGET");
 
 	const paymentForm = useMiniGamesPayment(port, gameSelector.$content());
-	if (!localStorage.getItem(CHAT_HINT_STORAGE_KEY)) {
+	if (!openFromUrl && !localStorage.getItem(CHAT_HINT_STORAGE_KEY)) {
 		gameButton.addEventListener('click', () => hint.close());
 		hint.element().addEventListener('click', () => gameSelector.open({}, gameButton));
 		gameSelector.on('afterOpen', () => localStorage.setItem(CHAT_HINT_STORAGE_KEY, '1'));
@@ -154,6 +156,12 @@ module.on("componentpage", () => {
 		gameSelector.content().innerHTML = '';
 		window.removeEventListener('resize', updateMenuHeight);
 	});
+
+	if (openFromUrl) {
+		currentURL.searchParams.delete("Mg_launch");
+		history.replaceState(history.state, document.title, currentURL.toString());
+		gameSelector.open({}, gameButton);
+	}
 
 	return () => {
 		closeImmediately();
