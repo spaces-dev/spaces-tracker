@@ -209,7 +209,7 @@ function AsyncFromSyncIterator(r) {
       }) : AsyncFromSyncIteratorContinuation(n.apply(this.s, arguments));
     },
     throw: function (r) {
-      var n = this.s.return;
+      var n = this.s.throw;
       return void 0 === n ? Promise.reject(r) : AsyncFromSyncIteratorContinuation(n.apply(this.s, arguments));
     }
   }, new AsyncFromSyncIterator(r);
@@ -738,25 +738,23 @@ function _interopRequireDefault(e) {
     default: e
   };
 }
+var cache;
 function _interopRequireWildcard(e, t) {
-  if ("function" == typeof WeakMap) var r = new WeakMap(),
-    n = new WeakMap();
-  return (_interopRequireWildcard = function (e, t) {
-    if (!t && e && e.__esModule) return e;
-    var o,
-      i,
-      f = {
-        __proto__: null,
-        default: e
-      };
-    if (null === e || "object" != typeof e && "function" != typeof e) return f;
-    if (o = t ? n : r) {
-      if (o.has(e)) return o.get(e);
-      o.set(e, f);
-    }
-    for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]);
-    return f;
-  })(e, t);
+  if (!t && e && e.__esModule) return e;
+  var r,
+    c,
+    a = Object.defineProperty,
+    n = {
+      __proto__: null,
+      default: e
+    };
+  if (Object(e) !== e) return n;
+  if (cache || "function" != typeof WeakMap || (cache = new WeakMap()), cache) {
+    if (cache.has(e)) return cache.get(e);
+    cache.set(e, n);
+  }
+  for (c in e) "default" !== c && {}.hasOwnProperty.call(e, c) && ((r = a && Object.getOwnPropertyDescriptor(e, c)) && (r.get || r.set) ? a(n, c, r) : n[c] = e[c]);
+  return n;
 }
 function _isNativeFunction(t) {
   try {
@@ -1147,15 +1145,15 @@ function _toArray(r) {
 function _toConsumableArray(r) {
   return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
 }
-function _toPrimitive(t, r) {
+function _toPrimitive(t, e) {
   if ("object" != typeof t || !t) return t;
-  var e = t[Symbol.toPrimitive];
-  if (void 0 !== e) {
-    var i = e.call(t, r || "default");
+  var r;
+  if ("undefined" != typeof Symbol && void 0 !== (r = t[Symbol.toPrimitive])) {
+    var i = r.call(t, e || "default");
     if ("object" != typeof i) return i;
     throw new TypeError("@@toPrimitive must return a primitive value.");
   }
-  return ("string" === r ? String : Number)(t);
+  return ("string" === e ? String : Number)(t);
 }
 function _toPropertyKey(t) {
   var i = _toPrimitive(t, "string");
