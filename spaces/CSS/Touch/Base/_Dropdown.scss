@@ -363,6 +363,26 @@
 		background: $dropdown-body-bg;
 	}
 
+	&__scroll {
+		max-height: 400px;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: $scrollbar-bg transparent;
+
+		&::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			border-radius: 3px;
+			background: $scrollbar-bg;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+	}
+
 	// Куда же без костылей
 	& > .widgets-group {
 		margin: 0;
