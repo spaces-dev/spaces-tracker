@@ -14,7 +14,7 @@ var tpl = {
 var has_adult_files, has_adult_channel;
 
 UniversalSearch.register("blog_channels", {
-	apiMethod: 'blogs.findChannel',
+	apiMethod: 'blogs.channel.find',
 	apiData: {CK: null},
 	param: "q",
 	results: "channels",

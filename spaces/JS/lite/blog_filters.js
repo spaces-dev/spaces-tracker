@@ -22,7 +22,7 @@ function filter_hide(e) {
 	if (data.action == 'blogs_filter_hide' || data.action == 'blogs_filter_unhide') {
 		params.CK = null;
 		
-		Spaces.api("blogs.hideChannel", params, function (res) {
+		Spaces.api("blogs.channel.hide", params, function (res) {
 			el.style.opacity = '1';
 			if (res.code != 0) {
 				Spaces.showError(res.$error);

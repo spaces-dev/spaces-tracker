@@ -58,7 +58,7 @@ module.on("componentpage", function () {
 			btn.find('.js-ico').addClass('ico_spinner');
 		}
 		
-		Spaces.api("blogs.questComplete", {CK: null, ChIds: channels, Online: online}, function (res) {
+		Spaces.api("blogs.quest.complete", {CK: null, ChIds: channels, Online: online}, function (res) {
 			if (res.code != 0)
 				console.error("[channel_subscribe] " + Spaces.apiError(res));
 			subscription_done = true;

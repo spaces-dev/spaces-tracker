@@ -62,7 +62,7 @@ var TYPES = {
 		render: "usersApiResult"
 	},
 	blog_channels: {
-		method: "blogs.findChannel",
+		method: "blogs.channel.find",
 		param: "name",
 		results: "channels",
 		length: 1,

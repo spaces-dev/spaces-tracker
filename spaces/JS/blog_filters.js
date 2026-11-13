@@ -18,7 +18,7 @@ module.on("componentpage", function () {
 			el.removeClass('disabled');
 		};
 		
-		Spaces.api("blogs.hideChannel", params, function (res) {
+		Spaces.api("blogs.channel.hide", params, function (res) {
 			on_done();
 			if (res.code != 0) {
 				Spaces.showApiError(res);
